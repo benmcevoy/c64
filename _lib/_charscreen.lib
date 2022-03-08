@@ -5,6 +5,8 @@
     Character: .byte 224
     PenColor: .byte GREEN
 
+    // TODO: WriteString - want to write a string starting at point x,y
+
     /* Peek the value at location x,y */
     Read: {
         .var x = __arg0
