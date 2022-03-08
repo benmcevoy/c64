@@ -4,10 +4,10 @@ BasicUpstart2(Start)
 // - multiply
 // - 
 
-#import "../_prelude.lib"
-#import "../_charscreen.lib"
-#import "../_joystick.lib"
-#import "../_debug.lib"
+#import "_prelude.lib"
+#import "_charscreen.lib"
+#import "_joystick.lib"
+#import "_debug.lib"
 
 .label ClearScreen = $E544
 

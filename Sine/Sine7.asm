@@ -12,8 +12,8 @@ BasicUpstart2(Start)
 // - joystick to twiddle the phase and xf
 
 
-#import "../_charscreen.lib"
-#import "../_joystick.lib"
+#import "_charscreen.lib"
+#import "_joystick.lib"
 
 .label ClearScreen = $E544
 

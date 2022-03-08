@@ -6,8 +6,8 @@ BasicUpstart2(Start)
 // - decay dx back to zero (+ve/-ve)
 // - check collision in NSEW directions
 
-#import "../_prelude.lib"
-#import "../_charscreen.lib"
+#import "_prelude.lib"
+#import "_charscreen.lib"
 
 .const GRAVITY = 2
 .const IMPULSE = -64

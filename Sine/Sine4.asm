@@ -4,7 +4,7 @@ BasicUpstart2(Start)
 // - lissajou, but as trails
 // ANIMATE PHASE
 
-#import "../_charscreen.lib"
+#import "_charscreen.lib"
 
 
 xSpeed: .byte $00

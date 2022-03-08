@@ -10,8 +10,8 @@ BasicUpstart2(Start)
 
 // should be able to jump and land on platforms...
 // walk left right
-#import "../_prelude.lib"
-#import "../_charscreen.lib"
+#import "_prelude.lib"
+#import "_charscreen.lib"
 
 .const IMPULSE = -8
 .const WALL0 = 0

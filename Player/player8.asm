@@ -8,8 +8,8 @@ BasicUpstart2(Start)
 // - a game field, i should not have to redraw the every render
 //      ye-ikes - now it is screaming fast
 
-#import "../_prelude.lib"
-#import "../_charscreen.lib"
+#import "_prelude.lib"
+#import "_charscreen.lib"
 
 .const GRAVITY = 2
 .const IMPULSE = -64

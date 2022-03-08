@@ -3,8 +3,8 @@ BasicUpstart2(Start)
     // let's just bounce
     // ignore dx for now.
 
-#import "../_prelude.lib"
-#import "../_charscreen.lib"
+#import "_prelude.lib"
+#import "_charscreen.lib"
 
 .const GRAVITY = 1
 .const GROUND = 192 // 4*24 in game space

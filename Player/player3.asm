@@ -14,8 +14,8 @@ BasicUpstart2(Start)
 // hey, you know what... this is running on a timer, performance is probably smoking...
 // er.. ok maybe not, but the Render method is cra cra fast
 
-#import "../_prelude.lib"
-#import "../_charscreen.lib"
+#import "_prelude.lib"
+#import "_charscreen.lib"
 
 .const GRAVITY = 1
 .const GROUND = 192 // 8*24 in game space

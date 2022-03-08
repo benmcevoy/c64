@@ -13,8 +13,8 @@ BasicUpstart2(Start)
 // 
 
 
-#import "../_prelude.lib"
-#import "../_charscreen.lib"
+#import "_prelude.lib"
+#import "_charscreen.lib"
 
 .const GRAVITY = 1
 .const GROUND = 192 // 8*24 in game space

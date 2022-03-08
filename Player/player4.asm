@@ -2,8 +2,8 @@ BasicUpstart2(Start)
 
 // let's try a circular buffer and see if we can have trails...
 
-#import "../_prelude.lib"
-#import "../_charscreen.lib"
+#import "_prelude.lib"
+#import "_charscreen.lib"
 
 .const GRAVITY = 1
 .const GROUND = 192 // 8*24 in game space

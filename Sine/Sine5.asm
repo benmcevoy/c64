@@ -12,7 +12,7 @@ BasicUpstart2(Start)
 // - joystick to twiddle the phase and xf
 
 
-#import "../_charscreen.lib"
+#import "_charscreen.lib"
 
 
 

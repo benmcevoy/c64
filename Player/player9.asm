@@ -12,8 +12,8 @@ BasicUpstart2(Start)
 // not just dec x or dec y or whatever...
 // that is now fixed and the code got much DRYer, winner winner
 
-#import "../_prelude.lib"
-#import "../_charscreen.lib"
+#import "_prelude.lib"
+#import "_charscreen.lib"
 
 .const GRAVITY = 2
 .const IMPULSE = -72

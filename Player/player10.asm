@@ -4,8 +4,8 @@ BasicUpstart2(Start)
 // - a little "car" game
 // yeah, kinda meh.
 
-#import "../_prelude.lib"
-#import "../_charscreen.lib"
+#import "_prelude.lib"
+#import "_charscreen.lib"
 
 .const MAXSPEED = 80
 .const SPEED_INC = 3

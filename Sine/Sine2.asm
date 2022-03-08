@@ -1,6 +1,6 @@
 BasicUpstart2(Start)
 
-#import "../_charscreen.lib"
+#import "_charscreen.lib"
 
 delayCounter: .byte 0
 .const DELAY = 255
