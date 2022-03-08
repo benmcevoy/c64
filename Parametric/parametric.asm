@@ -1,5 +1,7 @@
 BasicUpstart2(Start)
 
+// refer: https://github.com/benmcevoy/ParametricToy
+
 // TODO: how to loop over the sprite? the Charscreen.Read should be a start?
 // - multiply
 // - 
