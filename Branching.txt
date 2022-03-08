@@ -1,0 +1,31 @@
+=================================================================================================================
+Branch if:                              Operators       Unsigned        Flags   Signed              Flags
+-----------------------------------------------------------------------------------------------------------------
+The register is equal to the data       EQU             BEQ jump_addr   Z=1     Same as unsigned 
+                                        ==
+                                        =
+	
+-----------------------------------------------------------------------------------------------------------------
+The register is not equal to the data   NEQ             BNE jump_addr   Z=0     Same as unsigned
+                                        !=
+
+-----------------------------------------------------------------------------------------------------------------
+The register is less than the data      LT              BCC jump_addr   C=0     BMI jump_addr   N=1
+                                        <
+
+-----------------------------------------------------------------------------------------------------------------
+The register is less than,              LTE             BCC jump_addr   C=0     BMI jump_addr   N=1
+or equal to, the data                   <=              BEQ jump_addr   Z=1     BEQ jump_addr   Z=1
+
+-----------------------------------------------------------------------------------------------------------------
+The register is greater than the data   GT              BEQ cont_addr   Z=1     BEQ cont_addr   Z=1
+                                        >               BCS jump_addr   C=1     BPL jump_addr   N=0
+                                                        .cont_addr              .cont_addr
+
+-----------------------------------------------------------------------------------------------------------------
+The register is greater than,           GTE             BCS jump_addr   C=1     BPL jump_addr   N=0
+or equal to, the data	                >=
+
+
+jump_addr is the address to jump if the comparison succeeds
+cont_addr is the address if the comparison does not succeed (i.e. the code continues)

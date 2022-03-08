@@ -1,0 +1,106 @@
+** Message: 14:47:55.674: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 15:47:58.197: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 14:53:06.936: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 20:57:11.242: Connecting to org.freedesktop.Tracker3.Miner.Files
+Protocol error: bad 3 (Window); Sequence Number 5
+ Opcode (20, 0) = GetProperty
+ Bad resource 102760448 (0x6200000)
+ at -e line 16.
+Protocol error: bad 3 (Window); Sequence Number 5
+ Opcode (20, 0) = GetProperty
+ Bad resource 102760448 (0x6200000)
+ at -e line 16.
+Protocol error: bad 3 (Window); Sequence Number 5
+ Opcode (20, 0) = GetProperty
+ Bad resource 102760448 (0x6200000)
+ at -e line 16.
+Protocol error: bad 3 (Window); Sequence Number 5
+ Opcode (20, 0) = GetProperty
+ Bad resource 102760448 (0x6200000)
+ at -e line 16.
+Protocol error: bad 3 (Window); Sequence Number 5
+ Opcode (20, 0) = GetProperty
+ Bad resource 102760448 (0x6200000)
+ at -e line 16.
+** Message: 16:35:38.240: Connecting to org.freedesktop.Tracker3.Miner.Files
+[000055d3fdc4b580] main libvlc: Running vlc with the default interface. Use 'cvlc' to use vlc without interface.
+[000055d3fdd22270] main audio output error: too low audio sample frequency (0)
+[00007f26f0d9fa90] main decoder error: failed to create audio output
+[000055d3fdd22270] vlcpulse audio output error: digital pass-through stream connection failure: Not supported
+[000055d3fdd22270] main audio output error: module not functional
+[00007f26f0d9fa90] main decoder error: failed to create audio output
+[00007f26d8004390] gl gl: Initialized libplacebo v2.72.0 (API v72)
+libva info: VA-API version 1.12.0
+libva info: Trying to open /usr/lib/x86_64-linux-gnu/dri/nvidia_drv_video.so
+libva info: va_openDriver() returns -1
+[00007f26d8004390] glconv_vaapi_x11 gl error: vaInitialize: unknown libva error
+libva info: VA-API version 1.12.0
+libva error: vaGetDriverNameByIndex() failed with unknown libva error, driver_name = (null)
+[00007f26d8004390] glconv_vaapi_drm gl error: vaInitialize: unknown libva error
+libva info: VA-API version 1.12.0
+libva error: vaGetDriverNameByIndex() failed with unknown libva error, driver_name = (null)
+[00007f26d8004390] glconv_vaapi_drm gl error: vaInitialize: unknown libva error
+[00007f26d8004390] gl gl: Initialized libplacebo v2.72.0 (API v72)
+[00007f26f0c16dc0] avcodec decoder: Using NVIDIA VDPAU Driver Shared Library  470.103.01  Thu Jan  6 12:11:03 UTC 2022 for hardware decoding
+[00007f26f0c16dc0] main decoder error: Timestamp conversion failed for 4796001: no reference clock
+[00007f26f0c16dc0] main decoder error: Could not convert timestamp 0 for FFmpeg
+QObject::~QObject: Timers cannot be stopped from another thread
+** Message: 11:57:57.589: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 16:43:02.807: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 18:36:57.347: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 10:46:39.576: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 17:01:23.646: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 18:05:58.831: Connecting to org.freedesktop.Tracker3.Miner.Files
+
+(org.gnome.Nautilus:592382): Gtk-WARNING **: 10:44:21.083: You must override the default 'drag_data_delete' handler on GtkTreeView when using models that don't support the GtkTreeDragSource interface and enabling drag-and-drop. The simplest way to do this is to connect to 'drag_data_delete' and call g_signal_stop_emission_by_name() in your signal handler to prevent the default handler from running. Look at the source code for the default handler in gtktreeview.c to get an idea what your handler should do. (gtktreeview.c is in the GTK source code.) If you're using GTK from a language other than C, there may be a more natural way to override default handlers, e.g. via derivation.
+** Message: 12:41:29.529: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 16:05:10.159: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 20:16:45.681: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 15:08:23.529: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 17:25:13.363: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 11:49:25.871: Connecting to org.freedesktop.Tracker3.Miner.Files
+** Message: 16:34:33.288: Connecting to org.freedesktop.Tracker3.Miner.Files
+[0000558558871580] main libvlc: Running vlc with the default interface. Use 'cvlc' to use vlc without interface.
+[00007f44fc003f70] gl gl: Initialized libplacebo v2.72.0 (API v72)
+[00007f4550004090] gl gl: Initialized libplacebo v2.72.0 (API v72)
+libva info: VA-API version 1.12.0
+libva info: Trying to open /usr/lib/x86_64-linux-gnu/dri/nvidia_drv_video.so
+libva info: va_openDriver() returns -1
+[00007f4550004090] glconv_vaapi_x11 gl error: vaInitialize: unknown libva error
+libva info: VA-API version 1.12.0
+libva error: vaGetDriverNameByIndex() failed with unknown libva error, driver_name = (null)
+[00007f4550004090] glconv_vaapi_drm gl error: vaInitialize: unknown libva error
+libva info: VA-API version 1.12.0
+libva error: vaGetDriverNameByIndex() failed with unknown libva error, driver_name = (null)
+[00007f4550004090] glconv_vaapi_drm gl error: vaInitialize: unknown libva error
+[00007f45500372f0] gl gl: Initialized libplacebo v2.72.0 (API v72)
+[00007f44fc006ae0] main decoder error: buffer deadlock prevented
+QObject::~QObject: Timers cannot be stopped from another thread
+[0000556600575580] main libvlc: Running vlc with the default interface. Use 'cvlc' to use vlc without interface.
+[00007f4dd0003f70] gl gl: Initialized libplacebo v2.72.0 (API v72)
+libva info: VA-API version 1.12.0
+libva info: Trying to open /usr/lib/x86_64-linux-gnu/dri/nvidia_drv_video.so
+libva info: va_openDriver() returns -1
+[00007f4dd0003f70] glconv_vaapi_x11 gl error: vaInitialize: unknown libva error
+libva info: VA-API version 1.12.0
+libva error: vaGetDriverNameByIndex() failed with unknown libva error, driver_name = (null)
+[00007f4dd0003f70] glconv_vaapi_drm gl error: vaInitialize: unknown libva error
+libva info: VA-API version 1.12.0
+libva error: vaGetDriverNameByIndex() failed with unknown libva error, driver_name = (null)
+[00007f4dd0003f70] glconv_vaapi_drm gl error: vaInitialize: unknown libva error
+[00007f4dd0003f70] gl gl: Initialized libplacebo v2.72.0 (API v72)
+[00007f4de4c10c60] main decoder error: buffer deadlock prevented
+[00007f4dd0003f70] gl gl: Initialized libplacebo v2.72.0 (API v72)
+libva info: VA-API version 1.12.0
+libva info: Trying to open /usr/lib/x86_64-linux-gnu/dri/nvidia_drv_video.so
+libva info: va_openDriver() returns -1
+[00007f4dd0003f70] glconv_vaapi_x11 gl error: vaInitialize: unknown libva error
+libva info: VA-API version 1.12.0
+libva error: vaGetDriverNameByIndex() failed with unknown libva error, driver_name = (null)
+[00007f4dd0003f70] glconv_vaapi_drm gl error: vaInitialize: unknown libva error
+libva info: VA-API version 1.12.0
+libva error: vaGetDriverNameByIndex() failed with unknown libva error, driver_name = (null)
+[00007f4dd0003f70] glconv_vaapi_drm gl error: vaInitialize: unknown libva error
+[00007f4dd0003f70] gl gl: Initialized libplacebo v2.72.0 (API v72)
+[00007f4de4c17940] main decoder error: buffer deadlock prevented
+** Message: 16:21:12.705: Connecting to org.freedesktop.Tracker3.Miner.Files

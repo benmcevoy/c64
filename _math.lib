@@ -1,0 +1,63 @@
+#importonce
+#import "_prelude.lib"
+
+.namespace Math {
+
+    /* Pi in BRADs */
+    .const PI = 128
+    .const TWOPI = 128
+    .const HALFPI = 64
+
+    /* 
+    Mult_U_8_8 - 8 bit multiplication, unsigned, 8 bit result 
+    input: arg0, arg1
+    output: val0
+    */
+    Mult_U8_U8: {
+        // using my own implementation shift and add
+        .var result = __val0
+
+        lda #0
+        sta result
+        sta shift
+        lda #1
+        sta places
+
+        _loop:
+        // if place is high in op1
+        lda __arg0
+        and places
+        cmp places
+        bne _next // no it wasn't
+
+        // yes it was, add shift and add result
+        lda __arg1 
+        ldx shift
+        cpx #0
+        beq _add
+
+        _loop1:
+        asl
+        dex
+        cpx #0
+        bne _loop1
+
+        _add:
+        clc
+        adc result
+        sta result
+
+        _next:
+        inc shift
+        lda places; asl; sta places
+
+        cmp #0
+        bne _loop
+
+        rts
+
+        // locals
+        shift: .byte 0
+        places: .byte 0
+    }
+}

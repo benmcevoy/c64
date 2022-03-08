@@ -1,0 +1,109 @@
+#importonce
+
+// ZP temp variables __tmp0-3.
+.label __tmp0 = $02
+.label __tmp1 = $03
+.label __tmp2 = $04
+.label __tmp3 = $05
+
+// ZP arity args for macro's __arg0-3.
+.label __arg0 = $94
+.label __arg1 = $95
+.label __arg2 = $96
+.label __arg3 = $97
+
+// ZP result value variables __val0-3.
+.label __val0 = $2A
+.label __val1 = $4B
+.label __val2 = $4C
+.label __val3 = $52
+
+// ZP ptr words __ptr0-3
+.label __ptr0 = $06
+.label __ptr1 = $08
+.label __ptr2 = $0A
+.label __ptr3 = $0C
+
+// indicates if a pointer action was handled successfully
+.const ACTION_HANDLED = $FF
+
+/* Negate .A two's complement value */
+.macro NegateA() {
+    eor #$ff
+    clc
+    adc #1
+}
+
+/* Set memory address to value. */
+.pseudocommand Set address:value {
+    lda value
+    sta address
+}
+
+/* Set bit(s) high at address */
+.pseudocommand SetBit address:value {
+    lda address
+    ora value
+    sta address
+}
+
+/* Flip bit(s) at address */
+.pseudocommand FlipBit address:value {
+     lda address
+     eor value
+     sta address
+}
+
+// couldn';'t work out ClearBit using #~value?
+/* Clear bit(s) at address */
+// .pseudocommand ClearBit address:value {
+//     lda address
+//     and #~value
+//     sta address
+// }
+
+/* Push arg to stack. */
+.pseudocommand Push arg {
+    lda arg
+    pha
+}
+
+/* Pop arg from stack. */
+.pseudocommand Pop arg {
+    pla
+    sta arg
+}
+
+/* 
+Call - invoke subroutine, unused args can be omitted.
+Args are managed on the stack.
+Mind your call depth to avoid stack overflow.
+*/
+.pseudocommand Call subroutine:arg0:arg1:arg2:arg3 {
+    .if(arg0.getType() != AT_NONE) { Push __arg0; Set __arg0: arg0 }
+    .if(arg1.getType() != AT_NONE) { Push __arg1; Set __arg1: arg1 }
+    .if(arg2.getType() != AT_NONE) { Push __arg2; Set __arg2: arg2 }
+    .if(arg3.getType() != AT_NONE) { Push __arg3; Set __arg3: arg3 }
+
+    txa;pha;tya;pha
+
+    // allows us to use Call (indirect), as jsr (indirect) is not a supported thing in 6502
+    .if(subroutine.getType() == AT_INDIRECT) {
+        // push return location to stack
+        lda #>!+;pha
+        lda #<!+;pha
+        jmp subroutine
+        !:rts
+    }
+    
+    .if(subroutine.getType() == AT_ABSOLUTE) {
+        jsr subroutine
+    }
+
+    pla;tay;pla;tax
+
+    .if(arg3.getType() != AT_NONE) Pop __arg3
+    .if(arg2.getType() != AT_NONE) Pop __arg2
+    .if(arg1.getType() != AT_NONE) Pop __arg1
+    .if(arg0.getType() != AT_NONE) Pop __arg0
+}

@@ -1,0 +1,63 @@
+#importonce
+#import "_prelude.lib"
+
+DebugInit:{
+    // setup debug
+    Set __ptr3+1:#$c0
+    Set __ptr3:#$00
+    Set __dbgoffset:#0
+
+    rts
+}
+
+ __dbgoffset: .byte $0
+.pseudocommand DebugPrint value {
+    php
+    txa;pha;tya;pha
+    ldy __dbgoffset; lda value; sta (__ptr3),y; inc __dbgoffset
+    cpy #$ff
+    bne !+
+        brk
+    !:
+    pla;tay;pla;tax
+    plp
+}    
+
+DebugPrintResults: {
+    ldy #0
+    chrout:
+    // top 4 bits
+    lda (__ptr3),y
+    lsr;lsr;lsr;lsr
+    __toHex()
+    jsr $FFD2
+
+    lda (__ptr3),y
+    and #$0f
+    //  sta (__ptr1),y
+    __toHex()
+    jsr $FFD2
+
+    lda #32
+    jsr $FFD2
+    iny
+    cpy __dbgoffset
+    bne chrout
+
+    rts
+}
+
+.macro __toHex(){
+    cmp #$A
+    beq !+
+    bcs !+
+        clc
+        // 48 = 0 in petscii
+        adc #48
+        jmp exit
+    !:
+    clc
+    // 65 is A  
+    adc #55
+    exit:
+}

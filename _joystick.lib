@@ -1,0 +1,57 @@
+#importonce
+#import "_prelude.lib"
+
+.namespace Joystick {
+
+    .label PORT2 = $dc00
+
+    .label UP      = %00000001
+    .label DOWN    = %00000010
+    .label LEFT    = %00000100
+    .label RIGHT   = %00001000
+    .label FIRE    = %00010000
+
+    Read: {
+        .var playerAction = __arg0
+
+        Set playerAction:#0
+
+        // left
+        lda #LEFT
+        bit PORT2
+        bne !+
+            SetBit playerAction:#LEFT
+        !:
+
+        lda #RIGHT
+        bit PORT2
+        bne !+
+            SetBit playerAction:#RIGHT
+        !:
+
+        // up
+        lda #UP
+        bit PORT2
+        bne !+
+            SetBit playerAction:#UP
+        !:
+
+        // down
+        lda #DOWN
+        bit PORT2
+        bne !+
+            SetBit playerAction:#DOWN
+        !:
+
+        // fire
+        lda #FIRE
+        bit PORT2
+        bne !+
+            SetBit playerAction:#FIRE
+        !:
+
+        Set __val0:playerAction
+
+        rts
+    }
+}
