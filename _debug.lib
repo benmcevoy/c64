@@ -1,51 +1,36 @@
 #importonce
 #import "_prelude.lib"
 
-DebugInit:{
-    // setup debug
-    Set __ptr3+1:#$c0
-    Set __ptr3:#$00
-    Set __dbgoffset:#0
+.label ChrOut = $FFD2
 
-    rts
-}
-
- __dbgoffset: .byte $0
+/* Print a value to the screen as hex, using the kernal chrout */
 .pseudocommand DebugPrint value {
+    // try not to clobber anything, shove it all on the stack
     php
-    txa;pha;tya;pha
-    ldy __dbgoffset; lda value; sta (__ptr3),y; inc __dbgoffset
-    cpy #$ff
-    bne !+
-        brk
-    !:
-    pla;tay;pla;tax
-    plp
-}    
+    pha;txa;pha;tya;pha
 
-DebugPrintResults: {
+    lda value
+    sta __tmp3
     ldy #0
-    chrout:
+
     // top 4 bits
-    lda (__ptr3),y
+    lda __tmp3
     lsr;lsr;lsr;lsr
     __toHex()
-    jsr $FFD2
+    jsr ChrOut
 
-    lda (__ptr3),y
+    lda __tmp3
     and #$0f
-    //  sta (__ptr1),y
     __toHex()
-    jsr $FFD2
+    jsr ChrOut
 
+    // space
     lda #32
-    jsr $FFD2
-    iny
-    cpy __dbgoffset
-    bne chrout
+    jsr ChrOut
 
-    rts
-}
+    pla;tay;pla;tax;pla
+    plp
+}    
 
 .macro __toHex(){
     cmp #$A

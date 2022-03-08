@@ -17,47 +17,68 @@
         // using my own implementation shift and add
         .var result = __val0
 
-        lda #0
-        sta result
-        sta shift
-        lda #1
-        sta places
-
+        Set result:#0
+        Set shift:#0
+        Set places:#1
+        
         _loop:
-        // if place is high in op1
-        lda __arg0
-        and places
-        cmp places
-        bne _next // no it wasn't
+            // if place is high in op1
+            lda __arg0
+            and places
+            cmp places
+            bne _next // no it wasn't
 
-        // yes it was, add shift and add result
-        lda __arg1 
-        ldx shift
-        cpx #0
-        beq _add
+            // yes it was, add shift and add result
+            lda __arg1 
+            ldx shift
+            cpx #0
+            beq _add
 
-        _loop1:
-        asl
-        dex
-        cpx #0
-        bne _loop1
+            _loop1:
+                asl
+                dex
+                cpx #0
+                bne _loop1
 
-        _add:
-        clc
-        adc result
-        sta result
+            _add:
+                clc
+                adc result
+                sta result
 
-        _next:
-        inc shift
-        lda places; asl; sta places
-
-        cmp #0
-        bne _loop
-
+            _next:
+                inc shift
+                lda places; asl; sta places
+                cmp #0
+                bne _loop
         rts
 
         // locals
         shift: .byte 0
         places: .byte 0
+    }
+
+    /* 
+    Multiply two unsigned 8 bit numbers, 16 bit unsigned result in __val8 (LO),__val1 (HI)
+    From: https://llx.com/Neil/a2/mult.html
+     */
+    Mult_U8_U16: {
+        .var op1 = __arg0
+        .var op2 = __arg1
+
+        Set __val0:#0
+
+        lda #0       // initialize result to 0
+        ldx #8       // there are 8 bits in num2
+l1:     lsr op2      // get low bit of num2
+        bcc l2       // 0 or 1?
+        clc          // if 1, add num1
+        adc op1
+l2:     ror          // "stairstep" shift (catching carry from add)
+        ror __val0
+        dex
+        bne l1
+        sta __val1
+
+        rts
     }
 }

@@ -15,12 +15,14 @@ BasicUpstart2(Start)
 .const DELAY = 200
 .const AXIS = 8
 .const TRAILS = 12
-.const WIDTH = 24
+.const WIDTH = 40
 .const HEIGHT = 24
 .const CENTERX = (WIDTH/2)
 .const CENTERY = (HEIGHT/2)
 .const ROTATION_ANGLE_INCREMENT = (TWOPI/AXIS)  
 .const GLYPH = 204 // a little square
+
+.print CENTERX
 
 Start: {
     // initialise
@@ -28,8 +30,6 @@ Start: {
     jsr ClearScreen
     Set $d020:#BLACK
     Set $d021:#BLACK
-
-    jsr DebugInit
 
     // TODO: no idea what values to put yet
     Set size:#1
@@ -175,12 +175,12 @@ Rotate: {
     ldx angle
     lda cosine,x
 
+
     // var x2 = x1 * Math.Cos(angle) - y1 * Math.Sin(angle);
     // var y2 = x1 * Math.Sin(angle) + y1 * Math.Cos(angle);
 
-    // return new Tuple<double, double>(x2 + centerX, y2 + centerY);
-    Set __val0:x1 // x2
-    Set __val1:y1 // y2
+    Set __val0:x1 
+    Set __val1:y1 
 
     rts
     x1: .byte 0
@@ -297,3 +297,4 @@ cosine: .fill 256,round(127.5+127.5*cos(toRadians(i*360/256)))
 
 // WIP, ok for the now
 palette: .byte 4,6,14,3,5,13,7,10,2,8,9
+
