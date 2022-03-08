@@ -3,3 +3,5 @@ bin/
 kickass/
 .vscode/
 .idea/
+nohup.out
+log.txt
