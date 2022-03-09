@@ -1,4 +1,4 @@
-Learn some 6502 assembly and progam the C64
+Learn some 6502 assembly and program the C64
 ==============================================
 
 Last time I wrote 6502 was probably... 1990?
