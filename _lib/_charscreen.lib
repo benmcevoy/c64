@@ -6,6 +6,10 @@
     PenColor: .byte GREEN
 
     // TODO: WriteString - want to write a string starting at point x,y
+    // TODO: PlotLine - but try and use the petscii "sixel" characters to increase the "resolution"
+    // - might look a little dodgy, i feel it would need a virtual screen (or bounding window) that is 4x larger
+    // 
+
 
     /* Peek the value at location x,y */
     Read: {

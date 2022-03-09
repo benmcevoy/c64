@@ -10,6 +10,13 @@
     .label LEFT    = %00000100
     .label RIGHT   = %00001000
     .label FIRE    = %00010000
+    // TODO: FIRE_SHORT, FIRE_MEDIUM, FIRE_LONG, using that latching idea
+    // what other actions? at least add s-m-l to all these actions, thats 15 discrete states potentially, a nice nibble
+    // or just short/long 50:50, or indeed make that distribution configureable
+    // 100 50:50  25:50:25 30:70 etc can support 4 args as input
+    // DOUBLE_FIRE, DOUBLE_LEFT, etc
+    // refer awesome smash sibilings
+
 
     Read: {
         .var playerAction = __arg0
