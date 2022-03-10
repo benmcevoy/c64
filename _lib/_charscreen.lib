@@ -1,5 +1,6 @@
 #importonce
 #import "_prelude.lib"
+#import "_debug.lib"
 
 .namespace CharScreen {
     Character: .byte 224
@@ -86,6 +87,83 @@
         rts
     }
 
+    PlotH: {
+        .var x = __arg0
+        .var y = __arg1
+        
+        // set sixel1 as default even
+        Set sixel1:#1
+        Set sixel0:#0
+
+        // convert screen space
+        lda x
+        lsr 
+        sta xScreen
+
+        lda y
+        lsr 
+        sta yScreen
+
+        // get current sixel
+        Call CharScreen.Read:xScreen:yScreen
+        // convert the character to the sixel index
+        lda __val0
+        ldx #0
+        loop:
+            cmp sixels,X
+            bne !+
+                stx sixel0
+                jmp !next+
+            !:
+                inx
+                cpx #16
+                bne loop
+        !next:
+
+        // calulate new bit to set from odd/even of x,y
+        lda x
+        and #%00000001
+        cmp #0
+        beq !+ // was even, that's the default, do nothing
+            // was odd, 
+            Set sixel1:#2
+        !:
+        
+        lda y
+        and #%00000001
+        cmp #0
+        beq !+ // was odd, do nothing
+            // was even, shift << 2
+            lda sixel1
+            asl;asl
+            sta sixel1
+        !:
+
+        // sixel1 and sixel0 now have equivalent basis, 0..15
+        // combine the two with OR so as to preserve any ON bits
+        lda sixel0
+        ora sixel1
+        tax
+        stx sixel1
+
+        // lookup new char
+        lda sixels,X
+        sta sixel1
+
+        // and plot
+        Set CharScreen.Character:sixel1
+        Call CharScreen.Plot:xScreen:yScreen
+
+        rts
+        xScreen: .byte 0
+        yScreen: .byte 0
+        //            20,7e, 7c, e2, 7b, 61,ff, ec, 6c, 7f, e1, fb, 62,fc, fe, a0
+        sixels: .byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
+        sixel0: .byte 0
+        sixel1: .byte 0
+
+    }
+
     /* PlotLine from x0,y0 to x1,y1 */
     PlotLine: {
         .var x0 = __arg0
@@ -95,6 +173,21 @@
 
         Set __ptr0:#<(CharScreen.Plot)
         Set __ptr0+1:#>(CharScreen.Plot)
+
+        Call CastRay:x0:y0:x1:y1
+
+        rts
+    }
+
+        /* PlotLine from x0,y0 to x1,y1 */
+    PlotLineH: {
+        .var x0 = __arg0
+        .var y0 = __arg1
+        .var x1 = __arg2
+        .var y1 = __arg3
+
+        Set __ptr0:#<(CharScreen.PlotH)
+        Set __ptr0+1:#>(CharScreen.PlotH)
 
         Call CastRay:x0:y0:x1:y1
 
@@ -380,6 +473,25 @@
         y1: .byte 0
     }
 
+    PlotRectH: {
+        Set x0:__arg0
+        Set y0:__arg1
+        Set x1:__arg2
+        Set y1:__arg3
+
+        Call PlotLineH:x0:y0:x1:y0
+        Call PlotLineH:x1:y0:x1:y1
+        Call PlotLineH:x1:y1:x0:y1
+        Call PlotLineH:x0:y1:x0:y0
+        rts
+        // the stack get's messed up, or maybe because I use a value multiple times
+        // in a call, at any rate, getting some unexpected mutations, taking a copy solves this.
+        x0: .byte 0
+        y0: .byte 0
+        x1: .byte 0
+        y1: .byte 0
+    }
+
     _checkBounds: {
         .var x = __arg0
         .var y = __arg1
@@ -407,4 +519,6 @@
 
     screenRow: .lohifill 25, 40*i
 }
+
+
 
