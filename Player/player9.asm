@@ -116,30 +116,21 @@ DrawGameField: {
     // then ground should be a range, e.g. characters 40-60 
     // so we can have some variety, and our collision test can still be reasonable
     // e.g. I could draw with some nice PETSCII chars instead
-    Set CharScreen.PenColor:#RED
+    Set CharScreen.PenColor:#DARK_GREY
+
+    // jsr DrawLetters
+    // rts
     Call CharScreen.WriteString:#1:#1:#<message:#>message
-    Call CharScreen.WriteString:#1:#2:#<message1:#>message1
     Call CharScreen.WriteString:#1:#3:#<message:#>message
-    Call CharScreen.WriteString:#1:#4:#<message1:#>message1
     Call CharScreen.WriteString:#1:#5:#<message:#>message
-    Call CharScreen.WriteString:#1:#6:#<message1:#>message1
     Call CharScreen.WriteString:#1:#7:#<message:#>message
-    Call CharScreen.WriteString:#1:#8:#<message1:#>message1
     Call CharScreen.WriteString:#1:#9:#<message:#>message
-    Call CharScreen.WriteString:#1:#10:#<message1:#>message1
-    Set CharScreen.PenColor:#CYAN
     Call CharScreen.WriteString:#1:#11:#<message:#>message
-    Call CharScreen.WriteString:#1:#12:#<message1:#>message1
     Call CharScreen.WriteString:#1:#13:#<message:#>message
-    Call CharScreen.WriteString:#1:#14:#<message1:#>message1
     Call CharScreen.WriteString:#1:#15:#<message:#>message
-    Call CharScreen.WriteString:#1:#16:#<message1:#>message1
     Call CharScreen.WriteString:#1:#17:#<message:#>message
-    Call CharScreen.WriteString:#1:#18:#<message1:#>message1
     Call CharScreen.WriteString:#1:#19:#<message:#>message
-    Call CharScreen.WriteString:#1:#20:#<message1:#>message1
     Call CharScreen.WriteString:#1:#21:#<message:#>message
-    Call CharScreen.WriteString:#1:#22:#<message1:#>message1
     Call CharScreen.WriteString:#1:#23:#<message:#>message
     
 
@@ -161,8 +152,36 @@ DrawGameField: {
 
     rts
 
-    message: .text @".:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:\$ff"
-    message1: .text @"::::::::::::::::::::::::::::::::::::::::\$ff"
+    message: .text @"\$46\$46\$46\$46\$43\$43\$43\$43\$44\$44\$44\$45\$45\$45\$45\$45\$45\$45\$44\$44\$44\$44\$43\$43\$43\$46\$46\$46\$46\$46\$46\$46\$43\$43\$43\$43\$44\$44\$44\$45\$45\$45\$45\$45\$45\$45\$44\$44\$ff"
+    
+}
+
+DrawLetters: {
+        Set __tmp0:#0
+    Set __tmp1:#0
+    Set __tmp2:#0
+
+        next:
+
+        Set CharScreen.Character:__tmp0
+        Call CharScreen.Plot:__tmp1:__tmp2
+
+        inc __tmp0
+        inc __tmp1
+       
+        lda __tmp1
+        cmp #40
+        beq !+
+             jmp next
+        !:
+    Set __tmp1:#0
+        inc __tmp2
+        lda __tmp2
+        cmp #25
+        beq end
+          jmp next
+        end:
+    rts
 }
 
 ReadJoystick: {
