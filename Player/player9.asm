@@ -18,7 +18,7 @@ BasicUpstart2(Start)
 .const GRAVITY = 2
 .const IMPULSE = -72
 .const SPEED = 48
-.const GROUND_CHAR = 204
+.const GROUND_CHAR = 224
 .const BLANK_CHAR = 32
 .const PLAYER_CHAR = 81
 
@@ -29,6 +29,9 @@ dx: .byte 0
 dy: .byte 0
 y0: .byte 0
 x0: .byte 0
+
+swapColor: .byte 0
+swapChar: .byte 0
 
 delayCounter: .byte 0
 .const DELAY = 80
@@ -70,6 +73,10 @@ Start: {
 
     jsr DrawGameField
 
+    Call CharScreen.Read:x:y
+    Set swapChar:__val0
+    Set swapColor:__val1
+    
     // set IRQ for GameUpdate, CIA timer
     sei
     lda #<GameUpdate            
@@ -109,8 +116,34 @@ DrawGameField: {
     // then ground should be a range, e.g. characters 40-60 
     // so we can have some variety, and our collision test can still be reasonable
     // e.g. I could draw with some nice PETSCII chars instead
-    Set CharScreen.Character:#GROUND_CHAR
+    Set CharScreen.PenColor:#RED
+    Call CharScreen.WriteString:#1:#1:#<message:#>message
+    Call CharScreen.WriteString:#1:#2:#<message1:#>message1
+    Call CharScreen.WriteString:#1:#3:#<message:#>message
+    Call CharScreen.WriteString:#1:#4:#<message1:#>message1
+    Call CharScreen.WriteString:#1:#5:#<message:#>message
+    Call CharScreen.WriteString:#1:#6:#<message1:#>message1
+    Call CharScreen.WriteString:#1:#7:#<message:#>message
+    Call CharScreen.WriteString:#1:#8:#<message1:#>message1
+    Call CharScreen.WriteString:#1:#9:#<message:#>message
+    Call CharScreen.WriteString:#1:#10:#<message1:#>message1
+    Set CharScreen.PenColor:#CYAN
+    Call CharScreen.WriteString:#1:#11:#<message:#>message
+    Call CharScreen.WriteString:#1:#12:#<message1:#>message1
+    Call CharScreen.WriteString:#1:#13:#<message:#>message
+    Call CharScreen.WriteString:#1:#14:#<message1:#>message1
+    Call CharScreen.WriteString:#1:#15:#<message:#>message
+    Call CharScreen.WriteString:#1:#16:#<message1:#>message1
+    Call CharScreen.WriteString:#1:#17:#<message:#>message
+    Call CharScreen.WriteString:#1:#18:#<message1:#>message1
+    Call CharScreen.WriteString:#1:#19:#<message:#>message
+    Call CharScreen.WriteString:#1:#20:#<message1:#>message1
+    Call CharScreen.WriteString:#1:#21:#<message:#>message
+    Call CharScreen.WriteString:#1:#22:#<message1:#>message1
+    Call CharScreen.WriteString:#1:#23:#<message:#>message
+    
 
+    Set CharScreen.Character:#GROUND_CHAR
     Set CharScreen.PenColor:#GREEN    
     Call CharScreen.PlotRect:#0:#0:#39:#24
 
@@ -127,6 +160,9 @@ DrawGameField: {
     Call CharScreen.PlotLine:#1:#16:#10:#16
 
     rts
+
+    message: .text @".:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:\$ff"
+    message1: .text @"::::::::::::::::::::::::::::::::::::::::\$ff"
 }
 
 ReadJoystick: {
@@ -298,26 +334,32 @@ CheckCollisions: {
         rts
     }
 }
-
         
 Render:{
-    // changed?
+
     lda x0
     cmp x
-    bne clearPlayer
+    bne swap
     lda y0
     cmp y
-    beq !+
-        clearPlayer:
-            Set CharScreen.PenColor:#BLACK
-            Set CharScreen.Character:#BLANK_CHAR
-            Call CharScreen.Plot:x0:y0
-    !:
+    bne swap
+    jmp draw
+    
+swap:    
+    Set CharScreen.PenColor:swapColor
+    Set CharScreen.Character:swapChar
+    Call CharScreen.Plot:x0:y0
 
-    // draw player
+    Call CharScreen.Read:x:y
+    Set swapChar:__val0
+    Set swapColor:__val1
+
+draw:
     Set CharScreen.Character:#PLAYER_CHAR
     Set CharScreen.PenColor:#WHITE
     Call CharScreen.Plot:x:y
 
+end:
     rts
+
 }

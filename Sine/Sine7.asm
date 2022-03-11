@@ -212,7 +212,7 @@ Lissajou: {
     adc xPhase
     tax
     lda sine,X
-    lsr;lsr;lsr;lsr
+    lsr;lsr;
     clc
     adc xOffset
     sta x
@@ -224,7 +224,7 @@ Lissajou: {
     adc yPhase
     tax
     lda sine,X
-    lsr;lsr;lsr;lsr
+    lsr;lsr;
     clc
     adc yOffset
     sta y
@@ -232,7 +232,7 @@ Lissajou: {
     sta yTrails, X
 
     Set CharScreen.PenColor:t
-    Call CharScreen.Plot:x:y
+    Call CharScreen.PlotH:x:y
 
     lda i
     cmp #TRAILS
@@ -243,7 +243,7 @@ Lissajou: {
     rts
 
     xOffset: .byte 12
-    yOffset: .byte 4
+    yOffset: .byte 0
     x: .byte 0
     y: .byte 0
     i: .byte 0
@@ -251,10 +251,10 @@ Lissajou: {
 }
 
 
-* = $0e00 "unsigned trig tables"
+* = $1000 "unsigned trig tables"
 sine: .fill 256,round(127.5+127.5*sin(toRadians(i*360/256)))
 cosine: .fill 256,round(127.5+127.5*cos(toRadians(i*360/256)))
-* = $1000 "trails"
+* = $1200 "trails"
 xTrails: .fill TRAILS,0
 yTrails: .fill TRAILS,0
 

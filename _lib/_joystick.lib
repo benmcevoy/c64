@@ -11,11 +11,18 @@
     .label RIGHT   = %00001000
     .label FIRE    = %00010000
     // TODO: FIRE_SHORT, FIRE_MEDIUM, FIRE_LONG, using that latching idea
-    // what other actions? at least add s-m-l to all these actions, thats 15 discrete states potentially, a nice nibble
+    // what other actions? at least add s-m-l to all these actions, thats 15 discrete states potentially (15 bit)
     // or just short/long 50:50, or indeed make that distribution configureable
     // 100 50:50  25:50:25 30:70 etc can support 4 args as input
     // DOUBLE_FIRE, DOUBLE_LEFT, etc
-    // refer awesome smash sibilings
+    // refer awesome slam siblings
+
+    // well, look at time first
+    // result is 4 bytes
+    // action, fireDuration, horizontalDuration, verticalDuration
+    // bummer to have three bits unused in action, suppose it could be doubleF, doubleH, doubleV? maybe?
+    // then double left is %01000100 yeah?
+    // or reduce duration resolution to 4 bits and 3 bits fireDuration and pack the whole lot in two bytes, yeah nah.
 
 
     Read: {

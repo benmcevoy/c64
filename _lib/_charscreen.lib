@@ -3,16 +3,46 @@
 #import "_debug.lib"
 
 .namespace CharScreen {
-    Character: .byte 224
+    Character: .byte 204
     PenColor: .byte GREEN
 
-    // TODO: WriteString - want to write a string starting at point x,y
-    // TODO: PlotLine - but try and use the petscii "sixel" characters to increase the "resolution"
-    // - might look a little dodgy, i feel it would need a virtual screen (or bounding window) that is 4x larger
-    // 
+    // TODO: ScreenShake :) juice it
+    
+    /* Write a string to x,y */
+    // TODO: kind of awkward, not able to pass an address, only values?
+    WriteString: {
+        .var x = __arg0
+        .var y = __arg1
+        .var textL = __arg2
+        .var textH = __arg3
+        
+    Push CharScreen.Character
+
+    Set __ptr0:textL
+    Set __ptr0+1:textH
+
+    Set xWrite:x
+    
+    ldy #0
+    loop:   
+        lda (__ptr0),y
+        cmp #ACTION_HANDLED
+        beq exit
+        sta  CharScreen.Character
+        Call  CharScreen.Plot:xWrite:y
+        inc xWrite
+        iny
+        jmp loop
+
+    exit:
+        Pop  CharScreen.Character
+
+    rts
+    xWrite: .byte 0
+}
 
 
-    /* Peek the value at location x,y */
+    /* Peek the value at location x,y, return character __val0 and color __val1 */
     Read: {
         .var x = __arg0
         .var y = __arg1
@@ -35,12 +65,20 @@
         lda (screenLO),y  
         sta __val0
 
+        // color
+        lda screenRow.hi,x
+        ora #$D8 
+        sta screenHI
+
+        lda (screenLO),y  
+        sta __val1
+
         Pop __tmp1; Pop __tmp0
         
         rts
     }
 
-    /* __arg0=x, __arg1=y */
+    /* Plot a point, __arg0 is x 0..39, __arg1 is y 0..24 */
     Plot: {
         .var x = __arg0
         .var y = __arg1
@@ -87,6 +125,7 @@
         rts
     }
 
+    /* Plot a hires sixel point, __arg0 is x 0..79, __arg1 is y 0..49 */
     PlotH: {
         .var x = __arg0
         .var y = __arg1
@@ -179,7 +218,7 @@
         rts
     }
 
-        /* PlotLine from x0,y0 to x1,y1 */
+    /* Plot hires line from x0,y0 to x1,y1 */
     PlotLineH: {
         .var x0 = __arg0
         .var y0 = __arg1
@@ -519,6 +558,4 @@
 
     screenRow: .lohifill 25, 40*i
 }
-
-
 
