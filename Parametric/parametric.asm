@@ -298,5 +298,6 @@ sine: .fill 256,round(127.5+127.5*sin(toRadians(i*360/256)))
 cosine: .fill 256,round(127.5+127.5*cos(toRadians(i*360/256)))
 
 // WIP, ok for the now
-palette: .byte 4,6,14,3,5,13,7,10,2,8,9
+palette: .byte 0,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9
+
 
