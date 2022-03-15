@@ -5,6 +5,8 @@ BasicUpstart2(Start)
 
 // declare the layout in bytes
 .namespace Agent {
+    /* this is ;ile a header file */
+    /* offset in bytes, order is important */
     .label x = 0
     .label y = 1 
     .label z = 2
@@ -13,45 +15,52 @@ BasicUpstart2(Start)
     .label destroyed = 5 
     .label Update = 6  
     .label Render = 8
-    .label Glyph = 9
-    .label Color = 10
+    .label Glyph = 10
+    .label Color = 11
 
-    .label Length = 11
+    .label Length = 12
 
+    .var objectPtr = __ptr0
+    .var fieldPtr = __ptr1
+
+    // TODO: be nice to make these funciton generic or agnostic to the struct layout, would need to know the
+    // table pointer, preferably as zp 
     __getObjectPtr: {
         .var index = __arg0
 
-        Set __val0:#<Agents
-        Set __val1:#>Agents
+        Set objectPtr:#<Agents
+        Set objectPtr+1:#>Agents
 
-        // calculate object pointer
+        // calculate object pointer, offset by index*2 (2 bytes)
         lda index
         asl // *2
         clc
-        adc __val0
+        adc objectPtr
+        sta objectPtr
+        bcc !+
+            inc objectPtr+1
+        !:
+        // objectPtr now has the pointer (word from Agents table) to the pointer to the object
+        // extract object pointer actual address
+        ldy #0
+        lda (objectPtr),y
         sta __val0
-        lda __val1
-        // add the carry for page boundary
-        adc #0
+        iny
+        lda (objectPtr),y
         sta __val1
-
+        
         rts
     }
 
     _getFieldPtr: {
         .var field = __arg0
 
-        .var objectPtr = __ptr0
-        .var fieldPtr = __ptr1
-
         // calculate field pointer - objectPtr + field offset
-        ldy #0
-        lda (objectPtr),y
+        lda objectPtr
         clc
         adc field
         sta __val0
-        iny
-        lda (objectPtr),y
+        lda objectPtr+1
         // add the carry for page boundary
         adc #0
         sta __val1
@@ -61,9 +70,6 @@ BasicUpstart2(Start)
 
     _getMethodPtr: {
         .var method = __arg0
-
-        .var objectPtr = __ptr0
-        .var fieldPtr = __ptr1
 
         Call _getFieldPtr:method
         Set fieldPtr:__val0
@@ -84,9 +90,6 @@ BasicUpstart2(Start)
         .var index = __arg0
         .var field = __arg1
 
-        .var objectPtr = __ptr0
-        .var fieldPtr = __ptr1
-        
         Call __getObjectPtr:index
         Set objectPtr:__val0
         Set objectPtr+1:__val1
@@ -100,19 +103,6 @@ BasicUpstart2(Start)
         lda (fieldPtr),y
         sta __val0
 
-        DebugPrint #<Agents
-        DebugPrint #>Agents
-        DebugPrint objectPtr
-        DebugPrint objectPtr+1
-
-        TODO: fieldPtr is 0000
-        can the agenttable be zp?
-        dispatch table and double dispatch
-        how does an "object" do it?
-
-        DebugPrint fieldPtr
-        DebugPrint fieldPtr+1
-
         rts
     }
 
@@ -120,10 +110,7 @@ BasicUpstart2(Start)
         .var index = __arg0
         .var field = __arg1
         .var value = __arg2
-
-        .var objectPtr = __ptr0
-        .var fieldPtr = __ptr1
-        
+       
         Call __getObjectPtr:index
         Set objectPtr:__val0
         Set objectPtr+1:__val1
@@ -153,7 +140,7 @@ BasicUpstart2(Start)
         Call _getMethodPtr:method
         Set methodPtr:__val0
         Set methodPtr+1:__val1
-  
+
         Call (methodPtr):index
 
         rts
@@ -161,7 +148,7 @@ BasicUpstart2(Start)
 }
 
 Start: {
-    .var index = 1
+    .var index = 2
     
     Call Agent.Invoke:#index:#Agent.Update
     Call Agent.Invoke:#index:#Agent.Render
@@ -172,15 +159,15 @@ Start: {
 UpdateImpl: {
     .var index = __arg0
 
-    Call Agent.SetField:#index:#Agent.x:#80
-    
+    Call Agent.SetField:index:#Agent.x:#80
+
     rts
 }
 
 UpdateImpl2: {
     .var index = __arg0
 
-    Call Agent.SetField:#index:#Agent.x:#81
+    Call Agent.SetField:index:#Agent.x:#81
 
     rts
 }
@@ -188,7 +175,8 @@ UpdateImpl2: {
 RenderImpl: {
     .var index = __arg0
     
-    Call Agent.GetField:#index:#Agent.x
+    Call Agent.GetField:index:#Agent.x
+    lda __val0
 
     sta $0400
     rts
@@ -215,7 +203,7 @@ Agent0:{
 }
 
 Agent1:{
-    x: .byte 0
+    x: .byte $42
     y: .byte 0
     z: .byte 0
     dx: .byte 0
