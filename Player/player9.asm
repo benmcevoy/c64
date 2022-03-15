@@ -19,6 +19,9 @@ BasicUpstart2(Start)
 //#import "./Backgrounds/jungle.asm"
 //#import "./Backgrounds/clouds.asm"
 
+#import "./Agents/Agent.asm"
+#import "./Agents/AgentBehaviours.asm"
+
 .const GRAVITY = 2
 .const IMPULSE = -72
 .const SPEED = 48
@@ -75,7 +78,9 @@ Start: {
     Set dx:#0
     Set dy:#0
 
-    jsr DrawGameField
+    Call AgentBehaviours.Initialise
+    Call Background.Draw
+    Call DrawGameField
 
     Call CharScreen.Read:x:y
     Set swapChar:__val0
@@ -105,9 +110,9 @@ GameUpdate: {
         lda x; sta x0
         
         jsr ReadJoystick
-        jsr UpdatePos
+        jsr UpdateAgents
         jsr CheckCollisions
-        jsr Render
+        jsr RenderAgents
     !:
 
     // end irq
@@ -116,9 +121,6 @@ GameUpdate: {
 }
 
 DrawGameField: {
-
-    jsr DrawBackground
-    
     Set CharScreen.Character:#GROUND_CHAR
     Set CharScreen.PenColor:#GROUND_COLOR    
     Call CharScreen.PlotRect:#0:#0:#39:#24
@@ -182,6 +184,56 @@ ReadJoystick: {
                 SetBit playerAction:#ACTION_IS_JUMPING
         !skip:
     rts
+}
+
+UpdateAgents: {
+    lda #MAXAGENTS
+    sta index
+
+loop:
+    dec index
+    
+    lda index
+    cmp #0
+    bmi exit
+
+    Call Agent.IsDestroyed:index
+    lda __val0
+    cmp #1
+    beq loop
+    
+    Call Agent.Invoke:index:Agent.Update
+    jmp loop
+
+exit:    
+    rts
+
+    index: .byte 0
+}
+
+RenderAgents: {
+    lda #MAXAGENTS
+    sta index
+
+loop:
+    dec index
+    
+    lda index
+    cmp #0
+    bmi exit
+
+    Call Agent.IsDestroyed:index
+    lda __val0
+    cmp #1
+    beq loop
+    
+    Call Agent.Invoke:index:Agent.Render
+    jmp loop
+
+exit:    
+    rts
+
+    index: .byte 0
 }
 
 UpdatePos: {
