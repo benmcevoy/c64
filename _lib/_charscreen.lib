@@ -6,7 +6,38 @@
     Character: .byte 204
     PenColor: .byte GREEN
 
-    // TODO: ScreenShake :) juice it
+    // TODO: yikes, pretty terrible. probably should queue the shake as part of the render
+    Shake: {
+        .label xScroll = $d016
+
+        ldx #0
+        ldy #0
+    shake:
+        Set offset:#8
+    loop:    
+
+        Set xScroll:offset
+        ldx #0
+        delay:
+        dex
+        cpx #0
+        bne delay
+
+        iny
+        cpy #16
+        beq exit
+
+        inc offset
+        lda offset
+        cmp #16
+        beq shake
+        jmp loop
+    exit:
+        Set xScroll:#8
+        rts
+
+        offset: .byte 0
+    }
     
     /* Write a string to x,y */
     // TODO: kind of awkward, not able to pass an address, only values?
@@ -15,32 +46,31 @@
         .var y = __arg1
         .var textL = __arg2
         .var textH = __arg3
+            
+        Push CharScreen.Character
+
+        Set __ptr0:textL
+        Set __ptr0+1:textH
+
+        Set xWrite:x
         
-    Push CharScreen.Character
+        ldy #0
+        loop:   
+            lda (__ptr0),y
+            cmp #ACTION_HANDLED
+            beq exit
+            sta  CharScreen.Character
+            Call  CharScreen.Plot:xWrite:y
+            inc xWrite
+            iny
+            jmp loop
 
-    Set __ptr0:textL
-    Set __ptr0+1:textH
-
-    Set xWrite:x
+        exit:
+            Pop  CharScreen.Character
+        rts
     
-    ldy #0
-    loop:   
-        lda (__ptr0),y
-        cmp #ACTION_HANDLED
-        beq exit
-        sta  CharScreen.Character
-        Call  CharScreen.Plot:xWrite:y
-        inc xWrite
-        iny
-        jmp loop
-
-    exit:
-        Pop  CharScreen.Character
-
-    rts
-    xWrite: .byte 0
-}
-
+        xWrite: .byte 0
+    }
 
     /* Peek the value at location x,y, return character __val0 and color __val1 */
     Read: {

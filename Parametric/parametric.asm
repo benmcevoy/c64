@@ -2,10 +2,6 @@ BasicUpstart2(Start)
 
 // refer: https://github.com/benmcevoy/ParametricToy
 
-// TODO: how to loop over the sprite? the Charscreen.Read should be a start?
-// - multiply
-// - 
-
 #import "_prelude.lib"
 #import "_charscreen.lib"
 #import "_joystick.lib"
@@ -101,9 +97,9 @@ axis:
             Set x1:__val0
             Set y1:__val1
 
-            Call Wrap:x1:#WIDTH
+            Call Wrap:x:x1:#WIDTH
             Set x1:__val0
-            Call Wrap:y1:#HEIGHT
+            Call Wrap:y:y1:#HEIGHT
             Set y1:__val0
 
             // sprite[Wrap(x1,Sprite.Width), Wrap(y2, Sprite.Height)] = i % Sprite.PaletteLength;
@@ -190,21 +186,43 @@ Rotate: {
 }
 
 Wrap: {
-    .var value = __arg0
-    .var maxValue = __arg1
+    .var oldValue = __arg0
+    .var newValue = __arg1
+    .var maxValue = __arg2
+    
+    Set __val0:newValue
 
-    // if (value < 0)
-    // {
-    //     if (value % maxValue == 0) return 0;
+    // if new value >0 and <max then return it
+    lda newValue
+    cmp #0
+    bmi !+
+        cmp maxValue
+        beq !+
+        bmi !+
+        rts
+    !:
 
-    //     return (int)(value % maxValue + maxValue);
-    // }
+    // find delta/direction
+    lda newValue
+    sec
+    sbc oldValue
+    bmi decreasing
+        lda newValue
+        cmp maxValue
+        beq wrap1
+        bpl !+
+        wrap1:
+            sec
+            sbc maxValue
+            sta __val0
+            rts
+    !: 
+    decreasing:
+        lda newValue
+        clc
+        adc maxValue
+        sta __val0
 
-    // return value >= maxValue
-    //     ? (int)(value % maxValue)
-    //     : (int)(value);
-
-    Set __val0:value // TODO:
     rts
 }
 
@@ -293,7 +311,7 @@ phase: .word 0
 speed: .byte 0
 
 // unsigned trig tables
-*=$1000 "Data"
+*=$1200 "Data"
 sine: .fill 256,round(127.5+127.5*sin(toRadians(i*360/256)))
 cosine: .fill 256,round(127.5+127.5*cos(toRadians(i*360/256)))
 
