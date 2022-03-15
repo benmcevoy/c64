@@ -12,6 +12,7 @@ BasicUpstart2(Start)
     .label z = 2
     .label dx = 3 
     .label dy = 4 
+    // TODO: might pay to make this the first field as we would check it alot, i dunno
     .label destroyed = 5 
     .label Update = 6  
     .label Render = 8
@@ -20,33 +21,33 @@ BasicUpstart2(Start)
 
     .label Length = 12
 
-    .var objectPtr = __ptr0
-    .var fieldPtr = __ptr1
+    .var __objectPtr = __ptr0
+    .var __fieldPtr = __ptr1
 
     // TODO: be nice to make these funciton generic or agnostic to the struct layout, would need to know the
     // table pointer, preferably as zp 
     __getObjectPtr: {
         .var index = __arg0
 
-        Set objectPtr:#<Agents
-        Set objectPtr+1:#>Agents
+        Set __objectPtr:#<Agents
+        Set __objectPtr+1:#>Agents
 
         // calculate object pointer, offset by index*2 (2 bytes)
         lda index
         asl // *2
         clc
-        adc objectPtr
-        sta objectPtr
+        adc __objectPtr
+        sta __objectPtr
         bcc !+
-            inc objectPtr+1
+            inc __objectPtr+1
         !:
         // objectPtr now has the pointer (word from Agents table) to the pointer to the object
         // extract object pointer actual address
         ldy #0
-        lda (objectPtr),y
+        lda (__objectPtr),y
         sta __val0
         iny
-        lda (objectPtr),y
+        lda (__objectPtr),y
         sta __val1
         
         rts
@@ -56,11 +57,11 @@ BasicUpstart2(Start)
         .var field = __arg0
 
         // calculate field pointer - objectPtr + field offset
-        lda objectPtr
+        lda __objectPtr
         clc
         adc field
         sta __val0
-        lda objectPtr+1
+        lda __objectPtr+1
         // add the carry for page boundary
         adc #0
         sta __val1
@@ -72,15 +73,15 @@ BasicUpstart2(Start)
         .var method = __arg0
 
         Call _getFieldPtr:method
-        Set fieldPtr:__val0
-        Set fieldPtr+1:__val1
+        Set __fieldPtr:__val0
+        Set __fieldPtr+1:__val1
 
         // extract method pointer actual address
         ldy #0
-        lda (fieldPtr),y
+        lda (__fieldPtr),y
         sta __val0
         iny
-        lda (fieldPtr),y
+        lda (__fieldPtr),y
         sta __val1
 
         rts
@@ -91,16 +92,16 @@ BasicUpstart2(Start)
         .var field = __arg1
 
         Call __getObjectPtr:index
-        Set objectPtr:__val0
-        Set objectPtr+1:__val1
+        Set __objectPtr:__val0
+        Set __objectPtr+1:__val1
 
         Call _getFieldPtr:field
-        Set fieldPtr:__val0
-        Set fieldPtr+1:__val1
+        Set __fieldPtr:__val0
+        Set __fieldPtr+1:__val1
 
         // extract field actual value
         ldy #0
-        lda (fieldPtr),y
+        lda (__fieldPtr),y
         sta __val0
 
         rts
@@ -112,16 +113,16 @@ BasicUpstart2(Start)
         .var value = __arg2
        
         Call __getObjectPtr:index
-        Set objectPtr:__val0
-        Set objectPtr+1:__val1
+        Set __objectPtr:__val0
+        Set __objectPtr+1:__val1
 
         Call _getFieldPtr:field
-        Set fieldPtr:__val0
-        Set fieldPtr+1:__val1
+        Set __fieldPtr:__val0
+        Set __fieldPtr+1:__val1
 
         ldy #0
         lda value
-        sta (fieldPtr),y
+        sta (__fieldPtr),y
 
         rts
     }
@@ -148,10 +149,10 @@ BasicUpstart2(Start)
 }
 
 Start: {
-    .var index = 2
+    .var id = 2
     
-    Call Agent.Invoke:#index:#Agent.Update
-    Call Agent.Invoke:#index:#Agent.Render
+    Call Agent.Invoke:#id:#Agent.Update
+    Call Agent.Invoke:#id:#Agent.Render
 
     rts
 }
@@ -186,6 +187,8 @@ RenderImpl: {
 
 // pool of pointers to agents
 .label AgentTable = $c0fa
+// Agents should be in ZP to make things faster/easier
+// TODO: i need some memory mangement, to free up ZP and kill BASIC, tape drive, and unused stuff.
 Agents: .word  AgentTable+(Agent.Length*0),AgentTable+(Agent.Length*1),AgentTable+(Agent.Length*2)  // 3ptrs?
 
 *=AgentTable+(Agent.Length*0) "Agent data"
@@ -227,3 +230,5 @@ Agent2:{
     glyph: .byte 0
     color: .byte 0
 }
+
+// could also just add  .fill Agent.Length*number_of_agents_i_want_in_the_pool 0
