@@ -28,28 +28,20 @@
     .label Length = 22
 
     .var __objectPtr = __ptr0
-    .var __fieldPtr = __ptr1
 
 // TODO:
-// - consider indexing into struct, e.g. (ffff),x or what addressing mode is appropriate  absolute indexed, e.g. $ffff,X
-// - consider meta programming - can i alter the code as it is running and avoid a few lda/sta's, perhaps to set 16 bit values for lda/sta, 
 // might rework this api, to operate on object pointers and not fetch them every time
 // but first make it work (again)
-
-
-
 
     IsDestroyed: {
         .var index = __arg0
 
         Call GetObjectPtr:index
-        Set __objectPtr:__val0
-        Set __objectPtr+1:__val1
 
         // rely on the fact that destroyed is the 0th field
         // the object pointer points straight at it
         ldy #0
-        lda (__objectPtr),y
+        lda (__objectPtr),Y
         sta __val0
 
         rts
@@ -59,15 +51,13 @@
         .var index = __arg0
         .var field = __arg1
 
-        Call GetFieldPtr:index:field
-  
-        // extract field actual value
-        ldy #0
-        lda (__fieldPtr),Y
+        Call GetObjectPtr:index
+
+        ldy field
+        lda (__objectPtr),Y
         sta __val0
-        // __val1 might be rubbish
         iny
-        lda (__fieldPtr),Y
+        lda (__objectPtr),Y
         sta __val1
 
         rts
@@ -78,11 +68,11 @@
         .var field = __arg1
         .var value = __arg2
        
-        Call GetFieldPtr:index:field
+        Call GetObjectPtr:index
 
-        ldy #0
+        ldy field
         lda value
-        sta (__fieldPtr),y
+        sta (__objectPtr),Y
 
         rts
     }
@@ -93,14 +83,14 @@
         .var valueLo = __arg2
         .var valueHi = __arg3
        
-        Call GetFieldPtr:index:field
-
-        ldy #0
+        Call GetObjectPtr:index
+        
+        ldy field
         lda valueLo
-        sta (__fieldPtr),y
-        iny 
+        sta (__objectPtr),Y
+        iny
         lda valueHi
-        sta (__fieldPtr),y
+        sta (__objectPtr),Y
 
         rts
     }
@@ -109,12 +99,14 @@
         .var index = __arg0
         .var field = __arg1
         
+        .var __methodPtr = __ptr1
+        
         Call GetField:index:field
         
-        Set __fieldPtr:__val0
-        Set __fieldPtr+1:__val1
+        Set __methodPtr:__val0
+        Set __methodPtr+1:__val1
 
-        Call (__fieldPtr):index
+        Call (__methodPtr):index
 
         rts
     }
@@ -122,61 +114,24 @@
     GetObjectPtr: {
         .var index = __arg0
 
-        Set __objectPtr:#<__agents
-        Set __objectPtr+1:#>__agents
-
         // calculate object pointer, offset by index*2 (2 bytes)
         lda index
         asl // *2
-        clc
-        adc __objectPtr
-        sta __objectPtr
-        bcc !+
-            inc __objectPtr+1
-        !:
-        // objectPtr now has the pointer (word from Agents table) to the pointer to the object
-        // extract object pointer actual address
-        ldy #0
-        lda (__objectPtr),y
-        sta __val0
-        iny
-        lda (__objectPtr),y
-        sta __val1
+        tax
         
-        Set __objectPtr:__val0
-        Set __objectPtr+1:__val1
-
-        rts
-    }
-
-    GetFieldPtr: {
-        .var index = __arg0
-        .var field = __arg1
-
-        Call GetObjectPtr:index
-
-        // calculate field pointer - objectPtr + field offset
-        lda __objectPtr
-        clc
-        adc field
-        sta __val0
-        sta __fieldPtr
-        lda __objectPtr+1
-        // add the carry for page boundary
-        adc #0
-        sta __val1
-        sta __fieldPtr+1
+        lda __agents,x
+        sta __objectPtr
+        inx
+        lda __agents,x
+        sta __objectPtr+1
 
         rts
     }
 
     // pool of pointers to agents
-    
     .label __agentTable = $c000
-    
     // list of pointers to the agent table
     __agents: .for(var i = 0; i < MAXAGENTS; i++) .word __agentTable + (Agent.Length * i)
-
     // reserve memory
     *=__agentTable "Agent data"
     Agent0:{
@@ -214,5 +169,3 @@
         Collision: .word 0
     }
 }
-
-
