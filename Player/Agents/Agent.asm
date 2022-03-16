@@ -29,42 +29,23 @@
 
     .var __objectPtr = __ptr3
 
-// TODO:
-// might rework this api, to operate on object pointers and not fetch them every time
-// but first make it work (again)
+    Invoke: {
+        .var field = __arg0
+        
+        .var __methodPtr = __ptr1
+ 
+        Call GetField:field
+        
+        Set __methodPtr:__val0
+        Set __methodPtr+1:__val1
 
-    IsDestroyed: {
-        .var index = __arg0
-
-        Call GetObjectPtr:index
-
-        // rely on the fact that destroyed is the 0th field
-        // the object pointer points straight at it
-        ldy #0
-        lda (__objectPtr),Y
-        sta __val0
-
-        rts
-    }
-
-    GetField: {
-        .var index = __arg0
-        .var field = __arg1
-
-        Call GetObjectPtr:index
-
-        ldy field
-        lda (__objectPtr),Y
-        sta __val0
-        iny
-        lda (__objectPtr),Y
-        sta __val1
+        Call (__methodPtr)
 
         rts
     }
 
     /* MUST call GetObjectPtr first */
-    GetFieldFromObject: {
+    GetField: {
         .var field = __arg0
 
         ldy field
@@ -77,22 +58,9 @@
         rts
     }
 
-    SetField: {
-        .var index = __arg0
-        .var field = __arg1
-        .var value = __arg2
-       
-        Call GetObjectPtr:index
-
-        ldy field
-        lda value
-        sta (__objectPtr),Y
-
-        rts
-    }
-
+    
     /* MUST call GetObjectPtr first */
-    SetFieldOnObject: {
+    SetField: {
         .var field = __arg0
         .var value = __arg1
         
@@ -103,26 +71,8 @@
         rts
     }
 
-    SetFieldW: {
-        .var index = __arg0
-        .var field = __arg1
-        .var valueLo = __arg2
-        .var valueHi = __arg3
-       
-        Call GetObjectPtr:index
-        
-        ldy field
-        lda valueLo
-        sta (__objectPtr),Y
-        iny
-        lda valueHi
-        sta (__objectPtr),Y
-
-        rts
-    }
-
     /* MUST call GetObjectPtr first */
-    SetFieldWOnObject: {
+    SetFieldW: {
         .var field = __arg0
         .var valueLo = __arg1
         .var valueHi = __arg2
@@ -137,23 +87,7 @@
         rts
     }
 
-    Invoke: {
-        .var index = __arg0
-        .var field = __arg1
-        
-        .var __methodPtr = __ptr1
-        
-        Call GetField:index:field
-        
-        Set __methodPtr:__val0
-        Set __methodPtr+1:__val1
-
-        Call (__methodPtr):index
-
-        rts
-    }
-
-    GetObjectPtr: {
+    SetCurrentObject: {
         .var index = __arg0
 
         // calculate object pointer, offset by index*2 (2 bytes)
@@ -189,25 +123,25 @@
         color: .byte WHITE
         x0: .word 0
         y0: .word 0
-        glyph0: .byte 0
+        glyph0: .byte 32
         color0: .byte 0
         Collision: .word AgentBehaviours.DefaultCollision 
     }
     Agent1:{
-        destroyed: .byte 1
-        x: .word 0
-        y: .word 0
+        destroyed: .byte 0
+        x: .word 10
+        y: .word 2
         z: .byte 0
         dx: .byte 0
         dy: .byte 0
-        Update: .word 0 
-        Render: .word 0
-        glyph: .byte 0
-        color: .byte 0
+        Update: .word AgentBehaviours.SimpleUpdate 
+        Render: .word AgentBehaviours.SimpleRender 
+        glyph: .byte 81 // ball
+        color: .byte GREEN
         x0: .word 0
         y0: .word 0
-        glyph0: .byte 0
+        glyph0: .byte 32
         color0: .byte 0
-        Collision: .word 0
+        Collision: .word AgentBehaviours.NoOperation 
     }
 }

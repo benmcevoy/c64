@@ -15,9 +15,9 @@ BasicUpstart2(Start)
 #import "_debug.lib"
 #import "globals.asm"
 #import "./Agents/Agent.asm"
-#import "./Backgrounds/weave.asm"
+//#import "./Backgrounds/weave.asm"
 //#import "./Backgrounds/honeycomb.asm"
-//#import "./Backgrounds/city.asm"
+#import "./Backgrounds/city.asm"
 //#import "./Backgrounds/jungle.asm"
 //#import "./Backgrounds/clouds.asm"
 
@@ -44,10 +44,20 @@ Start: {
         // disable cia timers
         lda    #$7f
         sta    $dc0d
+        sta    $dc0c
+        lda    $dc0d
+        lda    $dc0c
     cli
 
+    loop:
+        // TODO: I should be able to move the Update and Collision
+        // code here and just render on the IRQ
+        // when I try that it looks like my pointers get clobbered, which is expected
+        // need more ZP space and setup a pointer per method, hello globals :)
+
+
     // infinite loop
-    jmp *
+    jmp loop
 }
 
 GameUpdate: {
@@ -55,12 +65,15 @@ GameUpdate: {
     lda    #$01
     sta    $d019
     // set next irq line number
-    lda    #30
+    lda    #20
     sta    $d012
 
     // - set border color change for some perf indicator
     Set $d020:#WHITE
 
+    // TODO: I think player is special, with it's joystick and collisions
+    // agents, best to dumb them right down, avoid collisions, simple updates (8 bit), simple rendering
+    
     //Call ReadJoystick
     Call UpdateAgents
     Set $d020:#RED
@@ -155,12 +168,13 @@ UpdateAgents: {
         jmp exit
     !:
  
-    Call Agent.IsDestroyed:index
+    Call Agent.SetCurrentObject:index
+    Call Agent.GetField:#Agent.destroyed
     lda __val0
     cmp #0
     bne loop
 
-    Call Agent.Invoke:index:#Agent.Update
+    Call Agent.Invoke:#Agent.Update
 
     jmp loop
 
@@ -183,12 +197,13 @@ RenderAgents: {
         jmp exit
     !:
 
-    Call Agent.IsDestroyed:index
+    Call Agent.SetCurrentObject:index
+    Call Agent.GetField:#Agent.destroyed
     lda __val0
     cmp #0 
     bne loop
     
-    Call Agent.Invoke:index:#Agent.Render
+    Call Agent.Invoke:#Agent.Render
     jmp loop
 
     exit:    
@@ -210,12 +225,13 @@ CollisionAgents: {
         jmp exit
     !:
 
-    Call Agent.IsDestroyed:index
+    Call Agent.SetCurrentObject:index
+    Call Agent.GetField:#Agent.destroyed
     lda __val0
     cmp #0 
     bne loop
     
-    Call Agent.Invoke:index:#Agent.Collision
+    Call Agent.Invoke:#Agent.Collision
     jmp loop
 
     exit:    
