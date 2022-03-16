@@ -9,21 +9,23 @@
     DefaultCollision: {
         .var index = __arg0
 
-        Call Agent.GetField:index:#Agent.x
+        Call Agent.GetObjectPtr:index
+
+        Call Agent.GetFieldFromObject:#Agent.x
         Set x:__val0
         Set x+1:__val1
-        Call Agent.GetField:index:#Agent.y
+        Call Agent.GetFieldFromObject:#Agent.y
         Set y:__val0
         Set y+1:__val1
-        Call Agent.GetField:index:#Agent.x0
+        Call Agent.GetFieldFromObject:#Agent.x0
         Set x0:__val0
         Set x0+1:__val1
-        Call Agent.GetField:index:#Agent.y0
+        Call Agent.GetFieldFromObject:#Agent.y0
         Set y0:__val0
         Set y0+1:__val1 
-        Call Agent.GetField:index:#Agent.dx
+        Call Agent.GetFieldFromObject:#Agent.dx
         Set dx:__val0
-        Call Agent.GetField:index:#Agent.dy
+        Call Agent.GetFieldFromObject:#Agent.dy
         Set dy:__val0     
 
         Set __ptr0:#<(checkCollision)
@@ -31,11 +33,11 @@
 
         Call CharScreen.CastRay:x0:y0:x:y
 
-        Call Agent.SetFieldW:index:#Agent.x:x:x+1
-        Call Agent.SetFieldW:index:#Agent.y:y:y+1
+        Call Agent.SetFieldWOnObject:#Agent.x:x:x+1
+        Call Agent.SetFieldWOnObject:#Agent.y:y:y+1
 
-        Call Agent.SetField:index:#Agent.dx:dx
-        Call Agent.SetField:index:#Agent.dy:dy
+        Call Agent.SetFieldOnObject:#Agent.dx:dx
+        Call Agent.SetFieldOnObject:#Agent.dy:dy
 
         rts
 
@@ -103,25 +105,27 @@
     DefaultRender: {
         .var index = __arg0
 
-        Call Agent.GetField:index:#Agent.x
+        Call Agent.GetObjectPtr:index
+
+        Call Agent.GetFieldFromObject:#Agent.x
         Set x:__val0
         Set x+1:__val1
-        Call Agent.GetField:index:#Agent.y
+        Call Agent.GetFieldFromObject:#Agent.y
         Set y:__val0
         Set y+1:__val1
-        Call Agent.GetField:index:#Agent.x0
+        Call Agent.GetFieldFromObject:#Agent.x0
         Set x0:__val0
         Set x0+1:__val1
-        Call Agent.GetField:index:#Agent.y0
+        Call Agent.GetFieldFromObject:#Agent.y0
         Set y0:__val0
         Set y0+1:__val1        
-        Call Agent.GetField:index:#Agent.glyph0
+        Call Agent.GetFieldFromObject:#Agent.glyph0
         Set swapChar:__val0
-        Call Agent.GetField:index:#Agent.color0
+        Call Agent.GetFieldFromObject:#Agent.color0
         Set swapColor:__val0
-        Call Agent.GetField:index:#Agent.glyph
+        Call Agent.GetFieldFromObject:#Agent.glyph
         Set glyph:__val0
-        Call Agent.GetField:index:#Agent.color
+        Call Agent.GetFieldFromObject:#Agent.color
         Set color:__val0        
 
         lda x0
@@ -147,8 +151,8 @@
         Call CharScreen.Plot:x:y
 
     end:
-        Call Agent.SetField:index:#Agent.glyph0:swapChar
-        Call Agent.SetField:index:#Agent.color0:swapColor
+        Call Agent.SetFieldOnObject:#Agent.glyph0:swapChar
+        Call Agent.SetFieldOnObject:#Agent.color0:swapColor
 
         rts
 
@@ -165,14 +169,16 @@
     DefaultUpdate: {
         .var index = __arg0
 
-        Call Agent.GetField:index:#Agent.dx
+        Call Agent.GetObjectPtr:index
+
+        Call Agent.GetFieldFromObject:#Agent.dx
         Set dx:__val0
-        Call Agent.GetField:index:#Agent.dy
+        Call Agent.GetFieldFromObject:#Agent.dy
         Set dy:__val0
-        Call Agent.GetField:index:#Agent.x
+        Call Agent.GetFieldFromObject:#Agent.x
         Set x:__val0
         Set x+1:__val1
-        Call Agent.GetField:index:#Agent.y
+        Call Agent.GetFieldFromObject:#Agent.y
         Set y:__val0
         Set y+1:__val1
 
@@ -224,12 +230,12 @@
         adc dHi
         sta x
 
-        Call Agent.SetField:index:#Agent.dx:dx
-        Call Agent.SetField:index:#Agent.dy:dy
-        Call Agent.SetField:index:#Agent.x:x:x+1
-        Call Agent.SetFieldW:index:#Agent.y:y:y+1
-        Call Agent.SetField:index:#Agent.x0:x0:x0+1
-        Call Agent.SetFieldW:index:#Agent.y0:y0:y0+1
+        Call Agent.SetFieldOnObject:#Agent.dx:dx
+        Call Agent.SetFieldOnObject:#Agent.dy:dy
+        Call Agent.SetFieldOnObject:#Agent.x:x:x+1
+        Call Agent.SetFieldWOnObject:#Agent.y:y:y+1
+        Call Agent.SetFieldOnObject:#Agent.x0:x0:x0+1
+        Call Agent.SetFieldWOnObject:#Agent.y0:y0:y0+1
 
         rts
         dHi: .byte 0

@@ -27,7 +27,7 @@
 
     .label Length = 22
 
-    .var __objectPtr = __ptr0
+    .var __objectPtr = __ptr3
 
 // TODO:
 // might rework this api, to operate on object pointers and not fetch them every time
@@ -63,6 +63,20 @@
         rts
     }
 
+    /* MUST call GetObjectPtr first */
+    GetFieldFromObject: {
+        .var field = __arg0
+
+        ldy field
+        lda (__objectPtr),Y
+        sta __val0
+        iny
+        lda (__objectPtr),Y
+        sta __val1
+
+        rts
+    }
+
     SetField: {
         .var index = __arg0
         .var field = __arg1
@@ -70,6 +84,18 @@
        
         Call GetObjectPtr:index
 
+        ldy field
+        lda value
+        sta (__objectPtr),Y
+
+        rts
+    }
+
+    /* MUST call GetObjectPtr first */
+    SetFieldOnObject: {
+        .var field = __arg0
+        .var value = __arg1
+        
         ldy field
         lda value
         sta (__objectPtr),Y
@@ -85,6 +111,22 @@
        
         Call GetObjectPtr:index
         
+        ldy field
+        lda valueLo
+        sta (__objectPtr),Y
+        iny
+        lda valueHi
+        sta (__objectPtr),Y
+
+        rts
+    }
+
+    /* MUST call GetObjectPtr first */
+    SetFieldWOnObject: {
+        .var field = __arg0
+        .var valueLo = __arg1
+        .var valueHi = __arg2
+       
         ldy field
         lda valueLo
         sta (__objectPtr),Y
