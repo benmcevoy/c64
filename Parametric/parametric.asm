@@ -2,15 +2,43 @@ BasicUpstart2(Start)
 
 // refer: https://github.com/benmcevoy/ParametricToy
 
+// ahhhh... so many issues
+// 16 bit math, i am not doing it
+// an angle is expressed as BRAD's e.g. 0..2PI => 0..255
+// but size, time, phase? what the hell units are they in? not BRAD's, not "normalized" to 0..255 ...
+
+// from reading my own code (in C#)
+// time - is a value that increases.  I think it is OK if it just loops around from 0 to 255.
+//  it mostly just passed to a trig function, so it would be fine. I also seem to add/subtract from time
+//  which acts like phase
+// 
+
+// phase - I do this - var a = Math.Cos(t) * ctx.Phase;
+//  which is not phase at all :) Phase also ranges from 0 .. 0.01  (1/100)
+//  it greatly reduces the angle.  at a phase of zero angle is zero.
+//  I don't know what this is, it's not phase, that's for sure
+//  but it looks cool.  leave at zero for now
+
+// size - ranges from 0..2. Seems I only use it in calulating the next point
+//  it seems to act like some kind of horizontal offset
+//  yeah it does.  in conjuntion with the trails it looks cool
+//  I can simply remove phase and size form my c# code and it still looks neat
+//  so for now - set size=1 so it does nothing...
+
+// speed - not even using it.  it was used to control the speed that time increases at.
+
+// so lets commit the work right now.  and then rip out speed, phase and size and see what happens
+
 #import "_prelude.lib"
 #import "_charscreen.lib"
 #import "_joystick.lib"
+#import "_math.lib"
 #import "_debug.lib"
 
 .label ClearScreen = $E544
 
 .const TWOPI = 256 // 256 is two PI in BRAD's
-.const DELAY = 200
+.const DELAY = 1
 .const AXIS = 8
 .const TRAILS = 12
 .const WIDTH = 40
@@ -31,7 +59,7 @@ Start: {
 
     // TODO: no idea what values to put yet
     Set size:#1
-    Set phase:#1
+    Set phase:#0
     Set speed:#1
 
     // start main loop
@@ -88,8 +116,11 @@ trails:
         // var a = Math.Cos(t) * ctx.Phase;
         ldx time
         lda cosine,X
-        // TODO: multiply by phase
         sta angle
+
+        Call Math.Mult_U8_U16:angle:phase
+        // TODO: yeah not really... result is 16 bit
+        Set angle:__val0
 
         Set j:#0
 axis:
@@ -143,10 +174,13 @@ Point: {
     .var time = __arg0
 
     // var x = centerX - time * ctx.Size;
+    Call Math.Mult_U8_U16:time:size
+    // __val0 is already set by call to 
     lda #CENTERX
     sec
-    sbc time // TODO: * size
+    sbc __val0 
     sta __val0
+    
     
     Set __val1:#CENTERY
 
@@ -170,12 +204,40 @@ Rotate: {
     sbc CENTERY
     sta y1
 
+    // var x2 = x1 * Math.Cos(angle) - y1 * Math.Sin(angle);
     ldx angle
     lda cosine,x
+    sta __tmp0
+    
+    Call Math.Mult_U8_U16:x:__tmp0
+    Set __tmp0:__val0
 
+    lda sine,x
+    sta __tmp1
+    Call Math.Mult_U8_U16:y:__tmp1
+    Set __tmp1:__val0
 
-    // var x2 = x1 * Math.Cos(angle) - y1 * Math.Sin(angle);
+    lda __tmp0
+    sec
+    sbc __tmp1
+    sta x1
+
     // var y2 = x1 * Math.Sin(angle) + y1 * Math.Cos(angle);
+    lda sine,x
+    sta __tmp0
+    
+    Call Math.Mult_U8_U16:x:__tmp0
+    Set __tmp0:__val0
+
+    lda cosine,x
+    sta __tmp1
+    Call Math.Mult_U8_U16:y:__tmp1
+    Set __tmp1:__val0
+
+    lda __tmp0
+    clc
+    adc __tmp1
+    sta y1
 
     Set __val0:x1 
     Set __val1:y1 
@@ -311,7 +373,7 @@ phase: .word 0
 speed: .byte 0
 
 // unsigned trig tables
-*=$1200 "Data"
+*=$1300 "Data"
 sine: .fill 256,round(127.5+127.5*sin(toRadians(i*360/256)))
 cosine: .fill 256,round(127.5+127.5*cos(toRadians(i*360/256)))
 
