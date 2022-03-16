@@ -12,6 +12,9 @@ BasicUpstart2(Start)
 
 #import "_prelude.lib"
 #import "_charscreen.lib"
+#import "_debug.lib"
+#import "globals.asm"
+#import "./Agents/Agent.asm"
 
 #import "./Backgrounds/weave.asm"
 //#import "./Backgrounds/honeycomb.asm"
@@ -19,73 +22,14 @@ BasicUpstart2(Start)
 //#import "./Backgrounds/jungle.asm"
 //#import "./Backgrounds/clouds.asm"
 
-#import "./Agents/Agent.asm"
-#import "./Agents/AgentBehaviours.asm"
-
-.const GRAVITY = 2
-.const IMPULSE = -72
-.const SPEED = 48
-.const GROUND_CHAR = 224
-.const BLANK_CHAR = 32
-.const PLAYER_CHAR = 81
-
-.const PLAYER_COLOR = WHITE
-.const GROUND_COLOR = BLACK
-
-// state
-x: .word 0
-y: .word 0
-dx: .byte 0
-dy: .byte 0
-y0: .byte 0
-x0: .byte 0
-
-swapColor: .byte 0
-swapChar: .byte 0
-
-delayCounter: .byte 0
-.const DELAY = 100
-
-.label PORT2 = $dc00
-
-.const JOYSTICK_UP      = %00000001
-.const JOYSTICK_DOWN    = %00000010
-.const JOYSTICK_LEFT    = %00000100
-.const JOYSTICK_RIGHT   = %00001000
-.const JOYSTICK_FIRE    = %00010000
-// similar to joystick flags
-.const ACTION_COLLIDED_UP       = %00000001
-.const ACTION_COLLIDED_DOWN     = %00000010
-.const ACTION_COLLIDED_LEFT     = %00000100
-.const ACTION_COLLIDED_RIGHT    = %00001000
-.const ACTION_IS_FIRING         = %00010000
-.const ACTION_IS_JUMPING        = %00100000
-
-// default state for the above flags
-playerAction: .byte %00100000
 
 Start: {
     // KERNAL clear screen
     jsr $E544
 
-    // init some things
-    // x,y are in 16 bit "game space", the high .byte is "screen space", nice.
-    // screen space being 0:39,0:24
-    Set x:#20
-    Set x+1:#0
-    Set y:#2
-    Set y+1:#0
-    Set dx:#0
-    Set dy:#0
-
-    Call AgentBehaviours.Initialise
     Call Background.Draw
     Call DrawGameField
-
-    Call CharScreen.Read:x:y
-    Set swapChar:__val0
-    Set swapColor:__val1
-    
+  
     // set IRQ for GameUpdate, CIA timer
     sei
         lda #<GameUpdate            
@@ -105,15 +49,17 @@ GameUpdate: {
     bne !+
         Set delayCounter:#0
 
-        // StoreInitialPos
-        lda y; sta y0
-        lda x; sta x0
-        
-        jsr ReadJoystick
-        jsr UpdateAgents
-        jsr CheckCollisions
-        jsr RenderAgents
+        //Call ReadJoystick
+        Set $d020:#WHITE
+        Call UpdateAgents
+        Set $d020:#WHITE
+        Call CollisionAgents
+        Set $d020:#GREEN
+        Call RenderAgents
     !:
+
+    // - set border color change for some perf indicator, needs IRQ to be raster one
+    Set $d020:#BLACK
 
     // end irq
     pla;tay;pla;tax;pla
@@ -140,72 +86,75 @@ DrawGameField: {
     rts
 }
 
-ReadJoystick: {
+// ReadJoystick: {
 
-    read_joystick:
-        // left
-        lda #JOYSTICK_LEFT
-        bit PORT2
-        bne !skip+
-            lda #ACTION_IS_JUMPING
-            bit playerAction
-            beq !+
-                Set dx:#-SPEED/2
-                jmp !skip+
-            !:
-                Set dx:#-SPEED
-        !skip: 
+//     read_joystick:
+//         // left
+//         lda #JOYSTICK_LEFT
+//         bit PORT2
+//         bne !skip+
+//             lda #ACTION_IS_JUMPING
+//             bit playerAction
+//             beq !+
+//                 Set dx:#-SPEED/2
+//                 jmp !skip+
+//             !:
+//                 Set dx:#-SPEED
+//         !skip: 
             
-        // right
-        lda #JOYSTICK_RIGHT
-        bit PORT2
-        bne !skip+
-            lda #ACTION_IS_JUMPING
-            bit playerAction
-            beq !+
-                Set dx:#SPEED/2
-                jmp !skip+
-            !:
-                Set dx:#SPEED
-        !skip: 
+//         // right
+//         lda #JOYSTICK_RIGHT
+//         bit PORT2
+//         bne !skip+
+//             lda #ACTION_IS_JUMPING
+//             bit playerAction
+//             beq !+
+//                 Set dx:#SPEED/2
+//                 jmp !skip+
+//             !:
+//                 Set dx:#SPEED
+//         !skip: 
 
-        // up
-        // down
+//         // up
+//         // down
 
-        // fire
-        lda #ACTION_IS_JUMPING
-        bit playerAction
-        // no double jumping
-        bne !skip+
-            lda #JOYSTICK_FIRE
-            bit PORT2
-            bne !skip+
-                Set dy:#IMPULSE
-                SetBit playerAction:#ACTION_IS_JUMPING
-        !skip:
-    rts
-}
+//         // fire
+//         lda #ACTION_IS_JUMPING
+//         bit playerAction
+//         // no double jumping
+//         bne !skip+
+//             lda #JOYSTICK_FIRE
+//             bit PORT2
+//             bne !skip+
+//                 Set dy:#IMPULSE
+//                 SetBit playerAction:#ACTION_IS_JUMPING
+//         !skip:
+//     rts
+// }
 
 UpdateAgents: {
     lda #MAXAGENTS
     sta index
 
-loop:
+    loop:
     dec index
-    
+ 
     lda index
     cmp #0
-    bmi exit
-
+    bpl !+
+        jmp exit
+    !:
+ 
     Call Agent.IsDestroyed:index
     lda __val0
-    cmp #1
-    beq loop
-    
-    Call Agent.Invoke:index:Agent.Update
+    cmp #0
+    bne loop
+
+    Call Agent.Invoke:index:#Agent.Update
+
     jmp loop
 
-exit:    
+    exit:    
     rts
 
     index: .byte 0
@@ -215,164 +164,52 @@ RenderAgents: {
     lda #MAXAGENTS
     sta index
 
-loop:
+    loop:
     dec index
     
     lda index
     cmp #0
-    bmi exit
+    bpl !+
+        jmp exit
+    !:
 
     Call Agent.IsDestroyed:index
     lda __val0
-    cmp #1
-    beq loop
+    cmp #0 
+    bne loop
     
-    Call Agent.Invoke:index:Agent.Render
+    Call Agent.Invoke:index:#Agent.Render
     jmp loop
 
-exit:    
+    exit:    
     rts
 
     index: .byte 0
 }
 
-UpdatePos: {
-    // dy is signed and must be clamped to prevent overflow, or suddenly switching from +ve to -ve
-    lda dy
-    clc
-    adc #GRAVITY
-    bvs !+
-        sta dy
-    !:
+CollisionAgents: {
+    lda #MAXAGENTS
+    sta index
+
+    loop:
+    dec index
     
-    // get high .bytes of dy for 16bit add
-    Set dHi:#0
-    lda dy 
-    // test the MSB by rotating into .C flag
-    rol
-    bcc !+
-        // add high .byte, sign extension
-        Set dHi:#$ff
+    lda index
+    cmp #0
+    bpl !+
+        jmp exit
     !:
 
-    // y + dy
-    // add low .bytes
-    lda y+1
-    clc
-    adc dy
-    sta y+1
-    lda y
-    adc dHi
-    sta y
-
-    Set dHi:#0
-    lda dx 
-    rol
-    bcc !+
-        Set dHi:#$ff
-    !:
-
-    // x + dx
-    lda x+1
-    clc
-    adc dx
-    sta x+1
-    lda x
-    adc dHi
-    sta x
-
-    rts
-    dHi: .byte 0
-}
-
-CheckCollisions: {
-    Set __ptr0:#<(checkCollision)
-    Set __ptr0+1:#>(checkCollision)
-
-    Call CharScreen.CastRay:x0:y0:x:y
-
-    rts
-
-    checkCollision:{
-        .var xRay = __arg0
-        .var yRay = __arg1
-        .var xPrev = __arg2
-        .var yPrev = __arg3
-
-        Call CharScreen.Read:xRay:yRay
-
-        lda __val0
-        cmp #GROUND_CHAR
-        bne !skip+
-            // set player back to position before collision
-            Set x:xPrev
-            Set y:yPrev
-
-            // what direction was collision?
-            lda dx
-            cmp #0
-            bmi setLeft
-            bpl setRight
-
-            setLeft: 
-                Set dx:#0
-                jmp end_h
-            setRight: 
-                Set dx:#0
-            end_h:
-
-            lda dy
-            cmp #0
-            bmi setUp
-            bpl setDown
-
-            setUp: 
-                Set dy:#0
-                jmp end_v
-            setDown: 
-                Set dy:#0
-                // allow jump
-                lda playerAction
-                and #~ACTION_IS_JUMPING
-                sta playerAction
-            end_v:
-
-            
-            Set __val0:#ACTION_HANDLED
-            rts
-        !skip:
-        
-        Set __val0:#0
-        rts
-    }
-}
-        
-Render:{
-
-    lda x0
-    cmp x
-    bne swap
-    lda y0
-    cmp y
-    bne swap
-    jmp draw
+    Call Agent.IsDestroyed:index
+    lda __val0
+    cmp #0 
+    bne loop
     
-swap:    
-    Set CharScreen.PenColor:swapColor
-    Set CharScreen.Character:swapChar
-    Call CharScreen.Plot:x0:y0
+    Call Agent.Invoke:index:#Agent.Collision
+    jmp loop
 
-    Call CharScreen.Read:x:y
-    Set swapChar:__val0
-    Set swapColor:__val1
-
-draw:
-    Set CharScreen.Character:#PLAYER_CHAR
-    Set CharScreen.PenColor:#PLAYER_COLOR
-    Call CharScreen.Plot:x:y
-
-end:
+    exit:    
     rts
 
+    index: .byte 0
 }
-

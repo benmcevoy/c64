@@ -1,16 +1,103 @@
 #importonce
 #import "_prelude.lib"
 #import "_charscreen.lib"
+#import "../globals.asm"
 #import "Agent.asm"
 
 .namespace AgentBehaviours {
 
-    Initialise: {
-        Call Agent.SetFieldW:#0:#Agent.Update:#<DefaultUpdate:#>DefaultUpdate
-        Call Agent.SetFieldW:#0:#Agent.Render:#<DefaultRender:#>DefaultRender
-        
+    DefaultCollision: {
+        .var index = __arg0
+
+        Call Agent.GetField:index:#Agent.x
+        Set x:__val0
+        Set x+1:__val1
+        Call Agent.GetField:index:#Agent.y
+        Set y:__val0
+        Set y+1:__val1
+        Call Agent.GetField:index:#Agent.x0
+        Set x0:__val0
+        Set x0+1:__val1
+        Call Agent.GetField:index:#Agent.y0
+        Set y0:__val0
+        Set y0+1:__val1 
+        Call Agent.GetField:index:#Agent.dx
+        Set dx:__val0
+        Call Agent.GetField:index:#Agent.dy
+        Set dy:__val0     
+
+        Set __ptr0:#<(checkCollision)
+        Set __ptr0+1:#>(checkCollision)
+
+        Call CharScreen.CastRay:x0:y0:x:y
+
+        Call Agent.SetFieldW:index:#Agent.x:x:x+1
+        Call Agent.SetFieldW:index:#Agent.y:y:y+1
+
+        Call Agent.SetField:index:#Agent.dx:dx
+        Call Agent.SetField:index:#Agent.dy:dy
 
         rts
+
+        checkCollision:{
+            .var xRay = __arg0
+            .var yRay = __arg1
+            .var xPrev = __arg2
+            .var yPrev = __arg3
+
+            Call CharScreen.Read:xRay:yRay
+
+            lda __val0
+            cmp #GROUND_CHAR
+            bne !skip+
+                // set player back to position before collision
+                Set x:xPrev
+                Set y:yPrev
+
+                // what direction was collision?
+                lda dx
+                cmp #0
+                bmi setLeft
+                bpl setRight
+
+                setLeft: 
+                    Set dx:#0
+                    jmp end_h
+                setRight: 
+                    Set dx:#0
+                end_h:
+
+                lda dy
+                cmp #0
+                bmi setUp
+                bpl setDown
+
+                setUp: 
+                    Set dy:#0
+                    jmp end_v
+                setDown: 
+                    Set dy:#0
+                    // allow jump
+                    lda playerAction
+                    and #~ACTION_IS_JUMPING
+                    sta playerAction
+                end_v:
+                
+                Set __val0:#ACTION_HANDLED
+                rts
+            !skip:
+            
+            Set __val0:#0
+            
+            rts
+        }
+
+        dy: .byte 0
+        dx: .byte 0
+        x0: .word 0
+        y0: .word 0
+        x: .word 0
+        y: .word 0
     }
 
     DefaultRender: {
@@ -33,10 +120,9 @@
         Call Agent.GetField:index:#Agent.color0
         Set swapColor:__val0
         Call Agent.GetField:index:#Agent.glyph
-        Set color:__val0
+        Set glyph:__val0
         Call Agent.GetField:index:#Agent.color
-        Set glyph:__val0        
-
+        Set color:__val0        
 
         lda x0
         cmp x
@@ -56,8 +142,8 @@
         Set swapColor:__val1
 
     draw:
-        Set CharScreen.Character:#glyph
-        Set CharScreen.PenColor:#color
+        Set CharScreen.Character:glyph
+        Set CharScreen.PenColor:color
         Call CharScreen.Plot:x:y
 
     end:
@@ -89,6 +175,18 @@
         Call Agent.GetField:index:#Agent.y
         Set y:__val0
         Set y+1:__val1
+
+        // StoreInitialPos
+        lda y; sta y0
+        lda x; sta x0
+
+        // dy is signed and must be clamped to prevent overflow, or suddenly switching from +ve to -ve
+        lda dy
+        clc
+        adc #GRAVITY
+        bvs !+
+            sta dy
+        !:
 
         // get high .bytes of dy for 16bit add
         Set dHi:#0
@@ -130,6 +228,8 @@
         Call Agent.SetField:index:#Agent.dy:dy
         Call Agent.SetField:index:#Agent.x:x:x+1
         Call Agent.SetFieldW:index:#Agent.y:y:y+1
+        Call Agent.SetField:index:#Agent.x0:x0:x0+1
+        Call Agent.SetFieldW:index:#Agent.y0:y0:y0+1
 
         rts
         dHi: .byte 0
@@ -137,5 +237,7 @@
         dx: .byte 0
         y: .word 0
         x: .word 0
+        y0: .word 0
+        x0: .word 0        
     }
 }
