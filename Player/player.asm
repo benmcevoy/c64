@@ -30,12 +30,19 @@ Start: {
     Call Background.Draw
     Call DrawGameField
   
-    // set IRQ for GameUpdate, CIA timer
+    // Raster IRQ
     sei
         lda #<GameUpdate            
         sta $0314
         lda #>GameUpdate
         sta $0315
+
+        lda    #$1b
+        sta    $d011
+        lda    #$01
+        sta    $d01a
+        lda    #$7f
+        sta    $dc0d
     cli
 
     // infinite loop
@@ -43,23 +50,23 @@ Start: {
 }
 
 GameUpdate: {
-    inc delayCounter
-    lda delayCounter
-    cmp #DELAY
-    bne !+
-        Set delayCounter:#0
+    // ack irq
+    lda    #$01
+    sta    $d019
+    // set next irq line number
+    lda    #30
+    sta    $d012
 
-        //Call ReadJoystick
-        Set $d020:#WHITE
-        Call UpdateAgents
-        Set $d020:#WHITE
-        Call CollisionAgents
-        Set $d020:#GREEN
-        Call RenderAgents
-    !:
+    // - set border color change for some perf indicator
+    inc $d020
 
-    // - set border color change for some perf indicator, needs IRQ to be raster one
-    Set $d020:#BLACK
+    //Call ReadJoystick
+    Call UpdateAgents
+    Call CollisionAgents
+    Call RenderAgents
+    
+    // - set border color change for some perf indicator
+    dec $d020
 
     // end irq
     pla;tay;pla;tax;pla
