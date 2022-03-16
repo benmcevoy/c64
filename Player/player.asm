@@ -15,17 +15,15 @@ BasicUpstart2(Start)
 #import "_debug.lib"
 #import "globals.asm"
 #import "./Agents/Agent.asm"
-
 #import "./Backgrounds/weave.asm"
 //#import "./Backgrounds/honeycomb.asm"
 //#import "./Backgrounds/city.asm"
 //#import "./Backgrounds/jungle.asm"
 //#import "./Backgrounds/clouds.asm"
 
-
 Start: {
     // KERNAL clear screen
-    jsr $E544
+    jsr Kernal.ClearScreen
 
     Call Background.Draw
     Call DrawGameField
@@ -37,10 +35,13 @@ Start: {
         lda #>GameUpdate
         sta $0315
 
+        // clear high bit of raster flag
         lda    #$1b
         sta    $d011
+        // enable raster irq
         lda    #$01
         sta    $d01a
+        // disable cia timers
         lda    #$7f
         sta    $dc0d
     cli
@@ -58,15 +59,17 @@ GameUpdate: {
     sta    $d012
 
     // - set border color change for some perf indicator
-    inc $d020
+    Set $d020:#WHITE
 
     //Call ReadJoystick
     Call UpdateAgents
+    Set $d020:#RED
     Call CollisionAgents
+    Set $d020:#GREEN
     Call RenderAgents
     
     // - set border color change for some perf indicator
-    dec $d020
+    Set $d020:#BLACK
 
     // end irq
     pla;tay;pla;tax;pla
