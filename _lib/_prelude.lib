@@ -34,6 +34,25 @@
     adc #1
 }
 
+/* Negate .A two's complement value */
+.macro Negate(op) {
+    lda op
+    NegateA()
+    sta op
+}
+
+.macro Negate16(lo, hi) {
+    // we need the carry flag, so subtract from 0
+    lda #0
+    sec
+    sbc lo
+    sta lo
+    lda #0
+    // preserve carry from above
+    sbc hi
+    sta hi
+}
+
 /* Set memory address to value. */
 .pseudocommand Set address:value {
     lda value

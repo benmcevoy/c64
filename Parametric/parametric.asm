@@ -58,9 +58,9 @@ Start: {
     Set $d021:#BLACK
 
     // TODO: no idea what values to put yet
-    Set size:#1
-    Set phase:#0
-    Set speed:#1
+    // // Set size:#1
+    // // Set phase:#0
+    // // Set speed:#1
 
     // start main loop
     sei
@@ -118,7 +118,7 @@ trails:
         lda cosine,X
         sta angle
 
-        Call Math.Mult_U8_U16:angle:phase
+        //Call Math.Mult_U8_U16:angle:phase
         // TODO: yeah not really... result is 16 bit
         Set angle:__val0
 
@@ -174,13 +174,12 @@ Point: {
     .var time = __arg0
 
     // var x = centerX - time * ctx.Size;
-    Call Math.Mult_U8_U16:time:size
+    //Call Math.Mult_U8_U16:time:size
     // __val0 is already set by call to 
     lda #CENTERX
     sec
-    sbc __val0 
+    sbc time 
     sta __val0
-    
     
     Set __val1:#CENTERY
 
@@ -330,28 +329,28 @@ ReadInput: {
     lda latchedUp
     cmp #V
     bne !+
-        inc size
+        //inc size
         Set latchedUp:#0
     !:
 
     lda latchedDown
     cmp #V
     bne !+
-        dec size
+       // dec size
         Set latchedDown:#0
     !:
 
     lda latchedLeft
     cmp #H
     bne !+
-        inc phase
+       // inc phase
         Set latchedLeft:#0
     !:
 
     lda latchedRight
     cmp #H
     bne !+
-        dec phase
+        //dec phase
         Set latchedRight:#0
     !:
 
@@ -368,9 +367,9 @@ ReadInput: {
 delayCounter: .byte 0
 
 time: .byte 0
-size: .byte 0
-phase: .word 0
-speed: .byte 0
+// size: .byte 0
+// phase: .word 0
+// speed: .byte 0
 
 // unsigned trig tables
 *=$1300 "Data"

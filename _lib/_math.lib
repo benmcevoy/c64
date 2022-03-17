@@ -8,60 +8,23 @@
     .const TWOPI = 128
     .const HALFPI = 64
 
-    /* 
-    Mult_U_8_8 - 8 bit multiplication, unsigned, 8 bit result 
-    input: arg0, arg1
-    output: val0
-    */
-    Mult_U8_U8: {
-        // using my own implementation shift and add
-        .var result = __val0
+    // I'm using x86 namings here mul, smul etc.
 
-        Set result:#0
-        Set shift:#0
-        Set places:#1
-        
-        _loop:
-            // if place is high in op1
-            lda __arg0
-            and places
-            cmp places
-            bne _next // no it wasn't
+    // Mul: {
+    //     // TODO:
+    //     rts
+    // }
 
-            // yes it was, add shift and add result
-            lda __arg1 
-            ldx shift
-            cpx #0
-            beq _add
-
-            _loop1:
-                asl
-                dex
-                cpx #0
-                bne _loop1
-
-            _add:
-                clc
-                adc result
-                sta result
-
-            _next:
-                inc shift
-                lda places; asl; sta places
-                cmp #0
-                bne _loop
-        rts
-
-        // locals
-        shift: .byte 0
-        places: .byte 0
-    }
+    // SMul: {
+    //     // TODO:
+    //     rts
+    // }
 
     /* 
-    Multiply two unsigned 8 bit numbers, 16 bit unsigned result in __val8 (LO),__val1 (HI)
+    Multiply two unsigned 8 bit numbers, 16 bit unsigned result in __val0 (LO),__val1 (HI)
     From: https://llx.com/Neil/a2/mult.html
      */
-    Mult_U8_U16: {
+    Mul16: {
         .var op1 = __arg0
         .var op2 = __arg1
 
@@ -81,4 +44,62 @@ l2:     ror          // "stairstep" shift (catching carry from add)
 
         rts
     }
+
+    /*
+    Multiply two signed bytes, returning a signed 16 result in __val0 (LO),__val1 (HI)
+    */
+    SMul16: {
+        .var op1 = __arg0
+        .var op2 = __arg1
+
+        // a * -b is the same as -( a * b )
+        // compute the sign first, then make positive and call Mul16
+        // then apply the sign
+
+        // if the MSB on EITHER operand is high, exclusively, e.g. XOR
+        // then negative, if both high or both low then positive result
+
+        // in the example from the the Mul16 above they php the processor flags, which has N,Z
+        // instead I store it in __tmp0 as I am not that smart
+
+        Set __tmp0:#0
+
+        lda op1
+        and #128
+        cmp #128
+        bne !+
+            Negate(op1)
+            inc __tmp0
+        !:
+
+        lda op2
+        and #128
+        cmp #128
+        bne !+
+            Negate(op2)
+            inc __tmp0
+        !:
+
+        Call Mul16:op1:op2
+
+        // set sign of result __val0 __val1
+        // here they pull the processor flags back off the stack
+        // and do a BPL against the N flag, maybe they save a few cycles but it bends my brain...
+        lda __tmp0
+        cmp #1
+        bne !+
+            Negate16(__val0, __val1)
+        !:
+
+        rts
+    }
+
+    Add16: {
+        .var op1 = __arg0
+        .var op2 = __arg1
+    }
+
+    // Sub16: {
+    //     rts
+    // }
 }
