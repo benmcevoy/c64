@@ -67,8 +67,16 @@ Update: {
 
 UpdateState: {
     Call CharScreen.Plot:#4:#4
+    
     // angle 32 BRAD's is pi/4=0.785 in radians or 45 degrees
-    Call Rotate:#32:#4:#4
+    .var angle = 32
+
+    Call Rotate:#angle:#4:#4
+
+    // expect (3,17 or 18)  ($03,$12)
+    DebugPrint __val0
+    DebugPrint __val1
+
     Call CharScreen.Plot:__val0:__val1
 
     rts
@@ -102,17 +110,18 @@ Rotate: {
     sta __tmp0
     
     Call Math.SMul16:xRelative:__tmp0
+    // TODO: need to handle this 16 bit value now.
     Set __tmp0:__val0
+    Set __tmp1:__val1
 
     lda sine,X
     sta __tmp1
     Call Math.SMul16:yRelative:__tmp1
-    Set __tmp1:__val0
+    Set __tmp2:__val0
+    Set __tmp3:__val1
 
-    lda __tmp0
-    sec
-    sbc __tmp1
-    sta x1
+    Sub16(__tmp0,__tmp1,__tmp2,__tmp3)
+    Set x1:__val0
 
     // var y2 = x * Math.Sin(angle) + y * Math.Cos(angle);
     lda sine,X
@@ -120,16 +129,19 @@ Rotate: {
     
     Call Math.SMul16:xRelative:__tmp0
     Set __tmp0:__val0
+    Set __tmp1:__val1
 
     lda cosine,X
     sta __tmp1
     Call Math.SMul16:yRelative:__tmp1
-    Set __tmp1:__val0
+    Set __tmp2:__val0
+    Set __tmp3:__val1
 
-    lda __tmp0
-    clc
-    adc __tmp1
-    sta y1
+    Add16(__tmp0,__tmp1,__tmp2,__tmp3)
+    Set y1:__val0
+    
+    DebugPrint x1
+    DebugPrint y1
 
     // convert back to "screen space"
     // x1 + CENTERX
@@ -143,8 +155,7 @@ Rotate: {
     sbc y1
     sta __val1
 
-    DebugPrint __val0
-    DebugPrint __val1
+
 
     rts
     // relative to origin at centerx,y

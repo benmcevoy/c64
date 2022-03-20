@@ -1,42 +1,211 @@
 #importonce
 #import "_prelude.lib"
+#import "_math.lib"
 #import "_debug.lib"
 
 .namespace CharScreen {
     Character: .byte 204
     PenColor: .byte GREEN
 
-    // TODO: yikes, pretty terrible. probably should queue the shake as part of the render
-    Shake: {
-        .label xScroll = $d016
+    /* this code sucks */
+     WriteStringLoRes: {
+        .var x = __arg0
+        .var y = __arg1
+        .var textL = __arg2
+        .var textH = __arg3
+        .var message = __ptr1
 
-        ldx #0
-        ldy #0
-    shake:
-        Set offset:#8
-    loop:    
+        Set message:textL
+        Set message+1:textH
+        
+        Push CharScreen.Character
+        Set charPtr:#0
+        Set xStart:x
+        Set yStart:y
 
-        Set xScroll:offset
-        ldx #0
-        delay:
-        dex
-        cpx #0
-        bne delay
+        // make char rom visible  
+        sei  
+            lda 1
+            and #251
+            sta 1
 
-        iny
-        cpy #16
-        beq exit
+            nextChar:
+                ldy charPtr
+                lda (message),y
+                cmp #ACTION_HANDLED
+                bne !+
+                    jmp exit
+                !:
 
-        inc offset
-        lda offset
-        cmp #16
-        beq shake
-        jmp loop
-    exit:
-        Set xScroll:#8
+                // at this point you have a screen code in the accumulator, between 0..255
+                // you need to multiply by 8 and add to $d000
+                sta __tmp3
+                Call Math.Mul16:#8:__tmp3
+                Call Math.Add16:__val0:__val1:#$00:#$d0
+                
+                // bit of meta programming
+                lda __val0
+                sta inject+1
+                lda __val1
+                sta inject+2
+
+                ldy #0
+                Set y:yStart
+
+                nextByteInChar:
+                    Set x:xStart
+                    inject:
+                    lda $d000,Y
+                    sta byteLine
+
+                    ldx #0
+                    
+                    plot:
+                        lda byteLine
+                        // shift msb into carry
+                        asl
+                        sta byteLine
+                        // test carry
+                        bcc !+
+                            Call CharScreen.PlotH:x:y
+                        !:
+
+                        inc x
+                        inx 
+                        cpx #8
+                        bne plot
+
+                    inc y
+                    iny
+                    cpy #8
+                    bne nextByteInChar
+                
+
+                lda xStart
+                clc
+                adc #8
+                sta xStart
+                cmp #80
+                bne !+
+                    // off the screen
+                    jmp exit
+                !:
+                
+                inc charPtr
+                jmp nextChar
+
+        exit:
+            Pop CharScreen.Character
+            // restore char rom
+            lda 1
+            ora #4
+            sta 1
+        cli
         rts
+        charPtr: .byte 0
+        byteLine: .byte 0
+        xStart: .byte 0
+        yStart: .byte 0
+    }
 
-        offset: .byte 0
+    WriteStringLoLoRes: {
+        .var x = __arg0
+        .var y = __arg1
+        .var textL = __arg2
+        .var textH = __arg3
+        .var message = __ptr1
+
+        Set message:textL
+        Set message+1:textH
+        
+        Push CharScreen.Character
+        Set charPtr:#0
+        Set xStart:x
+        Set yStart:y
+
+        // make char rom visible  
+        sei  
+            lda 1
+            and #251
+            sta 1
+
+            nextChar:
+                ldy charPtr
+                lda (message),y
+                cmp #ACTION_HANDLED
+                bne !+
+                    jmp exit
+                !:
+
+                // at this point you have a screen code in the accumulator, between 0..255
+                // you need to multiply by 8 and add to $d000
+                sta __tmp3
+                Call Math.Mul16:#8:__tmp3
+                Call Math.Add16:__val0:__val1:#$00:#$d0
+                
+                // bit of meta programming
+                lda __val0
+                sta inject+1
+                lda __val1
+                sta inject+2
+
+                ldy #0
+                Set y:yStart
+
+                nextByteInChar:
+                    Set x:xStart
+                    inject:
+                    lda $d000,Y
+                    sta byteLine
+
+                    ldx #0
+                    
+                    plot:
+                        lda byteLine
+                        // shift msb into carry
+                        asl
+                        sta byteLine
+                        // test carry
+                        bcc !+
+                            Call CharScreen.Plot:x:y
+                        !:
+
+                        inc x
+                        inx 
+                        cpx #8
+                        bne plot
+
+                    inc y
+                    iny
+                    cpy #8
+                    bne nextByteInChar
+                
+
+                lda xStart
+                clc
+                adc #8
+                sta xStart
+                cmp #80
+                bne !+
+                    // off the screen
+                    jmp exit
+                !:
+                
+                inc charPtr
+                jmp nextChar
+
+        exit:
+            Pop CharScreen.Character
+            // restore char rom
+            lda 1
+            ora #4
+            sta 1
+        cli
+        rts
+        charPtr: .byte 0
+        byteLine: .byte 0
+        xStart: .byte 0
+        yStart: .byte 0
     }
     
     /* Write a string to x,y */

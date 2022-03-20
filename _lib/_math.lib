@@ -94,12 +94,43 @@ l2:     ror          // "stairstep" shift (catching carry from add)
         rts
     }
 
-    Add16: {
-        .var op1 = __arg0
-        .var op2 = __arg1
-    }
 
-    // Sub16: {
-    //     rts
-    // }
+    Add16: {
+        .var op1Lo = __arg0
+        .var op1Hi = __arg1
+        .var op2Lo = __arg2
+        .var op2Hi = __arg3
+
+        lda op1Lo
+        clc
+        adc op2Lo
+        sta __val0
+        lda op1Hi
+        adc op2Hi
+        sta __val1
+        
+        rts
+    }
 }
+
+    // can't have a macro in a namespace?
+
+    // .macro Add16 (op1Lo, op1Hi, op2Lo, op2Hi) {
+    //     lda op1Lo
+    //     clc
+    //     adc op2Lo
+    //     sta __val0
+    //     lda op1Hi
+    //     adc op2Hi
+    //     sta __val1
+    // }
+
+    .macro Sub16 (op1Lo, op1Hi, op2Lo, op2Hi) {
+        lda op1Lo
+        sec
+        sbc op2Lo
+        sta __val0
+        lda op1Hi
+        sbc op2Hi
+        sta __val1
+    }

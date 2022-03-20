@@ -55,6 +55,10 @@ Start: {
         // when I try that it looks like my pointers get clobbered, which is expected
         // need more ZP space and setup a pointer per method, hello globals :)
 
+        // a lot of the work could be scheduled, e.g. readjoystick only needs to happen like every 2ms or less
+        // you can create a budget over the raster lines, e.g. allocate 20% to render, 1% for inputs, etc
+        // or maybe a scheduler runs first, tracking timeout till next piece of work
+        // and allocates the scan lines accordingly.  sounds complicated.
 
     // infinite loop
     jmp loop

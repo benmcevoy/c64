@@ -34,7 +34,7 @@
     adc #1
 }
 
-/* Negate .A two's complement value */
+/* Negate the operand two's complement value */
 .macro Negate(op) {
     lda op
     NegateA()
@@ -53,6 +53,7 @@
     sta hi
 }
 
+// TODO: often called mov
 /* Set memory address to value. */
 .pseudocommand Set address:value {
     lda value
@@ -73,11 +74,11 @@
      sta address
 }
 
-// couldn';'t work out ClearBit using #~value?
+// couldn't work out ClearBit using #~value?
 /* Clear bit(s) at address */
 // .pseudocommand ClearBit address:value {
 //     lda address
-//     and #~value
+//     and ~value
 //     sta address
 // }
 

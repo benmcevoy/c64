@@ -5,12 +5,19 @@
 
 /* Print a value to the screen as hex, using the kernal chrout */
 .pseudocommand DebugPrint value {
+    
+
+.if(value.getType() == AT_NONE) {     sta __tmp3 }
+ 
+    
     // try not to clobber anything, shove it all on the stack
     php
     pha;txa;pha;tya;pha
 
-    lda value
-    sta __tmp3
+
+ .if(value.getType() != AT_NONE) { lda value;sta __tmp3 }
+
+
     ldy #0
 
     // top 4 bits
