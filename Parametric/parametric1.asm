@@ -137,7 +137,7 @@ Rotate: {
     Set __tmp2:__val0
     Set __tmp3:__val1
 
-    Add16(__tmp0,__tmp1,__tmp2,__tmp3)
+    Call Math.Add16(__tmp0,__tmp1,__tmp2,__tmp3)
     Set y1:__val0
     
     DebugPrint x1

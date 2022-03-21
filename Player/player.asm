@@ -15,9 +15,9 @@ BasicUpstart2(Start)
 #import "_debug.lib"
 #import "globals.asm"
 #import "./Agents/Agent.asm"
-//#import "./Backgrounds/weave.asm"
+#import "./Backgrounds/weave.asm"
 //#import "./Backgrounds/honeycomb.asm"
-#import "./Backgrounds/colours.asm"
+//#import "./Backgrounds/colours.asm"
 //#import "./Backgrounds/jungle.asm"
 //#import "./Backgrounds/clouds.asm"
 
@@ -60,6 +60,18 @@ Start: {
         // or maybe a scheduler runs first, tracking timeout till next piece of work
         // and allocates the scan lines accordingly.  sounds complicated.
 
+        // for scheduling, the "simple" approach i just thought of
+        // is to have a flag that toggles the next piece of work between Update/Render
+        // so each subroutine gets a full frame each
+        // raster IRQ is 50Hz for PAL, so you are getting 25fps which is OK
+        // this coould be extended to interleave things, e.g. Render every 2nd frame, but the odd frames can be distributed amongst other things?
+        // might do a little reading on scheduling in an OS.
+        // consider
+        //  - priority
+        //  - frequency
+        //  - rentrancy or concurrency - CLOBBERING, lol. each worker needs it's own state
+        //      is there reentrancy?  on an IRQ the current PC is pushed to the stack, then RTI lets it resume
+
     // infinite loop
     jmp loop
 }
@@ -69,24 +81,19 @@ GameUpdate: {
     lda    #$01
     sta    $d019
     // set next irq line number
-    lda    #20
+    lda    #00
     sta    $d012
 
     // - set border color change for some perf indicator
-    Set $d020:#WHITE
+    //Set $d020:#WHITE
 
-    // TODO: I think player is special, with it's joystick and collisions
-    // agents, best to dumb them right down, avoid collisions, simple updates (8 bit), simple rendering
-    
-    //Call ReadJoystick
     Call UpdateAgents
-    Set $d020:#RED
-    Call CollisionAgents
-    Set $d020:#GREEN
+
+    //Set $d020:#GREEN
     Call RenderAgents
     
     // - set border color change for some perf indicator
-    Set $d020:#BLACK
+    //Set $d020:#BLACK
 
     // end irq
     pla;tay;pla;tax;pla
@@ -112,52 +119,6 @@ DrawGameField: {
 
     rts
 }
-
-// ReadJoystick: {
-
-//     read_joystick:
-//         // left
-//         lda #JOYSTICK_LEFT
-//         bit PORT2
-//         bne !skip+
-//             lda #ACTION_IS_JUMPING
-//             bit playerAction
-//             beq !+
-//                 Set dx:#-SPEED/2
-//                 jmp !skip+
-//             !:
-//                 Set dx:#-SPEED
-//         !skip: 
-            
-//         // right
-//         lda #JOYSTICK_RIGHT
-//         bit PORT2
-//         bne !skip+
-//             lda #ACTION_IS_JUMPING
-//             bit playerAction
-//             beq !+
-//                 Set dx:#SPEED/2
-//                 jmp !skip+
-//             !:
-//                 Set dx:#SPEED
-//         !skip: 
-
-//         // up
-//         // down
-
-//         // fire
-//         lda #ACTION_IS_JUMPING
-//         bit playerAction
-//         // no double jumping
-//         bne !skip+
-//             lda #JOYSTICK_FIRE
-//             bit PORT2
-//             bne !skip+
-//                 Set dy:#IMPULSE
-//                 SetBit playerAction:#ACTION_IS_JUMPING
-//         !skip:
-//     rts
-// }
 
 UpdateAgents: {
     lda #MAXAGENTS
@@ -208,34 +169,6 @@ RenderAgents: {
     bne loop
     
     Call Agent.Invoke:#Agent.Render
-    jmp loop
-
-    exit:    
-    rts
-
-    index: .byte 0
-}
-
-CollisionAgents: {
-    lda #MAXAGENTS
-    sta index
-
-    loop:
-    dec index
-    
-    lda index
-    cmp #0
-    bpl !+
-        jmp exit
-    !:
-
-    Call Agent.SetCurrentObject:index
-    Call Agent.GetField:#Agent.destroyed
-    lda __val0
-    cmp #0 
-    bne loop
-    
-    Call Agent.Invoke:#Agent.Collision
     jmp loop
 
     exit:    

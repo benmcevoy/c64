@@ -1,8 +1,8 @@
 #importonce
 
-.const GRAVITY = 2
-.const IMPULSE = -72
-.const SPEED = 48
+.const GRAVITY = 3
+.const IMPULSE = -96
+.const SPEED = 64
 .const GROUND_CHAR = 224
 .const GROUND_COLOR = BLACK
 

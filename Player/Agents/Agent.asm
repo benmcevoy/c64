@@ -1,7 +1,8 @@
 #importonce
 #import "_prelude.lib"
 #import "_debug.lib"
-#import "AgentBehaviours.asm"
+#import "AgentBehaviors.asm"
+#import "PlayerBehaviors.asm"
 
 .const MAXAGENTS = 2
 
@@ -23,9 +24,12 @@
     .label y0 = 16 // word
     .label glyph0 = 18
     .label color0 = 19
-    .label Collision = 20 // word
+    
+    .label Length = 20
 
-    .label Length = 22
+    // PICO-8 uses "flags" to associate behaviours, e.g. a tile or char with flag0 set is "collidable", a tile with flag1 set is a health buff, etc.
+    // consider if we could use the top nibble of colour ram to store flags per character tile?  Thought about WALL, ANIM0, ANIM1, ANIM2 or WALL, BOUNCY, SLOW, ???
+    // ideally flags should be additive so you can combine flags to get rich behaviour, like a bouncy wall or floor
 
     .var __objectPtr = __ptr3
 
@@ -57,7 +61,6 @@
 
         rts
     }
-
     
     /* MUST call GetObjectPtr first */
     SetField: {
@@ -110,38 +113,38 @@
     __agents: .for(var i = 0; i < MAXAGENTS; i++) .word __agentTable + (Agent.Length * i)
     // reserve memory
     *=__agentTable "Agent data"
-    Agent0:{
+    Player:{
         destroyed: .byte 0
         x: .word 20
         y: .word 2
         z: .byte 0
         dx: .byte 0
         dy: .byte 0
-        Update: .word AgentBehaviours.DefaultUpdate 
-        Render: .word AgentBehaviours.DefaultRender 
+        Update: .word PlayerBehaviors.PlayerUpdate 
+        Render: .word AgentBehaviors.DefaultRender 
         glyph: .byte 81 // ball
         color: .byte WHITE
         x0: .word 0
         y0: .word 0
         glyph0: .byte 32
         color0: .byte 0
-        Collision: .word AgentBehaviours.DefaultCollision 
+        
     }
-    Agent1:{
+    NPC1:{
         destroyed: .byte 0
         x: .word 10
         y: .word 2
         z: .byte 0
         dx: .byte 0
         dy: .byte 0
-        Update: .word AgentBehaviours.SimpleUpdate 
-        Render: .word AgentBehaviours.SimpleRender 
+        Update: .word AgentBehaviors.NoOperation 
+        Render: .word AgentBehaviors.SimpleRender 
         glyph: .byte 81 // ball
         color: .byte GREEN
         x0: .word 0
         y0: .word 0
         glyph0: .byte 32
         color0: .byte 0
-        Collision: .word AgentBehaviours.NoOperation 
+        
     }
 }
