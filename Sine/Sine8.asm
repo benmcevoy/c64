@@ -237,10 +237,10 @@ ClearTrail: {
 }
 
 
-* = $1200 "unsigned trig tables"
+* = $1300 "unsigned trig tables"
 sine: .fill 256,round(127.5+127.5*sin(toRadians(i*360/256)))
 cosine: .fill 256,round(127.5+127.5*cos(toRadians(i*360/256)))
-* = $1400 "trails"
+* = $1500 "trails"
 xTrails: .fill TRAILS,0
 yTrails: .fill TRAILS,0
 

@@ -58,7 +58,7 @@ Lissajou: {
     adc xPhase
     tax
     lda sine,X
-    lsr;lsr;lsr;
+    lsr;lsr;
     clc
     adc xOffset
     sta x
@@ -68,13 +68,13 @@ Lissajou: {
     adc yPhase
     tax
     lda sine,X
-    lsr;lsr;lsr;lsr;
+    lsr;lsr;
     clc
     adc yOffset
     sta y
 
     Set CharScreen.PenColor:yPhase
-    Call CharScreen.Plot:x:y
+    Call CharScreen.PlotH:x:y
         
     rts
 
@@ -167,7 +167,7 @@ ReadJoystick: {
     rts
 }
 
-* = $1000
+* = $1200
 // unsigned trig tables
 sine: .fill 256,round(127.5+127.5*sin(toRadians(i*360/256)))
 cosine: .fill 256,round(127.5+127.5*cos(toRadians(i*360/256)))

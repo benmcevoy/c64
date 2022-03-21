@@ -39,12 +39,7 @@ latchedLeft: .byte 0
 latchedRight: .byte 0
 
 Start:{
-    // let's try
-    // - draw a circle
-    // unit circle
-    // x = cos(t)
-    // y = sin(t)
-    Set CharScreen.Character:#204
+    // let's try1
     Set $d020:#0
     Set $d021:#0
     jsr $E544
@@ -243,10 +238,10 @@ Lissajou: {
 }
 
 
-* = $1000 "unsigned trig tables"
+* = $1300 "unsigned trig tables"
 sine: .fill 256,round(127.5+127.5*sin(toRadians(i*360/256)))
 cosine: .fill 256,round(127.5+127.5*cos(toRadians(i*360/256)))
-* = $1200 "trails"
+* = $1500 "trails"
 xTrails: .fill TRAILS,0
 yTrails: .fill TRAILS,0
 
