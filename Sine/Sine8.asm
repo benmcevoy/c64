@@ -85,36 +85,32 @@ ReadInput: {
     .const H = 50
 
     lda #Joystick.UP
-    and playerAction
-    cmp #Joystick.UP
-    bne !skip+
+    bit playerAction
+    beq !skip+
         // true
         inc latchedUp
         Set latchedDown:#0
     !skip:
 
     lda #Joystick.DOWN
-    and playerAction
-    cmp #Joystick.DOWN
-    bne !skip+
+    bit playerAction
+    beq !skip+
         // true
         inc latchedDown
         Set latchedUp:#0
     !skip:
 
     lda #Joystick.LEFT
-    and playerAction
-    cmp #Joystick.LEFT
-    bne !skip+
+    bit playerAction
+    beq !skip+
         // true
         inc latchedLeft
         Set latchedRight:#0
     !skip:
 
     lda #Joystick.RIGHT
-    and playerAction
-    cmp #Joystick.RIGHT
-    bne !skip+
+    bit playerAction
+    beq !skip+
         // true
         inc latchedRight
         Set latchedLeft:#0

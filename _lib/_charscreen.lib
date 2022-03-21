@@ -7,8 +7,7 @@
     Character: .byte 204
     PenColor: .byte GREEN
 
-    /* this code sucks */
-     WriteStringLoRes: {
+     WriteStringBig: {
         .var x = __arg0
         .var y = __arg1
         .var textL = __arg2
@@ -22,12 +21,6 @@
         Set charPtr:#0
         Set xStart:x
         Set yStart:y
-
-        // make char rom visible  
-        sei  
-            lda 1
-            and #251
-            sta 1
 
             nextChar:
                 ldy charPtr
@@ -54,9 +47,17 @@
 
                 nextByteInChar:
                     Set x:xStart
+                    // make char rom visible  
+                    lda 1
+                    and #251
+                    sta 1
                     inject:
                     lda $d000,Y
                     sta byteLine
+                    // restore char rom
+                    lda 1
+                    ora #4
+                    sta 1                    
 
                     ldx #0
                     
@@ -96,11 +97,7 @@
 
         exit:
             Pop CharScreen.Character
-            // restore char rom
-            lda 1
-            ora #4
-            sta 1
-        cli
+
         rts
         charPtr: .byte 0
         byteLine: .byte 0
@@ -108,7 +105,7 @@
         yStart: .byte 0
     }
 
-    WriteStringLoLoRes: {
+    WriteStringHuge: {
         .var x = __arg0
         .var y = __arg1
         .var textL = __arg2
@@ -154,9 +151,17 @@
 
                 nextByteInChar:
                     Set x:xStart
+                    // make char rom visible  
+                    lda 1
+                    and #251
+                    sta 1
                     inject:
                     lda $d000,Y
                     sta byteLine
+                    // restore char rom
+                    lda 1
+                    ora #4
+                    sta 1   
 
                     ldx #0
                     
@@ -316,7 +321,7 @@
         sta screenHI
 
         lda PenColor
-        sta (screenLO),y  
+        sta (screenLO),Y  
 
         // restore
         Pop __tmp1; Pop __tmp0
@@ -396,8 +401,7 @@
         xScreen: .byte 0
         yScreen: .byte 0
         //            20,7e, 7c, e2, 7b, 61,ff, ec, 6c, 7f, e1, fb, 62,fc, fe, a0
-        //sixels: .byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
-        sixels: .byte 46,46,46,58,58,58,43,43,43,81,81,81,214,214,214,214
+        sixels: .byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
         sixel0: .byte 0
         sixel1: .byte 0
 

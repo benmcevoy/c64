@@ -25,8 +25,12 @@
     // or reduce duration resolution to 4 bits and 3 bits fireDuration and pack the whole lot in two bytes, yeah nah.
 
 
+    /* 
+        Read joystick port 2 and update playerAction flags accordingly
+        Currently it's hardly worth using this, I'l make it a macro
+    */
     Read: {
-        .var playerAction = __arg0
+        .var playerAction = __val0
 
         Set playerAction:#0
 
@@ -63,8 +67,6 @@
         bne !+
             SetBit playerAction:#FIRE
         !:
-
-        Set __val0:playerAction
 
         rts
     }

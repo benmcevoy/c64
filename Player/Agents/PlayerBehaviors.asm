@@ -2,16 +2,10 @@
 #import "_prelude.lib"
 #import "../globals.asm"
 #import "Agent.asm"
+#import "_joystick.lib"
 
 .namespace PlayerBehaviors {
 
-    .label PORT2 = $dc00
-
-    .label JOYSTICK_UP      = %00000001
-    .label JOYSTICK_DOWN    = %00000010
-    .label JOYSTICK_LEFT    = %00000100
-    .label JOYSTICK_RIGHT   = %00001000
-    .label JOYSTICK_FIRE    = %00010000
 
     PlayerUpdate: {
         Call ReadJoystick
@@ -101,47 +95,73 @@
         Call Agent.GetField:#Agent.dy
         Set dy:__val0
 
-        read_joystick:
-            // left
-            lda #JOYSTICK_LEFT
-            bit PORT2
-            bne !skip+
-                lda #ACTION_IS_JUMPING
-                bit playerAction
-                beq !+
-                    Set dx:#-SPEED/2
-                    jmp !skip+
-                !:
-                    Set dx:#-SPEED
-            !skip: 
+        Call Joystick.Read
+        Set playerAction:__val0
+
+        lda #Joystick.LEFT
+        bit playerAction 
+        beq !+
+            Set dx:#-SPEED
+        !:
+
+        lda #Joystick.RIGHT
+        bit playerAction 
+        beq !+
+            Set dx:#SPEED
+        !:
+
+        lda #ACTION_IS_JUMPING
+        bit playerAction
+        bne !skip+
+            lda #Joystick.FIRE
+            bit playerAction 
+            beq !+
+                Set dy:#IMPULSE
+                SetBit playerAction:#ACTION_IS_JUMPING
+            !:
+        !skip:
+
+        // read_joystick:
+        //     // left
+        //     lda #JOYSTICK_LEFT
+        //     bit PORT2
+        //     bne !skip+
+        //         lda #ACTION_IS_JUMPING
+        //         bit playerAction
+        //         beq !+
+        //             Set dx:#-SPEED/2
+        //             jmp !skip+
+        //         !:
+        //             Set dx:#-SPEED
+        //     !skip: 
                 
-            // right
-            lda #JOYSTICK_RIGHT
-            bit PORT2
-            bne !skip+
-                lda #ACTION_IS_JUMPING
-                bit playerAction
-                beq !+
-                    Set dx:#SPEED/2
-                    jmp !skip+
-                !:
-                    Set dx:#SPEED
-            !skip: 
+        //     // right
+        //     lda #JOYSTICK_RIGHT
+        //     bit PORT2
+        //     bne !skip+
+        //         lda #ACTION_IS_JUMPING
+        //         bit playerAction
+        //         beq !+
+        //             Set dx:#SPEED/2
+        //             jmp !skip+
+        //         !:
+        //             Set dx:#SPEED
+        //     !skip: 
 
-            // up
-            // down
+        //     // up
+        //     // down
 
-            // fire
-            lda #ACTION_IS_JUMPING
-            bit playerAction
-            // no double jumping
-            bne !skip+
-                lda #JOYSTICK_FIRE
-                bit PORT2
-                bne !skip+
-                    Set dy:#IMPULSE
-                    SetBit playerAction:#ACTION_IS_JUMPING
-            !skip:
+        //     // fire
+        //     lda #ACTION_IS_JUMPING
+        //     bit playerAction
+        //     // no double jumping
+        //     bne !skip+
+        //         lda #JOYSTICK_FIRE
+        //         bit PORT2
+        //         bne !skip+
+        //             Set dy:#IMPULSE
+        //             SetBit playerAction:#ACTION_IS_JUMPING
+        //     !skip:
 
             Call Agent.SetField:#Agent.dx:dx
             Call Agent.SetField:#Agent.dy:dy
