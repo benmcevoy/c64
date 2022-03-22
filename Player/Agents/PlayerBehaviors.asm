@@ -82,7 +82,6 @@
         }
 
         ReadJoystick: {
-            
             Get(Agent.dx, dx)
             Get(Agent.dy, dy)
 

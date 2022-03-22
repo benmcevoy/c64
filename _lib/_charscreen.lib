@@ -7,7 +7,10 @@
     Character: .byte 204
     PenColor: .byte GREEN
 
-     WriteStringBig: {
+    /* @Call
+
+    */
+    WriteStringBig: {
         .var x = __arg0
         .var y = __arg1
         .var textL = __arg2
@@ -105,6 +108,9 @@
         yStart: .byte 0
     }
 
+    /* @Call
+    
+    */
     WriteStringHuge: {
         .var x = __arg0
         .var y = __arg1
@@ -120,92 +126,83 @@
         Set xStart:x
         Set yStart:y
 
-        // make char rom visible  
-        sei  
-            lda 1
-            and #251
-            sta 1
 
-            nextChar:
-                ldy charPtr
-                lda (message),y
-                cmp #ACTION_HANDLED
-                bne !+
-                    jmp exit
-                !:
+        nextChar:
+            ldy charPtr
+            lda (message),y
+            cmp #ACTION_HANDLED
+            bne !+
+                jmp exit
+            !:
 
-                // at this point you have a screen code in the accumulator, between 0..255
-                // you need to multiply by 8 and add to $d000
-                sta __tmp3
-                Call Math.Mul16:#8:__tmp3
-                Call Math.Add16:__val0:__val1:#$00:#$d0
+            // at this point you have a screen code in the accumulator, between 0..255
+            // you need to multiply by 8 and add to $d000
+            sta __tmp3
+            Call Math.Mul16:#8:__tmp3
+            Call Math.Add16:__val0:__val1:#$00:#$d0
+            
+            // bit of meta programming
+            lda __val0
+            sta inject+1
+            lda __val1
+            sta inject+2
+
+            ldy #0
+            Set y:yStart
+
+            nextByteInChar:
+                Set x:xStart
+                // make char rom visible  
+                lda 1
+                and #251
+                sta 1
+                inject:
+                lda $d000,Y
+                sta byteLine
+                // restore char rom
+                lda 1
+                ora #4
+                sta 1   
+
+                ldx #0
                 
-                // bit of meta programming
-                lda __val0
-                sta inject+1
-                lda __val1
-                sta inject+2
-
-                ldy #0
-                Set y:yStart
-
-                nextByteInChar:
-                    Set x:xStart
-                    // make char rom visible  
-                    lda 1
-                    and #251
-                    sta 1
-                    inject:
-                    lda $d000,Y
+                plot:
+                    lda byteLine
+                    // shift msb into carry
+                    asl
                     sta byteLine
-                    // restore char rom
-                    lda 1
-                    ora #4
-                    sta 1   
+                    // test carry
+                    bcc !+
+                        Call CharScreen.Plot:x:y
+                    !:
 
-                    ldx #0
-                    
-                    plot:
-                        lda byteLine
-                        // shift msb into carry
-                        asl
-                        sta byteLine
-                        // test carry
-                        bcc !+
-                            Call CharScreen.Plot:x:y
-                        !:
+                    inc x
+                    inx 
+                    cpx #8
+                    bne plot
 
-                        inc x
-                        inx 
-                        cpx #8
-                        bne plot
+                inc y
+                iny
+                cpy #8
+                bne nextByteInChar
+            
 
-                    inc y
-                    iny
-                    cpy #8
-                    bne nextByteInChar
-                
-
-                lda xStart
-                clc
-                adc #8
-                sta xStart
-                cmp #80
-                bne !+
-                    // off the screen
-                    jmp exit
-                !:
-                
-                inc charPtr
-                jmp nextChar
+            lda xStart
+            clc
+            adc #8
+            sta xStart
+            cmp #80
+            bne !+
+                // off the screen
+                jmp exit
+            !:
+            
+            inc charPtr
+            jmp nextChar
 
         exit:
             Pop CharScreen.Character
-            // restore char rom
-            lda 1
-            ora #4
-            sta 1
-        cli
+
         rts
         charPtr: .byte 0
         byteLine: .byte 0
@@ -213,7 +210,8 @@
         yStart: .byte 0
     }
     
-    /* Write a string to x,y */
+    /* @Call 
+        Write a string to x,y */
     // TODO: kind of awkward, not able to pass an address, only values?
     WriteString: {
         .var x = __arg0
@@ -246,7 +244,8 @@
         xWrite: .byte 0
     }
 
-    /* Peek the value at location x,y, return character __val0 and color __val1 */
+    /* @Call
+        Peek the value at location x,y, return character __val0 and color __val1 */
     Read: {
         .var x = __arg0
         .var y = __arg1
@@ -282,7 +281,8 @@
         rts
     }
 
-    /* Plot a point, __arg0 is x 0..39, __arg1 is y 0..24 */
+    /* @Call 
+        Plot a point, __arg0 is x 0..39, __arg1 is y 0..24 */
     Plot: {
         .var x = __arg0
         .var y = __arg1
@@ -329,7 +329,8 @@
         rts
     }
 
-    /* Plot a hires sixel point, __arg0 is x 0..79, __arg1 is y 0..49 */
+    /* @Call
+       Plot a hires sixel point, __arg0 is x 0..79, __arg1 is y 0..49 */
     PlotH: {
         .var x = __arg0
         .var y = __arg1
@@ -407,7 +408,8 @@
 
     }
 
-    /* PlotLine from x0,y0 to x1,y1 */
+    /* @Call
+       PlotLine from x0,y0 to x1,y1 */
     PlotLine: {
         .var x0 = __arg0
         .var y0 = __arg1
@@ -422,7 +424,8 @@
         rts
     }
 
-    /* Plot hires line from x0,y0 to x1,y1 */
+    /* @Call
+       Plot hires line from x0,y0 to x1,y1 */
     PlotLineH: {
         .var x0 = __arg0
         .var y0 = __arg1
@@ -437,7 +440,8 @@
         rts
     }
 
-    /* Cast a ray from (x0,y0) to (x1,y1). Set __ptr0 to the action:x:y for processing:
+    /* @Call
+       Cast a ray from (x0,y0) to (x1,y1). Set __ptr0 to the action:x:y for processing:
         
         e.g. Plot:x:y
         - Set __ptr0:#<(CharScreen.Plot)
@@ -696,7 +700,8 @@
         yPrevious: .byte 0
     }
 
-    /* Draw a rectangle bound by point1 (x0,y0) to point2 (x1,y1) */
+    /* @Call
+       Draw a rectangle bound by point1 (x0,y0) to point2 (x1,y1) */
     PlotRect: {
         Set x0:__arg0
         Set y0:__arg1
@@ -716,6 +721,8 @@
         y1: .byte 0
     }
 
+    /* @Call
+    */
     PlotRectH: {
         Set x0:__arg0
         Set y0:__arg1
@@ -735,6 +742,7 @@
         y1: .byte 0
     }
 
+    /* @Call */
     _checkBounds: {
         .var x = __arg0
         .var y = __arg1

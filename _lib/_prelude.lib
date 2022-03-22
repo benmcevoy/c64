@@ -24,23 +24,24 @@
 .label __ptr2 = $0A
 .label __ptr3 = $0C
 
-// indicates if a pointer action was handled successfully
+/* indicates if a pointer action was handled successfully */
 .const ACTION_HANDLED = $FF
 
-/* Negate .A two's complement value */
+/* @Macro Negate .A two's complement value */
 .macro NegateA() {
     eor #$ff
     clc
     adc #1
 }
 
-/* Negate the operand two's complement value */
+/* @Macro Negate the operand two's complement value */
 .macro Negate(op) {
     lda op
     NegateA()
     sta op
 }
 
+/* @Macro */
 .macro Negate16(lo, hi) {
     // we need the carry flag, so subtract from 0
     lda #0
@@ -54,20 +55,20 @@
 }
 
 // TODO: often called mov
-/* Set memory address to value. */
+/* @NotCall Set memory address to value. */
 .pseudocommand Set address:value {
     lda value
     sta address
 }
 
-/* Set bit(s) high at address */
+/* @NotCall Set bit(s) high at address */
 .pseudocommand SetBit address:value {
     lda address
     ora value
     sta address
 }
 
-/* Flip bit(s) at address */
+/* @NotCall Flip bit(s) at address */
 .pseudocommand FlipBit address:value {
      lda address
      eor value
@@ -82,13 +83,13 @@
 //     sta address
 // }
 
-/* Push arg to stack. */
+/* @NotCall Push arg to stack. */
 .pseudocommand Push arg {
     lda arg
     pha
 }
 
-/* Pop arg from stack. */
+/* @NotCall Pop arg from stack. */
 .pseudocommand Pop arg {
     pla
     sta arg

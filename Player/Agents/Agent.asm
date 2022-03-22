@@ -28,18 +28,21 @@
     // consider if we could use the top nibble of colour ram to store flags per character tile?  Thought about WALL, ANIM0, ANIM1, ANIM2 or WALL, BOUNCY, SLOW, ???
     // ideally flags should be additive so you can combine flags to get rich behaviour, like a bouncy wall or floor
 
-    .label __objectPtr = __ptr3
+    /* Current object */
+    .label Current = __ptr3
 
-    //@Call
+    /* @Call
+        Invoke method on Current object
+    */
     Invoke: {
         .var field = __arg0
         .var __methodPtr = __ptr1
     
         ldy field
-        lda (__objectPtr),Y
+        lda (Current),Y
         sta __methodPtr
         iny
-        lda (__objectPtr),Y
+        lda (Current),Y
         sta __methodPtr + 1
 
         Call (__methodPtr)
@@ -47,13 +50,17 @@
         rts
     }
 
-    //@Call
+    /* @Call
+       Is Current object destroyed?
+    */
     IsDestroyed: {
         Get(Agent.destroyed, __val0)
         rts
     }
-
-    //@Call
+    
+    /* @Call
+       Set Current object via index
+    */
     SetCurrentObject: {
         .var index = __arg0
 
@@ -63,37 +70,49 @@
         tax
         
         lda __agents,x
-        sta __objectPtr
+        sta Current
         inx
         lda __agents,x
-        sta __objectPtr+1
+        sta Current+1
 
         rts
     }
 
+    /* @Macro
+       Get field from Current into target byte
+    */
     .macro Get(y, target){
         ldy #y
-        lda (Agent.__objectPtr),Y
+        lda (Agent.Current),Y
         sta target
     }
 
+    /* @Macro
+       Get field from Current into target word
+    */
     .macro GetW(y, target){
         Get(y, target)
         iny 
-        lda (Agent.__objectPtr),Y
+        lda (Agent.Current),Y
         sta target+1
     }
 
+    /* @Macro
+       Set field on Current object to byte source
+    */
     .macro Set(y, source){
         ldy #y
         lda source
-        sta (Agent.__objectPtr),Y
+        sta (Agent.Current),Y
     }
 
+    /* @Macro
+       Set field on Current object to word source
+    */
     .macro SetW(y, source){
         Set(y, source)
         iny
         lda source+1
-        sta (Agent.__objectPtr),Y
+        sta (Agent.Current),Y
     }
 }

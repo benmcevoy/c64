@@ -20,7 +20,7 @@
     //     rts
     // }
 
-    /* 
+    /* @Call
     Multiply two unsigned 8 bit numbers, 16 bit unsigned result in __val0 (LO),__val1 (HI)
     From: https://llx.com/Neil/a2/mult.html
      */
@@ -45,7 +45,7 @@ l2:     ror          // "stairstep" shift (catching carry from add)
         rts
     }
 
-    /*
+    /* @Call
     Multiply two signed bytes, returning a signed 16 result in __val0 (LO),__val1 (HI)
     */
     SMul16: {
@@ -94,7 +94,7 @@ l2:     ror          // "stairstep" shift (catching carry from add)
         rts
     }
 
-
+    /* @Call */
     Add16: {
         .var op1Lo = __arg0
         .var op1Hi = __arg1
@@ -125,6 +125,7 @@ l2:     ror          // "stairstep" shift (catching carry from add)
     //     sta __val1
     // }
 
+    /* @Macro */
     .macro Sub16 (op1Lo, op1Hi, op2Lo, op2Hi) {
         lda op1Lo
         sec
