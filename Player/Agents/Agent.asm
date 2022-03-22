@@ -22,8 +22,8 @@
     .label color = 13
     .label x0 = 14 // word
     .label y0 = 16 // word
-    .label glyph0 = 18
-    .label color0 = 19
+    .label bgGlyph = 18
+    .label bgColor = 19
     
     .label Length = 20
 
@@ -31,62 +31,26 @@
     // consider if we could use the top nibble of colour ram to store flags per character tile?  Thought about WALL, ANIM0, ANIM1, ANIM2 or WALL, BOUNCY, SLOW, ???
     // ideally flags should be additive so you can combine flags to get rich behaviour, like a bouncy wall or floor
 
-    .var __objectPtr = __ptr3
+    .label __objectPtr = __ptr3
 
     Invoke: {
         .var field = __arg0
-        
         .var __methodPtr = __ptr1
- 
-        Call GetField:field
-        
-        Set __methodPtr:__val0
-        Set __methodPtr+1:__val1
+    
+        ldy field
+        lda (__objectPtr),Y
+        sta __methodPtr
+        iny
+        lda (__objectPtr),Y
+        sta __methodPtr + 1
 
         Call (__methodPtr)
 
         rts
     }
 
-    /* MUST call GetObjectPtr first */
-    GetField: {
-        .var field = __arg0
-
-        ldy field
-        lda (__objectPtr),Y
-        sta __val0
-        iny
-        lda (__objectPtr),Y
-        sta __val1
-
-        rts
-    }
-    
-    /* MUST call GetObjectPtr first */
-    SetField: {
-        .var field = __arg0
-        .var value = __arg1
-        
-        ldy field
-        lda value
-        sta (__objectPtr),Y
-
-        rts
-    }
-
-    /* MUST call GetObjectPtr first */
-    SetFieldW: {
-        .var field = __arg0
-        .var valueLo = __arg1
-        .var valueHi = __arg2
-       
-        ldy field
-        lda valueLo
-        sta (__objectPtr),Y
-        iny
-        lda valueHi
-        sta (__objectPtr),Y
-
+    IsDestroyed: {
+        Get(Agent.destroyed, __val0)
         rts
     }
 
@@ -105,6 +69,32 @@
         sta __objectPtr+1
 
         rts
+    }
+
+    .macro Get(y, target){
+        ldy #y
+        lda (Agent.__objectPtr),Y
+        sta target
+    }
+
+    .macro GetW(y, target){
+        Get(y, target)
+        iny 
+        lda (Agent.__objectPtr),Y
+        sta target+1
+    }
+
+    .macro Set(y, source){
+        ldy #y
+        lda source
+        sta (Agent.__objectPtr),Y
+    }
+
+    .macro SetW(y, source){
+        Set(y, source)
+        iny
+        lda source+1
+        sta (Agent.__objectPtr),Y
     }
 
     // pool of pointers to agents
@@ -126,9 +116,8 @@
         color: .byte WHITE
         x0: .word 0
         y0: .word 0
-        glyph0: .byte 32
-        color0: .byte 0
-        
+        bgGlyph: .byte 32
+        bgColor: .byte 0
     }
     NPC1:{
         destroyed: .byte 0
@@ -143,8 +132,7 @@
         color: .byte GREEN
         x0: .word 0
         y0: .word 0
-        glyph0: .byte 32
-        color0: .byte 0
-        
+        bgGlyph: .byte 32
+        bgColor: .byte 0
     }
 }

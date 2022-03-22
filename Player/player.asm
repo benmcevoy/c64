@@ -85,15 +85,14 @@ GameUpdate: {
     sta    $d012
 
     // - set border color change for some perf indicator
-    //Set $d020:#WHITE
-
+    Set $d020:#WHITE
     Call UpdateAgents
 
-    //Set $d020:#GREEN
+    Set $d020:#GREEN
     Call RenderAgents
     
     // - set border color change for some perf indicator
-    //Set $d020:#BLACK
+    Set $d020:#BLACK
 
     // end irq
     pla;tay;pla;tax;pla
@@ -125,23 +124,23 @@ UpdateAgents: {
     sta index
 
     loop:
-    dec index
- 
-    lda index
-    cmp #0
-    bpl !+
-        jmp exit
-    !:
- 
-    Call Agent.SetCurrentObject:index
-    Call Agent.GetField:#Agent.destroyed
-    lda __val0
-    cmp #0
-    bne loop
+        dec index
+    
+        lda index
+        cmp #0
+        bpl !+
+            jmp exit
+        !:
+    
+        Call Agent.SetCurrentObject:index
+        Call Agent.IsDestroyed
+        lda __val0
+        cmp #0
+        bne loop
 
-    Call Agent.Invoke:#Agent.Update
+        Call Agent.Invoke:#Agent.Update
 
-    jmp loop
+        jmp loop
 
     exit:    
     rts
@@ -154,22 +153,22 @@ RenderAgents: {
     sta index
 
     loop:
-    dec index
-    
-    lda index
-    cmp #0
-    bpl !+
-        jmp exit
-    !:
+        dec index
+        
+        lda index
+        cmp #0
+        bpl !+
+            jmp exit
+        !:
 
-    Call Agent.SetCurrentObject:index
-    Call Agent.GetField:#Agent.destroyed
-    lda __val0
-    cmp #0 
-    bne loop
-    
-    Call Agent.Invoke:#Agent.Render
-    jmp loop
+        Call Agent.SetCurrentObject:index
+        Call Agent.IsDestroyed
+        lda __val0
+        cmp #0 
+        bne loop
+        
+        Call Agent.Invoke:#Agent.Render
+        jmp loop
 
     exit:    
     rts
