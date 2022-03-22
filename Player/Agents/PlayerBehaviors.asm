@@ -6,7 +6,7 @@
 
 .namespace Agent{
     .namespace PlayerBehaviors {
-        PlayerUpdate: {
+        Update: {
             Call ReadJoystick
 
             GetW(Agent.x, x)

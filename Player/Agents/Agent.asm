@@ -1,10 +1,7 @@
 #importonce
 #import "_prelude.lib"
 #import "_debug.lib"
-#import "AgentBehaviors.asm"
-#import "PlayerBehaviors.asm"
-
-.const MAXAGENTS = 2
+#import "AgentTable.asm"
 
 // declare the layout in bytes
 .namespace Agent {
@@ -33,6 +30,7 @@
 
     .label __objectPtr = __ptr3
 
+    //@Call
     Invoke: {
         .var field = __arg0
         .var __methodPtr = __ptr1
@@ -49,11 +47,13 @@
         rts
     }
 
+    //@Call
     IsDestroyed: {
         Get(Agent.destroyed, __val0)
         rts
     }
 
+    //@Call
     SetCurrentObject: {
         .var index = __arg0
 
@@ -95,44 +95,5 @@
         iny
         lda source+1
         sta (Agent.__objectPtr),Y
-    }
-
-    // pool of pointers to agents
-    .label __agentTable = $c000
-    // list of pointers to the agent table
-    __agents: .for(var i = 0; i < MAXAGENTS; i++) .word __agentTable + (Agent.Length * i)
-    // reserve memory
-    *=__agentTable "Agent data"
-    Player:{
-        destroyed: .byte 0
-        x: .word 20
-        y: .word 2
-        z: .byte 0
-        dx: .byte 0
-        dy: .byte 0
-        Update: .word PlayerBehaviors.PlayerUpdate 
-        Render: .word AgentBehaviors.DefaultRender 
-        glyph: .byte 81 // ball
-        color: .byte WHITE
-        x0: .word 0
-        y0: .word 0
-        bgGlyph: .byte 32
-        bgColor: .byte 0
-    }
-    NPC1:{
-        destroyed: .byte 0
-        x: .word 10
-        y: .word 2
-        z: .byte 0
-        dx: .byte 0
-        dy: .byte 0
-        Update: .word AgentBehaviors.NoOperation 
-        Render: .word AgentBehaviors.SimpleRender 
-        glyph: .byte 81 // ball
-        color: .byte GREEN
-        x0: .word 0
-        y0: .word 0
-        bgGlyph: .byte 32
-        bgColor: .byte 0
     }
 }

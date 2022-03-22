@@ -98,6 +98,7 @@
 Call - invoke subroutine, unused args can be omitted.
 Args are managed on the stack.
 Mind your call depth to avoid stack overflow.
+This can have a ~40 cycle overhead.  I should probably get rid of it.
 */
 .pseudocommand Call subroutine:arg0:arg1:arg2:arg3 {
     .if(arg0.getType() != AT_NONE) { Push __arg0; Set __arg0: arg0 }
