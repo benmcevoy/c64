@@ -3,10 +3,11 @@
 
 .namespace Math {
 
-    /* Pi in BRADs */
-    .const PI = 128
-    .const TWOPI = 128
-    .const HALFPI = 64
+    // this would better as macros
+    // i want to be able to use immediate values and addresses
+    // maybe a .pseduocommand wrapping the .macro?  IMUL, apparanetlt in x86
+    // i'll check ARM
+    
 
     // I'm using x86 namings here mul, smul etc.
 
@@ -94,6 +95,36 @@ l2:     ror          // "stairstep" shift (catching carry from add)
         rts
     }
 
+    /* @Call Multiply two signed words returned 16 bit result in __val0 (LO) __val1 (HI) */
+    SMulW16: {
+        .var op1Lo = __arg0
+        .var op1Hi = __arg1
+        .var op2Lo = __arg2
+        .var op2Hi = __arg3
+
+        // copy logic from SMul16
+
+        rts
+    }
+
+    /* @Call Multiply two unsigned words returned 16 bit result in  __val0 (LO) __val1 (HI) */
+    MulW16: {
+        .var op1Lo = __arg0
+        .var op1Hi = __arg1
+        .var op2Lo = __arg2
+        .var op2Hi = __arg3
+
+        // can I extend Mul16?
+
+        // this is really FP with Q(8) (is it?)
+        // i do not want to return a 32 bit word
+        // i do want to truncate "decimal places" so it can stay as a 16 bit FP Q(8) result
+        // but I do not know how to do this. lol.
+        // so back to the books.
+
+        rts
+    }
+
     /* @Call */
     Add16: {
         .var op1Lo = __arg0
@@ -125,7 +156,7 @@ l2:     ror          // "stairstep" shift (catching carry from add)
     //     sta __val1
     // }
 
-    /* @Macro */
+    /* @Macro Subtract two words */
     .macro Sub16 (op1Lo, op1Hi, op2Lo, op2Hi) {
         lda op1Lo
         sec

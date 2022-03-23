@@ -68,8 +68,10 @@
             SetW(Agent.y, y)
             SetW(Agent.x0, x0)
             SetW(Agent.y0, y0)
-        
-            Call Collision
+
+            Call CollisionImmediate
+
+
 
             rts
             dHi: .byte 0
@@ -124,7 +126,7 @@
             dy: .byte 0
         }
 
-        Collision: {
+        CollisionCastRay: {
             GetW(Agent.x, x)
             GetW(Agent.y, y)
             GetW(Agent.x0, x0)
@@ -134,7 +136,8 @@
             
             Set __ptr0:#<(checkCollision)
             Set __ptr0+1:#>(checkCollision)
-
+            
+            // this is the most expensive collision check
             Call CharScreen.CastRay:x0:y0:x:y
 
             Set(Agent.dx, dx)
@@ -196,6 +199,61 @@
                 
                 rts
             }
+
+            dy: .byte 0
+            dx: .byte 0
+            x0: .word 0
+            y0: .word 0
+            x: .word 0
+            y: .word 0
+        }
+
+        CollisionImmediate: {
+            // very cheap and fast
+            // falls off the ceiling, but sticks to the walls
+            GetW(Agent.x, x)
+            GetW(Agent.y, y)
+            GetW(Agent.x0, x0)
+            GetW(Agent.y0, y0)
+            Get(Agent.dx, dx)
+            Get(Agent.dy, dy)
+
+            // what direction?
+            Call CharScreen.Read:x:y
+            lda __val0
+            cmp #GROUND_CHAR
+            bne !skip+
+                // set player back to position before collision
+                SetW(Agent.x, x0)
+                SetW(Agent.y, y0)
+
+                // kill horizontal movement
+                Set dx:#0
+                
+                // only allow jump if we collided DOWN
+                lda dy
+                cmp #0
+                bmi end_v
+                    setDown: 
+                        // allow jump
+                        lda playerAction
+                        // notice ~ negate
+                        and #~ACTION_IS_JUMPING
+                        sta playerAction
+                end_v:
+
+                // kill vertical
+                Set dy:#0
+                
+                Set(Agent.dx, dx)
+                Set(Agent.dy, dy)    
+
+                Set __val0:#ACTION_HANDLED
+                rts
+            !skip:
+                Set __val0:#0
+
+            rts
 
             dy: .byte 0
             dx: .byte 0

@@ -1,7 +1,6 @@
 #importonce
 #import "_prelude.lib"
 #import "_math.lib"
-#import "_debug.lib"
 
 .namespace CharScreen {
     Character: .byte 204

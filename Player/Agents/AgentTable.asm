@@ -39,7 +39,7 @@
         dx: .byte 0
         dy: .byte 0
         Update: .word AgentBehaviors.NoOperation 
-        Render: .word AgentBehaviors.SimpleRender 
+        Render: .word AgentBehaviors.DefaultRender 
         glyph: .byte 81 // ball
         color: .byte GREEN
         x0: .word 0
