@@ -95,32 +95,70 @@ l2:     ror          // "stairstep" shift (catching carry from add)
         rts
     }
 
-    /* @Call Multiply two signed words returned 16 bit result in __val0 (LO) __val1 (HI) */
-    SMulW16: {
+    /* @Call Multiply two signed words, return 32 bit result in  __val0 (LO) to __val3 (HI). */
+    SMulW32: {
         .var op1Lo = __arg0
         .var op1Hi = __arg1
         .var op2Lo = __arg2
         .var op2Hi = __arg3
 
-        // copy logic from SMul16
+        Set __tmp0:#0
+
+        lda op1Hi
+        and #128
+        cmp #128
+        bne !+
+            Negate16(op1Lo, op1Hi)
+            inc __tmp0
+        !:
+
+        lda op2Hi
+        and #128
+        cmp #128
+        bne !+
+            Negate16(op2Lo, op2Hi)
+            inc __tmp0
+        !:
+
+        Call MulW32:op1Lo:op1Hi:op2Lo:op2Hi
+        
+        lda __tmp0
+        cmp #1
+        bne !+
+            Negate32(__val0, __val1, __val2, __val3)
+        !:
 
         rts
     }
 
-    /* @Call Multiply two unsigned words returned 16 bit result in  __val0 (LO) __val1 (HI) */
-    MulW16: {
+    /* @Call Multiply two 16 bit values, return 32 bit result in  __val0 (LO) to __val3 (HI).
+       From: https://llx.com/Neil/a2/mult.html */
+    MulW32: {
         .var op1Lo = __arg0
         .var op1Hi = __arg1
         .var op2Lo = __arg2
         .var op2Hi = __arg3
 
-        // can I extend Mul16?
-
-        // this is really FP with Q(8) (is it?)
-        // i do not want to return a 32 bit word
-        // i do want to truncate "decimal places" so it can stay as a 16 bit FP Q(8) result
-        // but I do not know how to do this. lol.
-        // so back to the books.
+        lda #0       // initialize result to 0
+        sta __val2
+        ldx #16      // there are 16 bits in num2
+l1:      lsr op2Hi   // get low bit of num2
+        ror op2Lo
+        bcc l2       // 0 or 1?
+        tay          // if 1, add num1 (hi byte of result is in a)
+        clc
+        lda op1Lo
+        adc __val2
+        sta __val2
+        tya
+        adc op1Hi
+l2:      ror         // "stairstep" shift
+        ror __val2
+        ror __val1
+        ror __val0
+        dex
+        bne l1
+        sta __val3
 
         rts
     }

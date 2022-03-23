@@ -48,6 +48,32 @@ start:
         DebugPrint __val1
         DebugPrint __val0
 
-        // groovy
+        // unsigned word multiply
+        // 9.5 * 3.75 = 35.625
+        // 9.5 is $09.$80  (as $80 is 128 and that is HALF of 256)
+        // 3.75 is $03c0
+        // provided bytes lo hi
+        Call Math.MulW32:#$80:#$09:#$c0:#$03
+        // expect 35.625 or $0023a000
+        // $23a0 represents $23.$a0
+        // or 35 and (160/256)  or 35.625
+        
+        DebugPrint __val3
+        DebugPrint __val2
+        DebugPrint __val1
+        DebugPrint __val0
+
+        // signed word mulitply
+        // 9.5 * -3.75 = -35.625
+        // 9.5 is $09.$80  (as $80 is 128 and that is HALF of 256)
+        // 3.75 is $03c0
+        // provided bytes lo hi
+        Call Math.MulW32:#$80:#$09:#$c0:#$8d
+        // expect -35.625 or $0542a000
+        
+        DebugPrint __val3
+        DebugPrint __val2
+        DebugPrint __val1
+        DebugPrint __val0
 
         rts
