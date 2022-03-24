@@ -26,7 +26,7 @@
                 sta dy
             !:
 
-            Sat16(dy, dHi)
+            Sat16 dy: dHi
 
             // y + dy
             // add low .bytes
@@ -39,7 +39,7 @@
             adc dHi
             sta y
 
-            Sat16(dx, dHi)
+            Sat16 dx: dHi
 
             // x + dx
             lda x+1

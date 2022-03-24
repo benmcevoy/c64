@@ -118,7 +118,7 @@ trails:
         lda cosine,X
         sta angle
 
-        //Call Math.Mult_U8_U16:angle:phase
+        //Call Mult_U8_U16:angle:phase
         // TODO: yeah not really... result is 16 bit
         Set angle:__val0
 
@@ -174,7 +174,7 @@ Point: {
     .var time = __arg0
 
     // var x = centerX - time * ctx.Size;
-    //Call Math.Mult_U8_U16:time:size
+    // Mul16 time:size
     // __val0 is already set by call to 
     lda #CENTERX
     sec
@@ -208,12 +208,12 @@ Rotate: {
     lda cosine,x
     sta __tmp0
     
-    Call Math.Mult_U8_U16:x:__tmp0
+    Mul16 x:__tmp0
     Set __tmp0:__val0
 
     lda sine,x
     sta __tmp1
-    Call Math.Mult_U8_U16:y:__tmp1
+    Mul16 y:__tmp1
     Set __tmp1:__val0
 
     lda __tmp0
@@ -225,12 +225,12 @@ Rotate: {
     lda sine,x
     sta __tmp0
     
-    Call Math.Mult_U8_U16:x:__tmp0
+    Mul16 x:__tmp0
     Set __tmp0:__val0
 
     lda cosine,x
     sta __tmp1
-    Call Math.Mult_U8_U16:y:__tmp1
+    Mul16 y:__tmp1
     Set __tmp1:__val0
 
     lda __tmp0

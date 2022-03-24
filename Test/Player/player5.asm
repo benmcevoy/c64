@@ -101,7 +101,7 @@ OnTimer:
         sta y
         
         lda dy
-        NegateA()
+        NegateA
         sec
         sbc #NO_DECAY
         sta dy

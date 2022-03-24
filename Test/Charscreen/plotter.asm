@@ -11,13 +11,13 @@ Start:{
     Set CharScreen.PenColor:#GREEN
     
     // test cases
-    // jsr DrawHexagon
-    // jsr DrawSquare
-    // jsr DrawLines
-    // jsr DrawDisc
+    jsr DrawHexagon
+    jsr DrawSquare
+    jsr DrawLines
+    jsr DrawDisc
 
-    // jsr DrawAngle
-    // jsr DrawEdges
+    jsr DrawAngle
+    jsr DrawEdges
 
     //Call CharScreen.Plot:#39:#0
 

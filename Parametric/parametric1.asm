@@ -18,8 +18,8 @@ BasicUpstart2(Start)
 .const DELAY = 200
 .const AXIS = 8
 .const TRAILS = 12
-.const WIDTH = 40
-.const HEIGHT = 24
+.const WIDTH = 80
+.const HEIGHT = 50
 .const CENTERX = (WIDTH/2)
 .const CENTERY = (HEIGHT/2)
 .const ROTATION_ANGLE_INCREMENT = (TWOPI/AXIS)  
@@ -68,13 +68,64 @@ Update: {
 UpdateState: {
     loop:
     
+    Call CharScreen.PlotH:#4:#4
     Call Rotate:angle:#4:#4
-    Call CharScreen.Plot:__val0:__val1
+    Call CharScreen.PlotH:__val0:__val1
+
+    Call CharScreen.PlotH:#4:#5
+    Call Rotate:angle:#4:#5
+    Call CharScreen.PlotH:__val0:__val1
     
-    inc angle
+    Call CharScreen.PlotH:#4:#6
+    Call Rotate:angle:#4:#6
+    Call CharScreen.PlotH:__val0:__val1
+
+    Call CharScreen.PlotH:#4:#7
+    Call Rotate:angle:#4:#7
+    Call CharScreen.PlotH:__val0:__val1
+
+    Call CharScreen.PlotH:#4:#8
+    Call Rotate:angle:#4:#8
+    Call CharScreen.PlotH:__val0:__val1
+    
+    Call CharScreen.PlotH:#4:#9
+    Call Rotate:angle:#4:#9
+    Call CharScreen.PlotH:__val0:__val1
+
+    Call CharScreen.PlotH:#4:#10
+    Call Rotate:angle:#4:#10
+    Call CharScreen.PlotH:__val0:__val1
+
+    Call CharScreen.PlotH:#4:#11
+    Call Rotate:angle:#4:#11
+    Call CharScreen.PlotH:__val0:__val1
+    
+    Call CharScreen.PlotH:#4:#12
+    Call Rotate:angle:#4:#12
+    Call CharScreen.PlotH:__val0:__val1
+
+    Call CharScreen.PlotH:#4:#13
+    Call Rotate:angle:#4:#13
+    Call CharScreen.PlotH:__val0:__val1
+
+    Call CharScreen.PlotH:#4:#14
+    Call Rotate:angle:#4:#14
+    Call CharScreen.PlotH:__val0:__val1
+    
+    Call CharScreen.PlotH:#4:#15
+    Call Rotate:angle:#4:#15
+    Call CharScreen.PlotH:__val0:__val1    
+
+    lda angle
+    clc
+    adc #30
+    sta angle
 
     cmp #250
-    bne loop
+    beq !+
+        inc CharScreen.PenColor
+        jmp loop
+    !:
 
     rts
     angle: .byte 0
@@ -94,27 +145,6 @@ UpdateState: {
 
     refer:
     https://github.com/mgolombeck/3D-Demo/blob/master/PLOT3D.S#L635
-
-    I need to do this on paper first.
-    I do not understand what I do with a BRAD (or a BAM).  It's a fraction of a turn. OK
-    So what?
-
-    16 bit words
-
-    x.0
-    y.0
-    0.sin
-    0.cos
-
-    ding ding.  sine yields a value between -1 and 1, or -0.9999..0.99999
-    convert values to 16 bit fixed point
-    need a SWMul16 or something?  or convert to 8 bit fixed point, e.g. 0000.0000
-    just lsr;lsr;lsr;lsr ??
-
-    i think this may be working but 8 bit is too small
-
-    i had actually worked this out a while ago and forgot...
-    obvious now, assuming it is correct.
 */
 
 Rotate: {
@@ -146,20 +176,20 @@ Rotate: {
     sta __tmp0
     
     // sign extension required on value of cosine
-    Sat16(__tmp0,__tmp1)
-    Call Math.SMulW32:xRelative:xRelative+1:__tmp0:__tmp1
+    Sat16 __tmp0:__tmp1
+    SMulW32 xRelative:xRelative+1:__tmp0:__tmp1
     Set __tmp0:__val1
     Set __tmp1:__val2
 
     lda sine,X
     sta __tmp2
-    Sat16(__tmp2,__tmp3)
+    Sat16 __tmp2:__tmp3
 
-    Call Math.SMulW32:yRelative:yRelative+1:__tmp2:__tmp3
+    SMulW32 yRelative:yRelative+1:__tmp2:__tmp3
     Set __tmp2:__val1
     Set __tmp3:__val2
 
-    Sub16(__tmp0,__tmp1,__tmp2,__tmp3)
+    Sub16 __tmp0:__tmp1:__tmp2:__tmp3
     Set x1:__val0
     Set x1+1:__val1
 
@@ -167,24 +197,21 @@ Rotate: {
     lda sine,X
     sta __tmp0
 
-    Sat16(__tmp0,__tmp1)
-    
-    Call Math.SMulW32:xRelative:xRelative+1:__tmp0:__tmp1
+    Sat16 __tmp0:__tmp1
+    SMulW32 xRelative:xRelative+1:__tmp0:__tmp1
     Set __tmp0:__val1
     Set __tmp1:__val2
 
     lda cosine,X
     sta __tmp2
-    Sat16(__tmp2,__tmp3)
-    Call Math.SMulW32:yRelative:yRelative+1:__tmp2:__tmp3
+    Sat16 __tmp2:__tmp3
+    SMulW32 yRelative:yRelative+1:__tmp2:__tmp3
     Set __tmp2:__val1
     Set __tmp3:__val2
 
-    Call Math.Add16:__tmp0:__tmp1:__tmp2:__tmp3
+    Add16 __tmp0:__tmp1:__tmp2:__tmp3
     Set y1:__val0
     Set y1+1:__val1
-
-
 
     // convert back to "screen space"
     // use HI bytes

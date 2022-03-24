@@ -1,208 +1,154 @@
 #importonce
 #import "_prelude.lib"
 
-.namespace Math {
-
-    // this would better as macros
-    // i want to be able to use immediate values and addresses
-    // maybe a .pseduocommand wrapping the .macro?  IMUL, apparanetlt in x86
-    // i'll check ARM
-    
-
-    // I'm using x86 namings here mul, smul etc.
-
-    // Mul: {
-    //     // TODO:
-    //     rts
-    // }
-
-    // SMul: {
-    //     // TODO:
-    //     rts
-    // }
-
-    /* @Call
-    Multiply two unsigned 8 bit numbers, 16 bit unsigned result in __val0 (LO),__val1 (HI)
-    From: https://llx.com/Neil/a2/mult.html
-     */
-    Mul16: {
-        .var op1 = __arg0
-        .var op2 = __arg1
-
-        Set __val0:#0
-
-        lda #0       // initialize result to 0
-        ldx #8       // there are 8 bits in num2
-l1:     lsr op2      // get low bit of num2
-        bcc l2       // 0 or 1?
-        clc          // if 1, add num1
-        adc op1
-l2:     ror          // "stairstep" shift (catching carry from add)
-        ror __val0
-        dex
-        bne l1
-        sta __val1
-
-        rts
-    }
-
-    /* @Call
-    Multiply two signed bytes, returning a signed 16 result in __val0 (LO),__val1 (HI)
+/* @Command
+Multiply two unsigned 8 bit numbers, 16 bit unsigned result in __val0 (LO),__val1 (HI)
+From: https://llx.com/Neil/a2/mult.html
     */
-    SMul16: {
-        .var op1 = __arg0
-        .var op2 = __arg1
+.pseudocommand Mul16 op1:op2 {
+    Set __val0:#0
 
-        // a * -b is the same as -( a * b )
-        // compute the sign first, then make positive and call Mul16
-        // then apply the sign
-
-        // if the MSB on EITHER operand is high, exclusively, e.g. XOR
-        // then negative, if both high or both low then positive result
-
-        // in the example from the the Mul16 above they php the processor flags, which has N,Z
-        // instead I store it in __tmp0 as I am not that smart
-
-        Set __tmp0:#0
-
-        lda op1
-        and #128
-        cmp #128
-        bne !+
-            Negate(op1)
-            inc __tmp0
-        !:
-
-        lda op2
-        and #128
-        cmp #128
-        bne !+
-            Negate(op2)
-            inc __tmp0
-        !:
-
-        Call Mul16:op1:op2
-
-        // set sign of result __val0 __val1
-        // here they pull the processor flags back off the stack
-        // and do a BPL against the N flag, maybe they save a few cycles but it bends my brain...
-        lda __tmp0
-        cmp #1
-        bne !+
-            Negate16(__val0, __val1)
-        !:
-
-        rts
-    }
-
-    /* @Call Multiply two signed words, return 32 bit result in  __val0 (LO) to __val3 (HI). */
-    SMulW32: {
-        .var op1Lo = __arg0
-        .var op1Hi = __arg1
-        .var op2Lo = __arg2
-        .var op2Hi = __arg3
-
-        Set __tmp0:#0
-
-        lda op1Hi
-        and #128
-        cmp #128
-        bne !+
-            Negate16(op1Lo, op1Hi)
-            inc __tmp0
-        !:
-
-        lda op2Hi
-        and #128
-        cmp #128
-        bne !+
-            Negate16(op2Lo, op2Hi)
-            inc __tmp0
-        !:
-
-        Call MulW32:op1Lo:op1Hi:op2Lo:op2Hi
-        
-        lda __tmp0
-        cmp #1
-        bne !+
-            Negate32(__val0, __val1, __val2, __val3)
-        !:
-
-        rts
-    }
-
-    /* @Call Multiply two 16 bit values, return 32 bit result in  __val0 (LO) to __val3 (HI).
-       From: https://llx.com/Neil/a2/mult.html */
-    MulW32: {
-        .var op1Lo = __arg0
-        .var op1Hi = __arg1
-        .var op2Lo = __arg2
-        .var op2Hi = __arg3
-
-        lda #0       // initialize result to 0
-        sta __val2
-        ldx #16      // there are 16 bits in num2
-l1:      lsr op2Hi   // get low bit of num2
-        ror op2Lo
-        bcc l2       // 0 or 1?
-        tay          // if 1, add num1 (hi byte of result is in a)
-        clc
-        lda op1Lo
-        adc __val2
-        sta __val2
-        tya
-        adc op1Hi
-l2:      ror         // "stairstep" shift
-        ror __val2
-        ror __val1
-        ror __val0
-        dex
-        bne l1
-        sta __val3
-
-        rts
-    }
-
-    /* @Call */
-    Add16: {
-        .var op1Lo = __arg0
-        .var op1Hi = __arg1
-        .var op2Lo = __arg2
-        .var op2Hi = __arg3
-
-        lda op1Lo
-        clc
-        adc op2Lo
-        sta __val0
-        lda op1Hi
-        adc op2Hi
-        sta __val1
-        
-        rts
-    }
-
-
+    lda #0       // initialize result to 0
+    ldx #8       // there are 8 bits in num2
+l1: lsr op2      // get low bit of num2
+    bcc l2       // 0 or 1?
+    clc          // if 1, add num1
+    adc op1
+l2: ror          // "stairstep" shift (catching carry from add)
+    ror __val0
+    dex
+    bne l1
+    sta __val1
 }
-    /* @Macro Saturate - Extend a byte to a two's complement word */
-    .macro Sat16(lo, hi) {
-        Set hi:#0
-        lda lo
-        // test the MSB by rotating into .C flag
-        rol
-        bcc !+
-            // add high .byte, sign extension
-            Set hi:#$ff
-        !:
-    }
 
-    // can't have a macro in a namespace?
-    /* @Macro Subtract two words */
-    .macro Sub16 (op1Lo, op1Hi, op2Lo, op2Hi) {
-        lda op1Lo
-        sec
-        sbc op2Lo
-        sta __val0
-        lda op1Hi
-        sbc op2Hi
-        sta __val1
-    }
+/* @Command
+Multiply two signed bytes, returning a signed 16 result in __val0 (LO),__val1 (HI)
+*/
+.pseudocommand SMul16 op1:op2 {
+    // a * -b is the same as -( a * b )
+    // compute the sign first, then make positive and call Mul16
+    // then apply the sign
+
+    // if the MSB on EITHER operand is high, exclusively, e.g. XOR
+    // then negative, if both high or both low then positive result
+
+    // in the example from the the Mul16 above they php the processor flags, which has N,Z
+    // instead I store it in __tmp0 as I am not that smart
+
+    Set __tmp0:#0
+
+    lda op1
+    and #128
+    cmp #128
+    bne !+
+        Negate op1
+        inc __tmp0
+    !:
+
+    lda op2
+    and #128
+    cmp #128
+    bne !+
+        Negate op2
+        inc __tmp0
+    !:
+
+    Mul16 op1:op2
+
+    // set sign of result __val0 __val1
+    // here they pull the processor flags back off the stack
+    // and do a BPL against the N flag, maybe they save a few cycles but it bends my brain...
+    lda __tmp0
+    cmp #1
+    bne !+
+        Negate16 __val0: __val1
+    !:
+}
+
+/* @Command Multiply two signed words, return 32 bit result in  __val0 (LO) to __val3 (HI). */
+.pseudocommand SMulW32 op1Lo:op1Hi:op2Lo:op2Hi  {
+    Set __tmp0:#0
+
+    lda op1Hi
+    and #128
+    cmp #128
+    bne !+
+        Negate16 op1Lo: op1Hi
+        inc __tmp0
+    !:
+
+    lda op2Hi
+    and #128
+    cmp #128
+    bne !+
+        Negate16 op2Lo: op2Hi
+        inc __tmp0
+    !:
+
+    MulW32 op1Lo:op1Hi:op2Lo:op2Hi
+    
+    lda __tmp0
+    cmp #1
+    bne !+
+        Negate32 __val0: __val1: __val2: __val3
+    !:
+}
+
+/* @Command Multiply two 16 bit values, return 32 bit result in  __val0 (LO) to __val3 (HI).
+    From: https://llx.com/Neil/a2/mult.html */
+.pseudocommand MulW32  op1Lo:op1Hi:op2Lo:op2Hi {
+    lda #0       // initialize result to 0
+    sta __val2
+    ldx #16      // there are 16 bits in num2
+l1: lsr op2Hi   // get low bit of num2
+    ror op2Lo
+    bcc l2       // 0 or 1?
+    tay          // if 1, add num1 (hi byte of result is in a)
+    clc
+    lda op1Lo
+    adc __val2
+    sta __val2
+    tya
+    adc op1Hi
+l2: ror         // "stairstep" shift
+    ror __val2
+    ror __val1
+    ror __val0
+    dex
+    bne l1
+    sta __val3
+}
+
+/* @Command */
+.pseudocommand Add16 op1Lo:op1Hi:op2Lo:op2Hi {
+    lda op1Lo
+    clc
+    adc op2Lo
+    sta __val0
+    lda op1Hi
+    adc op2Hi
+    sta __val1
+}
+
+/* @Command Saturate - Extend a byte to a two's complement word */
+.pseudocommand Sat16 lo:hi {
+    Set hi:#0
+    lda lo
+    // test the MSB by rotating into .C flag
+    rol
+    bcc !+
+        // add high .byte, sign extension
+        Set hi:#$ff
+    !:
+}
+
+/* @Command Subtract two words */
+.pseudocommand Sub16 op1Lo: op1Hi: op2Lo: op2Hi {
+    lda op1Lo
+    sec
+    sbc op2Lo
+    sta __val0
+    lda op1Hi
+    sbc op2Hi
+    sta __val1
+}

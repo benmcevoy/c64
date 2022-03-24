@@ -43,8 +43,8 @@ Start:{
         // at this point you have a screen code in the accumulator, between 0..255
         // you need to multiply by 8 and add to $d000
         sta __tmp2
-        Call Math.Mul16:#8:__tmp2
-        Call Math.Add16:__val0:__val1:#$00:#$d0
+        Mul16 #8:__tmp2
+        Add16 __val0:__val1:#$00:#$d0
         
         // bit of meta programming
         lda __val0

@@ -65,7 +65,7 @@ OnTimer:
         // hit the ground, make dy -ve
         lda dy
         //  invert
-        NegateA()
+        NegateA
         sec
         sbc #NO_DECAY
         sta dy

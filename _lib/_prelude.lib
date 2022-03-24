@@ -27,22 +27,22 @@
 /* indicates if a pointer action was handled successfully */
 .const ACTION_HANDLED = $FF
 
-/* @Macro Negate the operand two's complement value in place. op is updated with the negated value. */
-.macro Negate(op) {
+/* @Command Negate the operand two's complement value in place. op is updated with the negated value. */
+.pseudocommand Negate op {
     lda op
-    NegateA()
+    NegateA
     sta op
 }
 
 /* @Macro Negate .A two's complement value */
-.macro NegateA() {
+.pseudocommand NegateA {
     eor #$ff
     clc
     adc #1
 }
 
-/* @Macro Negate word in place. lo and hi are changed to the two's complement negated values. */
-.macro Negate16(lo, hi) {
+/* @Command Negate word in place. lo and hi are changed to the two's complement negated values. */
+.pseudocommand Negate16 lo: hi {
     sec
 
 	lda #0
@@ -54,42 +54,25 @@
 	sta hi
 }
 
-/* @Macro Negate 32 bit word in place. lo1, lo2, hi1 and hi2 are changed to the two's complement negated values. */
-.macro Negate32(lo1, lo2, hi1, hi2) {
+/* @Command Negate 32 bit word in place. lo1, lo2, hi1 and hi2 are changed to the two's complement negated values. */
+.pseudocommand Negate32 lo1: lo2: hi1: hi2 {
+    sec
 
-    lda hi2
-    eor #$ff
-    sta hi2
-
-    lda hi1
-    eor #$ff
-    sta hi1
-    
-    lda lo2
-    eor #$ff
-    sta lo2
-
-    lda lo1
-    eor #$ff
-    clc
-    adc #1
+	lda #0
+	sbc lo1
     sta lo1
 
-    bcc skip
-        lda lo2
-        adc #0
-        sta lo2
-        bcc skip
-            lda hi1
-            adc #0
-            sta hi1
-            bcc skip
-                lda hi2
-                adc #0
-                sta hi2
-            
-    skip:
+	lda #0
+	sbc lo2
+	sta lo2
 
+    lda #0
+	sbc hi1
+	sta hi1
+
+    lda #0
+	sbc hi2
+	sta hi2
 }
 
 // TODO: often called mov
