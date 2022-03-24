@@ -1,5 +1,5 @@
 #importonce
-
+#import "_debug.lib"
 // ZP temp variables __tmp0-3.
 .label __tmp0 = $02
 .label __tmp1 = $03
@@ -43,34 +43,53 @@
 
 /* @Macro Negate word in place. lo and hi are changed to the two's complement negated values. */
 .macro Negate16(lo, hi) {
-    // we need the carry flag, so subtract from 0
-    lda #0
     sec
-    sbc lo
+
+	lda #0
+	sbc lo
     sta lo
-    lda #0
-    // preserve carry from above
-    sbc hi
-    sta hi
+
+	lda #0
+	sbc hi
+	sta hi
 }
 
 /* @Macro Negate 32 bit word in place. lo1, lo2, hi1 and hi2 are changed to the two's complement negated values. */
 .macro Negate32(lo1, lo2, hi1, hi2) {
-    // we need the carry flag, so subtract from 0
-    lda #0
-    sec
-    sbc lo1
-    sta lo1
-    lda #0
-    // preserve carry from above
-    sbc lo2
-    sta lo2
-    sbc hi1
-    sta hi1
-    lda #0
-    // preserve carry from above
-    sbc hi2
+
+    lda hi2
+    eor #$ff
     sta hi2
+
+    lda hi1
+    eor #$ff
+    sta hi1
+    
+    lda lo2
+    eor #$ff
+    sta lo2
+
+    lda lo1
+    eor #$ff
+    clc
+    adc #1
+    sta lo1
+
+    bcc skip
+        lda lo2
+        adc #0
+        sta lo2
+        bcc skip
+            lda hi1
+            adc #0
+            sta hi1
+            bcc skip
+                lda hi2
+                adc #0
+                sta hi2
+            
+    skip:
+
 }
 
 // TODO: often called mov

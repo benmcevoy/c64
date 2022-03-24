@@ -66,23 +66,21 @@ Update: {
 }
 
 UpdateState: {
-    Call CharScreen.Plot:#4:#4
     
-    // angle 32 BRAD's is pi/4=0.785 in radians or 45 degrees
-    .var angle = 32
 
-    Call Rotate:#32:#4:#4
-    // Call Rotate:#64:#4:#4
-    // Call Rotate:#96:#4:#4
-    // Call Rotate:#128:#4:#4
-
-    // expect (3,17 or 18)  ($03,$12)
-    DebugPrint __val0
-    DebugPrint __val1
-
+    loop:
+    
+    Call Rotate:angle:#4:#4
     Call CharScreen.Plot:__val0:__val1
+    
+    inc angle
+
+    cmp #250
+    bne loop
+    
 
     rts
+    angle: .byte 0
 }
 
 /*
@@ -145,56 +143,50 @@ Rotate: {
     Set yRelative:#0
 
     // correct so far
-
     // var x2 = xRel * Math.Cos(angle) - yRel * Math.Sin(angle);
     ldx angle
     lda cosine,X
     sta __tmp0
     
-DebugPrint __tmp0
-
-    Call Math.SMul16:xRelative:__tmp0
-    Set __tmp0:__val0
-    Set __tmp1:__val1
-
-DebugPrint __tmp1
-DebugPrint __tmp0
-
+    // sign extension required on value of cosine
+    Sat16(__tmp0,__tmp1)
+    Call Math.SMulW32:xRelative:xRelative+1:__tmp0:__tmp1
+    Set __tmp0:__val1
+    Set __tmp1:__val2
 
     lda sine,X
     sta __tmp2
+    Sat16(__tmp2,__tmp3)
 
-DebugPrint __tmp2
-
-    Call Math.SMul16:yRelative:__tmp2
-    Set __tmp2:__val0
-    Set __tmp3:__val1
+    Call Math.SMulW32:yRelative:yRelative+1:__tmp2:__tmp3
+    Set __tmp2:__val1
+    Set __tmp3:__val2
 
     Sub16(__tmp0,__tmp1,__tmp2,__tmp3)
     Set x1:__val0
     Set x1+1:__val1
 
-    DebugPrint x1+1
-    DebugPrint x1
-    
-
     // var y2 = x * Math.Sin(angle) + y * Math.Cos(angle);
     lda sine,X
     sta __tmp0
+
+    Sat16(__tmp0,__tmp1)
     
-    Call Math.SMulW16:xRelative:xRelative+1:#0:__tmp0
-    Set __tmp0:__val0
-    Set __tmp1:__val1
+    Call Math.SMulW32:xRelative:xRelative+1:__tmp0:__tmp1
+    Set __tmp0:__val1
+    Set __tmp1:__val2
 
     lda cosine,X
-    sta __tmp1
-    Call Math.SMulW16:yRelative:yRelative+1:#0:__tmp1
-    Set __tmp2:__val0
-    Set __tmp3:__val1
+    sta __tmp2
+    Sat16(__tmp2,__tmp3)
+    Call Math.SMulW32:yRelative:yRelative+1:__tmp2:__tmp3
+    Set __tmp2:__val1
+    Set __tmp3:__val2
 
     Call Math.Add16:__tmp0:__tmp1:__tmp2:__tmp3
     Set y1:__val0
     Set y1+1:__val1
+
 
 
     // convert back to "screen space"
@@ -212,8 +204,8 @@ DebugPrint __tmp2
 
     rts
     // relative to origin at centerx,y
-    xRelative: .byte 0
-    yRelative: .byte 0
+    xRelative: .word 0
+    yRelative: .word 0
     x1: .word 0
     y1: .word 0
 }
@@ -223,7 +215,7 @@ delayCounter: .byte 0
 
 time: .byte 0
 
-*=$1600 "Signed trig tables"
+*=$2000 "Signed trig tables"
 // values range -127..127  
 sine: .fill 256,round(127*sin(toRadians(i*360/256)))
 cosine: .fill 256,round(127*cos(toRadians(i*360/256)))

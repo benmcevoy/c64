@@ -26,18 +26,11 @@
                 sta dy
             !:
 
-            // get high .bytes of dy for 16bit add
-            Set dHi:#0
-            lda dy
-            // test the MSB by rotating into .C flag
-            rol
-            bcc !+
-                // add high .byte, sign extension
-                Set dHi:#$ff
-            !:
+            Sat16(dy, dHi)
 
             // y + dy
             // add low .bytes
+            // TODO: looks abit wrong? big-endian?
             lda y+1
             clc
             adc dy
@@ -46,12 +39,7 @@
             adc dHi
             sta y
 
-            Set dHi:#0
-            lda dx 
-            rol
-            bcc !+
-                Set dHi:#$ff
-            !:
+            Sat16(dx, dHi)
 
             // x + dx
             lda x+1
@@ -70,8 +58,6 @@
             SetW(Agent.y0, y0)
 
             Call CollisionImmediate
-
-
 
             rts
             dHi: .byte 0

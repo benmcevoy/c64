@@ -5,11 +5,17 @@
 
 /* Print a value to the screen as hex, using the kernal chrout */
 .pseudocommand DebugPrint value {
+
     .if(value.getType() == AT_NONE) {     sta __tmp3 }
 
     // try not to clobber anything, shove it all on the stack
     php
     pha;txa;pha;tya;pha
+
+    Push __tmp3
+    Push __tmp2
+    Push __tmp1
+    Push __tmp0
 
     .if(value.getType() != AT_NONE) { lda value;sta __tmp3 }
 
@@ -29,9 +35,16 @@
     // space
     lda #32
     jsr ChrOut
+    
+    Pop __tmp0
+    Pop __tmp1
+    Pop __tmp2
+    Pop __tmp3
 
     pla;tay;pla;tax;pla
     plp
+    
+
 }    
 
 .macro __toHex(){

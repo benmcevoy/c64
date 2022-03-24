@@ -180,20 +180,22 @@ l2:      ror         // "stairstep" shift
         
         rts
     }
+
+
 }
+    /* @Macro Saturate - Extend a byte to a two's complement word */
+    .macro Sat16(lo, hi) {
+        Set hi:#0
+        lda lo
+        // test the MSB by rotating into .C flag
+        rol
+        bcc !+
+            // add high .byte, sign extension
+            Set hi:#$ff
+        !:
+    }
 
     // can't have a macro in a namespace?
-
-    // .macro Add16 (op1Lo, op1Hi, op2Lo, op2Hi) {
-    //     lda op1Lo
-    //     clc
-    //     adc op2Lo
-    //     sta __val0
-    //     lda op1Hi
-    //     adc op2Hi
-    //     sta __val1
-    // }
-
     /* @Macro Subtract two words */
     .macro Sub16 (op1Lo, op1Hi, op2Lo, op2Hi) {
         lda op1Lo
