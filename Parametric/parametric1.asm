@@ -66,8 +66,6 @@ Update: {
 }
 
 UpdateState: {
-    
-
     loop:
     
     Call Rotate:angle:#4:#4
@@ -77,7 +75,6 @@ UpdateState: {
 
     cmp #250
     bne loop
-    
 
     rts
     angle: .byte 0
