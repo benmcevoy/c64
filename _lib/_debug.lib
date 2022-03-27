@@ -13,9 +13,6 @@
     pha;txa;pha;tya;pha
 
     Push __tmp3
-    Push __tmp2
-    Push __tmp1
-    Push __tmp0
 
     .if(value.getType() != AT_NONE) { lda value;sta __tmp3 }
 
@@ -36,15 +33,10 @@
     lda #32
     jsr ChrOut
     
-    Pop __tmp0
-    Pop __tmp1
-    Pop __tmp2
     Pop __tmp3
 
     pla;tay;pla;tax;pla
     plp
-    
-
 }    
 
 .macro __toHex(){

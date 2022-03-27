@@ -1,6 +1,5 @@
 #importonce
 #import "_prelude.lib"
-#import "_debug.lib"
 #import "AgentTable.asm"
 
 // declare the layout in bytes

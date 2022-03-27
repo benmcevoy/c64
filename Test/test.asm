@@ -2,7 +2,6 @@ BasicUpstart2(start)
 
 #import "_prelude.lib"
 #import "_math.lib"
-#import "_debug.lib"
 
 start:
         // Mul16 #16:#48
@@ -42,11 +41,14 @@ start:
         // DebugPrint __val1
         // DebugPrint __val0
 
-        // SMul16 #-40:#33
+        Set __tmp1:#33
+        Set __tmp0:#-40
 
-        // // expect -1320 or $fad8
-        // DebugPrint __val1
-        // DebugPrint __val0
+        SMul16 __tmp0:__tmp1
+
+        // expect -1320 or $fad8
+        DebugPrint __val1
+        DebugPrint __val0
 
         // // unsigned word multiply
         // // 9.5 * 3.75 = 35.625
@@ -76,46 +78,37 @@ start:
         // DebugPrint __val1
         // DebugPrint __val0
 
-        // // -16.0 * 0.351625 = -5.626
-        // // -16.00 is $f000
-        // // 0.351652 = $005a
-        // // expected result is -5.626 base10
-        // // $FB.
-        // SMulW32 #$00:#$f0:#$5a:#$00
-        // // expect -35.625 or $05460000
+        // -16.0 * 0.351625 = -5.626
+        // -16.00 is $f000
+        // 0.351652 = $005a
+        // expected result is -5.626 base10
+        // $FB.
+
+        Set __tmp3:#0
+        Set __tmp2:#$5a
+        Set __tmp1:#$f0
+        Set __tmp0:#0
+
+        SMulW32 __tmp0:__tmp1:__tmp2:__tmp3
+        // expect $00546000 negate32
+        // or ffaba000
         
-        // DebugPrint __val3
-        // DebugPrint __val2
-        // DebugPrint __val1
-        // DebugPrint __val0
+        DebugPrint __val3
+        DebugPrint __val2
+        DebugPrint __val1
+        DebugPrint __val0
 
-        // Set __tmp1:#$F0
-        // Set __tmp0:#$5a
+        // Set __tmp3:#0
+        // Set __tmp2:#$54
+        // Set __tmp1:#$60
+        // Set __tmp0:#0
+        
+        // Negate32 __tmp0: __tmp1: __tmp2: __tmp3
 
+        // DebugPrint __tmp3
+        // DebugPrint __tmp2
         // DebugPrint __tmp1
         // DebugPrint __tmp0
 
-        // Negate16 __tmp0 __tmp1
-
-        // DebugPrint __tmp1
-        // DebugPrint __tmp0
-
-
-        Set __tmp3:#$ff
-        Set __tmp2:#$f0
-        Set __tmp1:#$5a
-        Set __tmp0:#$00
-
-        DebugPrint __tmp3
-        DebugPrint __tmp2
-        DebugPrint __tmp1
-        DebugPrint __tmp0
-
-        Negate32 __tmp0: __tmp1: __tmp2: __tmp3
-
-        DebugPrint __tmp3
-        DebugPrint __tmp2
-        DebugPrint __tmp1
-        DebugPrint __tmp0
 
         rts

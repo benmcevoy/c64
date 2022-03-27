@@ -12,7 +12,6 @@ BasicUpstart2(Start)
 
 #import "_prelude.lib"
 #import "_charscreen.lib"
-#import "_debug.lib"
 #import "globals.asm"
 #import "./Agents/Agent.asm"
 #import "./Backgrounds/weave.asm"

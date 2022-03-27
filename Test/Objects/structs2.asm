@@ -1,7 +1,6 @@
 BasicUpstart2(Start)
 
 #import "_prelude.lib"
-#import "_debug.lib"
 
 // declare the layout in bytes
 .namespace Agent {

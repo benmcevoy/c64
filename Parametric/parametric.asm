@@ -33,7 +33,6 @@ BasicUpstart2(Start)
 #import "_charscreen.lib"
 #import "_joystick.lib"
 #import "_math.lib"
-#import "_debug.lib"
 
 .label ClearScreen = $E544
 

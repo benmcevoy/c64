@@ -6,7 +6,7 @@ BasicUpstart2(Start)
 
 .label ClearScreen = $E544
 
-.const TRAILS = 255
+.const TRAILS = 256
 
 t: .byte 0
 
