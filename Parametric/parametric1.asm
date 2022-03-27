@@ -65,37 +65,18 @@ Update: {
 }
 
 UpdateState: {
-    Call CharScreen.Plot:#4:#4
-    // gotcha - at #32 or 45 degrees cos=sin
-    Call Rotate:#32:#4:#4
+
+    Set angle:#0
+!loop:
+    Call Rotate:angle:#4:#4
+
     Call CharScreen.Plot:__val0:__val1
 
-    // expect 3,17  or $03, $11
-    DebugPrint __val0
-    DebugPrint __val1
-
-    // Call Rotate:#64:#4:#4
-    // Call CharScreen.Plot:__val0:__val1
-
-    // Call Rotate:#96:#4:#4
-    // Call CharScreen.Plot:__val0:__val1
-
-    // Call Rotate:#128:#4:#4
-    // Call CharScreen.Plot:__val0:__val1
-
-    // Call Rotate:#160:#4:#4
-    // Call CharScreen.Plot:__val0:__val1
-
-    // Call Rotate:#192:#4:#4
-    // Call CharScreen.Plot:__val0:__val1
-
-    // Call Rotate:#224:#4:#4
-    // Call CharScreen.Plot:__val0:__val1
-
-    // Call Rotate:#0:#4:#4
-    // Call CharScreen.Plot:__val0:__val1
+    inc angle
+    bne !loop-
 
     rts
+    angle: .byte 0
 }
 
 /*
@@ -128,6 +109,7 @@ Rotate: {
     sbc #CENTERX
     sta xRelative+1
     Set xRelative:#0
+
     // xRelative is now 16 bit fixedpoint hi.lo, e.g. x.00000000
     // var y1 = centerY - y 
     // reverse that due to Y being upside down on a screen
@@ -148,62 +130,80 @@ Rotate: {
     Sat16 sineAngle:sineAngle+1
 
     // var x2 = xRel * Math.Cos(angle) - yRel * Math.Sin(angle);
-    Set __tmp1:xRelative+1
     Set __tmp0:xRelative
-
-    DebugPrint __tmp1
-    DebugPrint __tmp0
-    DebugPrint cosineAngle+1
-    DebugPrint cosineAngle
-
-    SMulW32 __tmp0:__tmp1:cosineAngle:cosineAngle+1
-
-    DebugPrint __val3
-    DebugPrint __val2
-    DebugPrint __val1
-    DebugPrint __val0
-
+    Set __tmp1:xRelative+1
+    Set __tmp2:cosineAngle
+    Set __tmp3:cosineAngle+1
+    
+    SMulW32 __tmp0:__tmp1:__tmp2:__tmp3
     Set x2a:__val1
     Set x2a+1:__val2
 
-    Set __tmp1:yRelative+1
     Set __tmp0:yRelative
-    SMulW32 __tmp0:__tmp1:sineAngle:sineAngle+1
+    Set __tmp1:yRelative+1
+    Set __tmp2:sineAngle
+    Set __tmp3:sineAngle+1
+
+    SMulW32 __tmp0:__tmp1:__tmp2:__tmp3
+
     Set y2a:__val1
     Set y2a+1:__val2
 
-    Sub16 x2a:x2a+1:y2a:y2a+1
-    Set x1:__val0
-    Set x1+1:__val1
+    Set __tmp0:x2a
+    Set __tmp1:x2a+1
+    Set __tmp2:y2a
+    Set __tmp3:y2a+1
+    
+    Sub16 __tmp0:__tmp1:__tmp2:__tmp3
+
+    // only care about high byte
+    lda __val1
+    // i do not know why i have to double it, only that it works :(
+    asl     
+    sta x1
 
     // var y2 = x * Math.Sin(angle) + y * Math.Cos(angle);
-    // Set __tmp1:xRelative+1
-    // Set __tmp0:xRelative
-    // SMulW32 __tmp0:__tmp1:sineAngle:sineAngle+1
-    // Set x2a:__val1
-    // Set x2a+1:__val2
+    Set __tmp0:xRelative
+    Set __tmp1:xRelative+1
+    Set __tmp2:sineAngle
+    Set __tmp3:sineAngle+1
 
-    // Set __tmp1:yRelative+1
-    // Set __tmp0:yRelative
-    // SMulW32 __tmp0:__tmp1:cosineAngle:cosineAngle+1
-    // Set y2a:__val1
-    // Set y2a+1:__val2
+    SMulW32 __tmp0:__tmp1:__tmp2:__tmp3
+    Set x2a:__val1
+    Set x2a+1:__val2
 
-    // Add16 x2a:x2a+1:y2a:y2a+1
-    // Set y1:__val0
-    // Set y1+1:__val1
+    Set __tmp0:yRelative
+    Set __tmp1:yRelative+1
+    Set __tmp2:cosineAngle
+    Set __tmp3:cosineAngle+1
+
+    SMulW32 __tmp0:__tmp1:__tmp2:__tmp3
+    Set y2a:__val1
+    Set y2a+1:__val2
+
+    Set __tmp0:x2a
+    Set __tmp1:x2a+1
+    Set __tmp2:y2a
+    Set __tmp3:y2a+1
+
+    Add16 __tmp0:__tmp1:__tmp2:__tmp3
+    // only care about high byte
+    lda __val1
+    asl     
+    sta y1
 
     // convert back to "screen space"
     // use HI bytes
     // x1 + CENTERX
-    lda x1+1
+    lda x1
     clc
     adc #CENTERX
     sta __val0
+
     // CENTERY - y1
     lda #CENTERY
     sec
-    sbc y1+1
+    sbc y1
     sta __val1
 
     rts
@@ -217,8 +217,8 @@ Rotate: {
     x2a: .word 0
     y2a: .word 0
 
-    x1: .word 0
-    y1: .word 0
+    x1: .byte 0
+    y1: .byte 0
 }
 
 // state

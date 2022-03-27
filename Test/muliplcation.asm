@@ -7,8 +7,20 @@ start: {
     //  jsr Test_multiply_8bit_unsigned
     //  jsr Test_multiply_8bit_signed
     // jsr Test_multiply_16bit_unsigned
-    jsr Test_multiply_16bit_signed
+    //jsr Test_multiply_16bit_signed
 
+     // $f000 * $005a
+    Set __tmp0:#$00
+    Set __tmp1:#$f0
+    Set __tmp2:#$5a
+    Set __tmp3:#$00
+    sec
+    jsr multiply_16bit_signed
+
+    DebugPrint __val3
+    DebugPrint __val2
+    DebugPrint __val1
+    DebugPrint __val0
     rts
 }
 

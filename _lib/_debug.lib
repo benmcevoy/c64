@@ -3,6 +3,11 @@
 
 .label ChrOut = $FFD2
 
+.pseudocommand DebugPrintLine {
+    lda #13
+    jsr ChrOut
+} 
+
 /* Print a value to the screen as hex, using the kernal chrout */
 .pseudocommand DebugPrint value {
 
