@@ -17,8 +17,8 @@ BasicUpstart2(Start)
 .const DELAY = 200
 .const AXIS = 8
 .const TRAILS = 12
-.const WIDTH = 40
-.const HEIGHT = 25
+.const WIDTH = 80
+.const HEIGHT = 50
 .const CENTERX = (WIDTH/2)
 .const CENTERY = (HEIGHT/2)
 .const ROTATION_ANGLE_INCREMENT = (TWOPI/AXIS)  
@@ -32,19 +32,19 @@ Start: {
     Set $d020:#BLACK
     Set $d021:#BLACK
 
-    jsr UpdateState
-    rts
+    // jsr UpdateState
+    // rts
 
-    // // start main loop
-    // sei
-    //     lda #<Update            
-    //     sta $0314
-    //     lda #>Update
-    //     sta $0315
-    // cli
+    // start main loop
+    sei
+        lda #<Update            
+        sta $0314
+        lda #>Update
+        sta $0315
+    cli
 
-    // // infinite loop
-    // jmp *
+    // infinite loop
+    jmp *
 }
 
 Update: {
@@ -64,19 +64,104 @@ Update: {
     rti 
 }
 
-UpdateState: {
+Point: {
+    .var time = __arg0
 
-    Set angle:#0
-!loop:
-    Call Rotate:angle:#4:#4
-
-    Call CharScreen.Plot:__val0:__val1
-
-    inc angle
-    bne !loop-
+    // var x = centerX - time * ctx.Size;
+    // Mul16 time:size
+    // __val0 is already set by call to 
+    lda #CENTERX
+    sec
+    sbc time 
+    sta __val0
+    
+    Set __val1:#CENTERY
 
     rts
+}
+
+UpdateState: {
+
+    // clear the sprite data, can i do this in the loop below?
+    /*
+    lda #0
+    Set __ptr0:#>sprite
+    Set __ptr0+1:#<sprite
+    !:
+        sta (__ptr0),Y
+            
+        dey
+        bne !-
+    */
+    Set i:#0
+trails:
+        Call Point:time
+        Set x:__val0
+        Set y:__val1
+        
+        // var a = Math.Cos(t) * ctx.Phase;
+        ldx time
+        lda cosine,X
+        sta angle
+
+        //Call Mult_U8_U16:angle:phase
+        // TODO: yeah not really... result is 16 bit
+        Set angle:__val0
+
+        Set j:#0
+axis:
+            Call Rotate:angle:x:y
+            Set x1:__val0
+            Set y1:__val1
+
+            // Call Wrap:x:x1:#WIDTH
+            // Set x1:__val0
+            // Call Wrap:y:y1:#HEIGHT
+            // Set y1:__val0
+
+            // sprite[Wrap(x1,Sprite.Width), Wrap(y2, Sprite.Height)] = i % Sprite.PaletteLength;
+            // TODO: set the sprite x,y with i % palette
+            // should just Call Plot, but set colour first
+            Set CharScreen.PenColor:i
+            Call CharScreen.PlotH:x1:y1
+                            
+            lda angle
+            clc
+            adc #ROTATION_ANGLE_INCREMENT 
+            sta angle
+        inc j
+        lda j
+        cmp #AXIS
+        bcs !+
+            jmp axis
+        !:
+        dec time
+    inc i
+    lda i
+    cmp #TRAILS
+    bcs exit
+    jmp trails
+
+exit:
+    rts
+
+    rts
+
+    // indexes
+    i: .byte 0
+    j: .byte 0
+    x: .byte 0
+    y: .byte 0
+    x1: .byte 0
+    y1: .byte 0
     angle: .byte 0
+}
+
+.macro DrawWithRot(angle, x, y){
+    Call CharScreen.Plot:#x:#y
+    Call Rotate:angle:#x:#y
+    Call CharScreen.Plot:__val0:__val1
+
 }
 
 /*
