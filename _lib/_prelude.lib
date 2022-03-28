@@ -36,7 +36,7 @@
     sta op
 }
 
-/* @Macro Negate .A two's complement value */
+/* @Command Negate .A two's complement value */
 .pseudocommand NegateA {
     eor #$ff
     clc
@@ -135,7 +135,7 @@
 }
 
 /* 
-Call - invoke subroutine, unused args can be omitted.
+@Command - invoke subroutine, unused args can be omitted.
 Args are managed on the stack.
 Mind your call depth to avoid stack overflow.
 This can have a ~40 cycle overhead.  I should probably get rid of it.

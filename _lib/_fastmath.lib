@@ -1,0 +1,243 @@
+#importonce
+#import "_prelude.lib"
+
+// faster implementations of multiplication, use 2k of lookup tables
+
+/* @Command
+Multiply two unsigned 8 bit numbers, 16 bit unsigned result in __val0 (LO),__val1 (HI)
+From: https://codebase64.org/doku.php?id=base:seriously_fast_multiplication
+*/
+.pseudocommand Mul16 T1:T2 {
+        .var PRODUCT = __val0
+        .var PRODUCTHI = __val1
+
+        bcc !+                                                    
+            lda T1                                                
+            sta sm1+1                                             
+            sta sm3+1                                             
+            eor #$ff                                              
+            sta sm2+1                                             
+            sta sm4+1                                             
+        !:  
+
+        ldx T2 
+        sec   
+sm1:    lda square1.lo,x
+sm2:    sbc square2.lo,x
+        sta PRODUCT   
+sm3:    lda square1.hi,x
+sm4:    sbc square2.hi,x
+        sta PRODUCTHI   
+}
+
+/* @Command
+Multiply two signed bytes, returning a signed 16 result in __val0 (LO),__val1 (HI)
+From: https://codebase64.org/doku.php?id=base:seriously_fast_multiplication
+*/
+.pseudocommand SMul16 T1:T2 {
+    .errorif T1.getType() == AT_IMMEDIATE, "SMul16 does not support IMMEDIATE values. Error in op1."
+    .errorif T2.getType() == AT_IMMEDIATE, "SMul16 does not support IMMEDIATE values. Error in op2."
+
+    .var PRODUCT = __val0
+    .var PRODUCTHI = __val1
+
+    lda T1                                     
+    bpl !+                                     
+        sec                                    
+        lda PRODUCT+1                          
+        sbc T2                                 
+        sta PRODUCT+1                          
+    !:                                          
+    lda T2                                     
+    bpl !+                                     
+        sec                                    
+        lda PRODUCT+1                          
+        sbc T1                                 
+        sta PRODUCT+1                          
+    !: 
+}
+
+/* @Command 
+Multiply two signed words, return 32 bit result in  __val0 (LO) to __val3 (HI). 
+From: https://codebase64.org/doku.php?id=base:seriously_fast_multiplication
+*/
+.pseudocommand SMulW32 T1LO:T1HI:T2LO:T2HI  {
+    .errorif T1LO.getType() == AT_IMMEDIATE, "SMulW32 does not support IMMEDIATE values. Error in op1Lo."
+    .errorif T1HI.getType() == AT_IMMEDIATE, "SMulW32 does not support IMMEDIATE values. Error in op1Hi."
+    .errorif T2LO.getType() == AT_IMMEDIATE, "SMulW32 does not support IMMEDIATE values. Error in op2Lo."
+    .errorif T2HI.getType() == AT_IMMEDIATE, "SMulW32 does not support IMMEDIATE values. Error in op2Hi."
+
+    .var PRODUCTLO1 = __val0
+    .var PRODUCTLO2 = __val1
+    .var PRODUCTHI1 = __val2
+    .var PRODUCTHI2 = __val3
+
+    MulW32 T1LO:T1HI:T2LO:T2HI
+
+    // Apply sign (See C=Hacking16 for details).
+    lda T1HI
+    bpl !+
+        sec
+        lda PRODUCTHI1
+        sbc T2LO
+        sta PRODUCTHI1
+        lda PRODUCTHI2
+        sbc T2HI
+        sta PRODUCTHI2
+    !:
+    lda T2HI
+    bpl !+
+        sec
+        lda PRODUCTHI1
+        sbc T1LO
+        sta PRODUCTHI1
+        lda PRODUCTHI2
+        sbc T1HI
+        sta PRODUCTHI2
+    !:
+}
+
+/* @Command 
+    Multiply two 16 bit values, return 32 bit result in  __val0 (LO) to __val3 (HI).
+    From: https://codebase64.org/doku.php?id=base:seriously_fast_multiplication
+*/
+.pseudocommand MulW32  T1LO:T1HI:T2LO:T2HI {
+    .errorif T1LO.getType() == AT_IMMEDIATE, "MulW32 does not support IMMEDIATE values. Error in op1Lo."
+    .errorif T1HI.getType() == AT_IMMEDIATE, "MulW32 does not support IMMEDIATE values. Error in op1Hi."
+    .errorif T2LO.getType() == AT_IMMEDIATE, "MulW32 does not support IMMEDIATE values. Error in op2Lo."
+    .errorif T2HI.getType() == AT_IMMEDIATE, "MulW32 does not support IMMEDIATE values. Error in op2Hi."
+
+             
+    .var PRODUCTLO1 = __val0
+    .var PRODUCTLO2 = __val1
+    .var PRODUCTHI1 = __val2
+    .var PRODUCTHI2 = __val3
+
+    // Setup T1 if changed
+    bcc !+               
+        lda T1LO        
+        sta sm1a+1       
+        sta sm3a+1       
+        sta sm5a+1       
+        sta sm7a+1       
+        eor #$ff         
+        sta sm2a+1       
+        sta sm4a+1       
+        sta sm6a+1       
+        sta sm8a+1       
+        lda T1HI       
+        sta sm1b+1       
+        sta sm3b+1       
+        sta sm5b+1       
+        sta sm7b+1       
+        eor #$ff         
+        sta sm2b+1       
+        sta sm4b+1       
+        sta sm6b+1       
+        sta sm8b+1       
+    !:                    
+
+    // Perform <T1 * <T2 = AAaa
+    ldx T2LO                  
+    sec                       
+sm1a:           lda square1.lo,x          
+sm2a:           sbc square2.lo,x          
+    sta PRODUCTLO1             
+sm3a:           lda square1.hi,x          
+sm4a:           sbc square2.hi,x          
+    sta _AA+1                 
+
+    // Perform >T1_hi * <T2 = CCcc
+    sec                          
+sm1b:           lda square1.lo,x             
+sm2b:           sbc square2.lo,x             
+    sta _cc+1                    
+sm3b:           lda square1.hi,x             
+sm4b:           sbc square2.hi,x             
+    sta _CC+1                    
+
+    // Perform <T1 * >T2 = BBbb
+    ldx T2HI                 
+    sec                       
+sm5a:           lda square1.lo,x          
+sm6a:           sbc square2.lo,x          
+    sta _bb+1                 
+sm7a:           lda square1.hi,x          
+sm8a:           sbc square2.hi,x          
+    sta _BB+1                 
+
+    // Perform >T1 * >T2 = DDdd
+    sec                       
+sm5b:           lda square1.lo,x          
+sm6b:           sbc square2.lo,x          
+    sta _dd+1                 
+sm7b:           lda square1.hi,x          
+sm8b:           sbc square2.hi,x          
+    sta PRODUCTHI2             
+
+    // Add the separate multiplications together
+    clc                                        
+_AA:            lda #0                                     
+_bb:            adc #0                                     
+    sta PRODUCTLO2                              
+_BB:            lda #0                                     
+_CC:            adc #0                                     
+    sta PRODUCTHI1                             
+    bcc !+                                     
+        inc PRODUCTHI2                          
+        clc                                    
+    !:                                          
+_cc:            lda #0                                     
+    adc PRODUCTLO2                            
+    sta PRODUCTLO2                        
+_dd:            lda #0                                     
+    adc PRODUCTHI1                              
+    sta PRODUCTHI1                      
+    bcc !+                                     
+        inc PRODUCTHI2                          
+    !:  
+}
+
+/* @Command Add two 16 bit words, result in  __val0 (LO),__val1 (HI). */
+.pseudocommand Add16 op1Lo:op1Hi:op2Lo:op2Hi {
+    lda op1Lo
+    clc
+    adc op2Lo
+    sta __val0
+    lda op1Hi
+    adc op2Hi
+    sta __val1
+}
+
+/* @Command Saturate - Extend a byte in place to a two's complement word. */
+.pseudocommand Sat16 lo:hi {
+    .errorif lo.getType() == AT_IMMEDIATE, "Sat16 does not support IMMEDIATE values. Error in lo."
+    .errorif hi.getType() == AT_IMMEDIATE, "Sat16 does not support IMMEDIATE values. Error in hi."
+
+    Set hi:#0
+    lda lo
+    // test the MSB by rotating into .C flag
+    rol
+    bcc !+
+        // add high .byte, sign extension
+        Set hi:#$ff
+    !:
+}
+
+/* @Command Subtract two words,result in  __val0 (LO),__val1 (HI). */
+.pseudocommand Sub16 op1Lo: op1Hi: op2Lo: op2Hi {
+    lda op1Lo
+    sec
+    sbc op2Lo
+    sta __val0
+    lda op1Hi
+    sbc op2Hi
+    sta __val1
+}
+
+
+// TODO: allow tables to be relocatable, somehow...
+*=$2200 "Squares"
+square1: .lohifill 512, ((i*i)/4)
+square2: .lohifill 512, ((i-255)*(i-255)/4)
+
