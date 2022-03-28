@@ -1,11 +1,8 @@
 BasicUpstart2(Start)
 
-// extract player out to an "Agent" struct, with OnUpdate, OnRender, then allow multiple for "enemies" and other things.
 // consider the idea of a z-index, i'd like to see little thing moving in the background.
 // a little dot in the background, bouncing along, reverse direction on collide
 // or a bird flying past in the fore ground.  The "swap" logic in render would allow things to go over/under other things
-// push render to a raster irq?
-// push update to some other raster line irq?
 // multi character "sprites"
 // animation - (new state, duration), new state of the value being animated, maybe state is the pointer to the four characters that make up a "sprite"
 // handle screen edges so we do not need the box around the screen for collisions, give us back 2 cols and 2 rows of screen
@@ -71,6 +68,13 @@ Start: {
         //  - rentrancy or concurrency - CLOBBERING, lol. each worker needs it's own state
         //      is there reentrancy?  on an IRQ the current PC is pushed to the stack, then RTI lets it resume
 
+        // schedule
+        // update
+        // render
+        // cleanup
+
+
+
     // infinite loop
     jmp loop
 }
@@ -102,7 +106,6 @@ DrawGameField: {
     Set CharScreen.Character:#GROUND_CHAR
     Set CharScreen.PenColor:#GROUND_COLOR    
     Call CharScreen.PlotRect:#0:#0:#39:#24
-    //Call CharScreen.PlotLine:#0:#24:#39:#24
 
     Call CharScreen.PlotLine:#30:#20:#38:#20
     Call CharScreen.PlotLine:#20:#16:#30:#16
