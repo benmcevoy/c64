@@ -41,10 +41,14 @@ Start: {
     Set $d021:#BLACK
 
     Set phase:#0
-    Set phase+1:#12
+    Set phase+1:#0
 
     loop:
         inc time
+        // inc phase
+        // bcc !+
+        //     inc phase+1
+        // !:
         jsr UpdateState
     jmp loop
 }
@@ -60,9 +64,9 @@ UpdateState: {
         Set x:__val0
         Set y:#CENTERY
 
-        Wrap x0:x:#WIDTH
+        Wrap x0:x:#CENTERX
         Set x:__val0
-        Wrap y0:y:#HEIGHT
+        Wrap y0:y:#CENTERY
         Set y:__val0
 
         Set x0:x
@@ -75,7 +79,7 @@ UpdateState: {
 
         Sat16 angle:angle+1
         SMulW32 angle:angle+1:phase:phase+1
-        Set angle:__val1
+        Set angle:__val2
 
         Set j:#0
 
@@ -84,13 +88,10 @@ UpdateState: {
             Set x1:__val0
             Set y1:__val1
 
-            lda x1
-            sta $c000
-            lda y1
-            sta $c001
-
-            // sprite[Wrap(x1,Sprite.Width), Wrap(y2, Sprite.Height)] = i % Sprite.PaletteLength;
-            Set CharScreen.PenColor:i
+            ldx i
+            lda palette,x
+            sta CharScreen.PenColor
+                        
             #if HIRES
                 Call CharScreen.PlotH:x1:y1
             #else
@@ -130,22 +131,15 @@ exit:
 }
 
 Point: {
-
-    lda time
-    //lsr;
-    sta t
-
     lda #CENTERX
     sec
-    sbc t
+    sbc time
     sta __val0
     
     rts
-    t: .byte 0
 }
 
 .pseudocommand Rotate angle:x:y{
-
     // xRelative is signed and relative to the origin at (CENTERX, CENTERY)
     lda x
     sec
@@ -229,7 +223,7 @@ Point: {
     Add16 __tmp0:__tmp1:__tmp2:__tmp3
     // only care about high byte
     lda __val1
-   // asl     
+    //asl     
     sta y1
 
     // convert back to "screen space"
@@ -243,9 +237,6 @@ Point: {
     sec
     sbc y1
     sta __val1
-
-    
-
 }
     // relative to origin at centerx,y
     xRelative: .word 0
@@ -300,6 +291,11 @@ Point: {
 // state
 time: .byte 0
 phase: .word 0
+
+// WIP, ok for the now
+palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03
+//palette: .byte $06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03
+ 
 
 *=$0900 "Signed trig tables"
 // values range -127..127  

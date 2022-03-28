@@ -198,44 +198,6 @@ _dd:            lda #0
     !:  
 }
 
-/* @Command Add two 16 bit words, result in  __val0 (LO),__val1 (HI). */
-.pseudocommand Add16 op1Lo:op1Hi:op2Lo:op2Hi {
-    lda op1Lo
-    clc
-    adc op2Lo
-    sta __val0
-    lda op1Hi
-    adc op2Hi
-    sta __val1
-}
-
-/* @Command Saturate - Extend a byte in place to a two's complement word. */
-.pseudocommand Sat16 lo:hi {
-    .errorif lo.getType() == AT_IMMEDIATE, "Sat16 does not support IMMEDIATE values. Error in lo."
-    .errorif hi.getType() == AT_IMMEDIATE, "Sat16 does not support IMMEDIATE values. Error in hi."
-
-    Set hi:#0
-    lda lo
-    // test the MSB by rotating into .C flag
-    rol
-    bcc !+
-        // add high .byte, sign extension
-        Set hi:#$ff
-    !:
-}
-
-/* @Command Subtract two words,result in  __val0 (LO),__val1 (HI). */
-.pseudocommand Sub16 op1Lo: op1Hi: op2Lo: op2Hi {
-    lda op1Lo
-    sec
-    sbc op2Lo
-    sta __val0
-    lda op1Hi
-    sbc op2Hi
-    sta __val1
-}
-
-
 // TODO: allow tables to be relocatable, somehow...
 *=$2200 "Squares"
 square1: .lohifill 512, ((i*i)/4)
