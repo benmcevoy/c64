@@ -227,9 +227,9 @@ ClearTrail: {
     Call CharScreen.PlotH:x:y
 
     rts
-        x: .byte 0
+    x: .byte 0
     y: .byte 0
-        j: .byte 1
+    j: .byte 1
 }
 
 
