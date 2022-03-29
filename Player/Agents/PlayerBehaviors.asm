@@ -33,10 +33,9 @@
             !:
 
             // dx*=friction
-            // TODO: why not work?
-            // Sat16 dx: dHi
-            // SMulW32 dx:dHi:friction:friction+1
-            // Set dx:__val1
+            Sat16 dx: dHi
+            SMulW32 dx:dHi:friction:friction+1
+            Set dx:__val1
 
             // update position
             // y + dy

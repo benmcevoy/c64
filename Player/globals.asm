@@ -1,6 +1,6 @@
 #importonce
 
-//#define FASTMATH
+#define FASTMATH
 
 .const GRAVITY = 2
 .const IMPULSE = -72
