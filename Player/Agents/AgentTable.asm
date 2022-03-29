@@ -16,8 +16,8 @@
 
     Player:{
         destroyed: .byte 0
-        x: .word 20
-        y: .word 2
+        x: .word $1400
+        y: .word $0200
         z: .byte 0
         dx: .byte 0
         dy: .byte 0
@@ -32,9 +32,9 @@
     }
 
     NPC1:{
-        destroyed: .byte 0
-        x: .word 10
-        y: .word 2
+        destroyed: .byte 1
+        x: .word $0a00
+        y: .word $0200
         z: .byte 0
         dx: .byte 0
         dy: .byte 0

@@ -104,11 +104,12 @@ GameUpdate: {
         // StoreInitialPos
         lda y; sta y0
         lda x; sta x0
-        
+        Set $d020:#WHITE
         jsr ReadJoystick
         jsr UpdatePos
         jsr CheckCollisions
         jsr Render
+        Set $d020:#BLACK
     !:
 
     // end irq

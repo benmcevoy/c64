@@ -1,7 +1,7 @@
 #importonce
+#import "../globals.asm"
 #import "_prelude.lib"
 #import "_charscreen.lib"
-#import "../globals.asm"
 #import "Agent.asm"
 
 .namespace Agent{
@@ -16,26 +16,26 @@
             Get(Agent.glyph, glyph)
             Get(Agent.color, color)
             
-            lda x0
-            cmp x
+            lda x0+1
+            cmp x+1
             bne swap
-            lda y0
-            cmp y
+            lda y0+1
+            cmp y+1
             bne swap
             jmp draw
-            
+
         swap:    
             Set CharScreen.PenColor:bgColor
             Set CharScreen.Character:bgGlyph
-            Call CharScreen.Plot:x0:y0
+            Call CharScreen.Plot:x0+1:y0+1
 
-            Call CharScreen.Read:x:y
+            Call CharScreen.Read:x+1:y+1
             Set(Agent.bgGlyph, __val0)
             Set(Agent.bgColor, __val1)
         draw:
             Set CharScreen.Character:glyph
             Set CharScreen.PenColor:color
-            Call CharScreen.Plot:x:y
+            Call CharScreen.Plot:x+1:y+1
         end:
             
             rts

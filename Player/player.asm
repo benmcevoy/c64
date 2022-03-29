@@ -6,10 +6,9 @@ BasicUpstart2(Start)
 // multi character "sprites"
 // animation - (new state, duration), new state of the value being animated, maybe state is the pointer to the four characters that make up a "sprite"
 // handle screen edges so we do not need the box around the screen for collisions, give us back 2 cols and 2 rows of screen
-
+#import "globals.asm"
 #import "_prelude.lib"
 #import "_charscreen.lib"
-#import "globals.asm"
 #import "./Agents/Agent.asm"
 #import "./Backgrounds/weave.asm"
 //#import "./Backgrounds/honeycomb.asm"
@@ -18,7 +17,6 @@ BasicUpstart2(Start)
 //#import "./Backgrounds/clouds.asm"
 
 Start: {
-    // KERNAL clear screen
     jsr Kernal.ClearScreen
 
     Call Background.Draw
@@ -73,13 +71,15 @@ Start: {
         // render
         // cleanup
 
-
+        // the version player9 has a nice feel, i think because it updates on the cia timer instead, seems like it is updating more than 50 fps
+        // also the jump speed is half
 
     // infinite loop
     jmp loop
 }
 
 GameUpdate: {
+    
     // ack irq
     lda    #$01
     sta    $d019
@@ -90,7 +90,7 @@ GameUpdate: {
     // - set border color change for some perf indicator
     Set $d020:#WHITE
     Call UpdateAgents
-
+         
     Set $d020:#GREEN
     Call RenderAgents
     

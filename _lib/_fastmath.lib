@@ -106,7 +106,6 @@ From: https://codebase64.org/doku.php?id=base:seriously_fast_multiplication
     .errorif T1HI.getType() == AT_IMMEDIATE, "MulW32 does not support IMMEDIATE values. Error in op1Hi."
     .errorif T2LO.getType() == AT_IMMEDIATE, "MulW32 does not support IMMEDIATE values. Error in op2Lo."
     .errorif T2HI.getType() == AT_IMMEDIATE, "MulW32 does not support IMMEDIATE values. Error in op2Hi."
-
              
     .var PRODUCTLO1 = __val0
     .var PRODUCTLO2 = __val1

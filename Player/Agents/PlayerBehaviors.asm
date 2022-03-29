@@ -1,24 +1,30 @@
 #importonce
 #import "_prelude.lib"
-#import "../globals.asm"
-#import "Agent.asm"
 #import "_joystick.lib"
+#import "_math.lib"
+#import "Agent.asm"
+#import "../globals.asm"
 
 .namespace Agent{
     .namespace PlayerBehaviors {
-        Update: {
-            Call ReadJoystick
+        // signed, but positive only as negative friction is what now? 
+        // 64 is halving
+        friction: .word $0080
 
+        Update: {
+            jsr ReadJoystick
+  
             GetW(Agent.x, x)
             GetW(Agent.y, y)
             Get(Agent.dx, dx)
             Get(Agent.dy, dy)
 
             // StoreInitialPos
-            lda y; sta y0
-            lda x; sta x0
+            lda y+1; sta y0+1
+            lda x+1; sta x0+1
 
             // dy is signed and must be clamped to prevent overflow, or suddenly switching from +ve to -ve
+            // dy+=gravity
             lda dy
             clc
             adc #GRAVITY
@@ -26,29 +32,24 @@
                 sta dy
             !:
 
-            Sat16 dy: dHi
+            // dx*=friction
+            // TODO: why not work?
+            // Sat16 dx: dHi
+            // SMulW32 dx:dHi:friction:friction+1
+            // Set dx:__val1
 
+            // update position
             // y + dy
-            // add low .bytes
-            // TODO: looks abit wrong? big-endian?
-            lda y+1
-            clc
-            adc dy
-            sta y+1
-            lda y
-            adc dHi
-            sta y
-
-            Sat16 dx: dHi
+            Sat16 dy: dHi
+            Add16 y:y+1:dy:dHi
+            Set y:__val0
+            Set y+1:__val1
 
             // x + dx
-            lda x+1
-            clc
-            adc dx
-            sta x+1
-            lda x
-            adc dHi
-            sta x
+            Sat16 dx: dHi
+            Add16 x:x+1:dx:dHi
+            Set x:__val0
+            Set x+1:__val1
 
             Set(Agent.dx, dx)
             Set(Agent.dy, dy)
@@ -201,11 +202,11 @@
             GetW(Agent.y, y)
             GetW(Agent.x0, x0)
             GetW(Agent.y0, y0)
-            Get(Agent.dx, dx)
+            //Get(Agent.dx, dx)
             Get(Agent.dy, dy)
 
             // what direction?
-            Call CharScreen.Read:x:y
+            Call CharScreen.Read:x+1:y+1
             lda __val0
             cmp #GROUND_CHAR
             bne !skip+
@@ -214,7 +215,7 @@
                 SetW(Agent.y, y0)
 
                 // kill horizontal movement
-                Set dx:#0
+                //Set dx:#0
                 
                 // only allow jump if we collided DOWN
                 lda dy
@@ -231,7 +232,7 @@
                 // kill vertical
                 Set dy:#0
                 
-                Set(Agent.dx, dx)
+                //Set(Agent.dx, dx)
                 Set(Agent.dy, dy)    
 
                 Set __val0:#ACTION_HANDLED
