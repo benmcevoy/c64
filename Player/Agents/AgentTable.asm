@@ -23,12 +23,12 @@
         dy: .byte 0
         Update: .word PlayerBehaviors.Update 
         Render: .word AgentBehaviors.DefaultRender 
-        glyph: .byte 81 // ball
+        glyph: .byte 93 // vertical bar
         color: .byte WHITE
         x0: .word 0
         y0: .word 0
-        bgGlyph: .byte 32
-        bgColor: .byte 0
+        bgGlyph: .byte 81
+        bgColor: .byte GRAY
     }
 
     NPC1:{

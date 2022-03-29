@@ -88,14 +88,14 @@ GameUpdate: {
     sta    $d012
 
     // - set border color change for some perf indicator
-    Set $d020:#WHITE
+    //Set $d020:#WHITE
     Call UpdateAgents
          
-    Set $d020:#GREEN
+    //Set $d020:#GREEN
     Call RenderAgents
     
     // - set border color change for some perf indicator
-    Set $d020:#BLACK
+    //Set $d020:#BLACK
 
     // end irq
     pla;tay;pla;tax;pla
