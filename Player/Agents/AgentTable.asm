@@ -31,7 +31,7 @@
         bgColor: .byte GRAY
     }
 
-    NPC1:{
+    PlayerGadget:{
         destroyed: .byte 1
         x: .word $0a00
         y: .word $0200
@@ -40,7 +40,7 @@
         dy: .byte 0
         Update: .word AgentBehaviors.NoOperation 
         Render: .word AgentBehaviors.DefaultRender 
-        glyph: .byte 81 // ball
+        glyph: .byte 36 // .
         color: .byte GREEN
         x0: .word 0
         y0: .word 0

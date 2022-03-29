@@ -15,13 +15,19 @@
         .const ACTION_COLLIDED_DOWN     = %00000010
         .const ACTION_COLLIDED_LEFT     = %00000100
         .const ACTION_COLLIDED_RIGHT    = %00001000
-        .const ACTION_IS_FIRING         = %00010000
+        .const ACTION_PRESSED_BUTTON    = %00010000
+
         .const ACTION_IS_JUMPING        = %00100000
+        .const ACTION_IS_SHOOTING        = %01000000
         // default state for the above flags
         playerAction: .byte %00100000        
         // signed, but positive only as negative friction is what now? 
         // 64 is halving
         friction: .word $007c
+
+        .const LEFTGLYPH = 79
+        .const RIGHTGLYPH = 80
+        .const STILLGLYPH = 93
 
         Update: {
             jsr ReadJoystick
@@ -36,7 +42,7 @@
             lda y+1; sta y0+1
             lda x+1; sta x0+1
 
-            // dy is signed and must be clamped to prevent overflow, or suddenly switching from +ve to -ve
+            // dy is signed and must be clamped to prevent overflow,
             // dy+=gravity
             lda dy
             clc
@@ -58,7 +64,7 @@
             lda dx
             cmp #0
             bne !+
-                Set glyph:#93
+                Set glyph:#STILLGLYPH
             !:
 
             // update position
@@ -82,7 +88,7 @@
             SetW(Agent.y0, y0)
             Set(Agent.glyph, glyph) 
 
-            Call CollisionImmediate
+            jsr Collision
 
             rts
             dHi: .byte 0
@@ -119,7 +125,7 @@
                 !skip:
                     sta dx
 
-                Set glyph:#79
+                Set glyph:#LEFTGLYPH
             !:
 
             lda #Joystick.RIGHT
@@ -133,7 +139,13 @@
                     lda #MAX_DX                
                 !skip:
                     sta dx
-                Set glyph:#80
+                Set glyph:#RIGHTGLYPH
+            !:
+
+            lda #Joystick.FIRE
+            bit playerAction 
+            beq !+
+                SetBit playerAction:#ACTION_PRESSED_BUTTON
             !:
 
             lda #ACTION_IS_JUMPING
@@ -158,89 +170,7 @@
             glyph: .byte 0
         }
 
-        CollisionCastRay: {
-            GetW(Agent.x, x)
-            GetW(Agent.y, y)
-            GetW(Agent.x0, x0)
-            GetW(Agent.y0, y0)
-            Get(Agent.dx, dx)
-            Get(Agent.dy, dy)
-            
-            Set __ptr0:#<(checkCollision)
-            Set __ptr0+1:#>(checkCollision)
-            
-            // this is the most expensive collision check
-            Call CharScreen.CastRay:x0:y0:x:y
-
-            Set(Agent.dx, dx)
-            Set(Agent.dy, dy)
-            SetW(Agent.x, x)
-            SetW(Agent.y, y)
-
-            rts
-
-            checkCollision:{
-                .var xRay = __arg0
-                .var yRay = __arg1
-                .var xPrev = __arg2
-                .var yPrev = __arg3
-
-                Call CharScreen.Read:xRay:yRay
-
-                lda __val0
-                cmp #GROUND_CHAR
-                bne !skip+
-                    // set player back to position before collision
-                    Set x:xPrev
-                    Set y:yPrev
-
-                    // what direction was collision?
-                    lda dx
-                    cmp #0
-                    bmi setLeft
-                    bpl setRight
-
-                    setLeft: 
-                        Set dx:#0
-                        jmp end_h
-                    setRight: 
-                        Set dx:#0
-                    end_h:
-
-                    lda dy
-                    cmp #0
-                    bmi setUp
-                    bpl setDown
-
-                    setUp: 
-                        Set dy:#0
-                        jmp end_v
-                    setDown: 
-                        Set dy:#0
-                        // allow jump
-                        lda playerAction
-                        and #~ACTION_IS_JUMPING
-                        sta playerAction
-                    end_v:
-                    
-                    Set __val0:#ACTION_HANDLED
-                    rts
-                !skip:
-                
-                Set __val0:#0
-                
-                rts
-            }
-
-            dy: .byte 0
-            dx: .byte 0
-            x0: .word 0
-            y0: .word 0
-            x: .word 0
-            y: .word 0
-        }
-
-        CollisionImmediate: {
+        Collision: {
             // very cheap and fast
             // falls off the ceiling, but sticks to the walls
             GetW(Agent.x, x)

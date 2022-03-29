@@ -58,7 +58,7 @@ Start: {
         // is to have a flag that toggles the next piece of work between Update/Render
         // so each subroutine gets a full frame each
         // raster IRQ is 50Hz for PAL, so you are getting 25fps which is OK
-        // this coould be extended to interleave things, e.g. Render every 2nd frame, but the odd frames can be distributed amongst other things?
+        // this could be extended to interleave things, e.g. Render every 2nd frame, but the odd frames can be distributed amongst other things?
         // might do a little reading on scheduling in an OS.
         // consider
         //  - priority
@@ -79,7 +79,6 @@ Start: {
 }
 
 GameUpdate: {
-    
     // ack irq
     lda    #$01
     sta    $d019
