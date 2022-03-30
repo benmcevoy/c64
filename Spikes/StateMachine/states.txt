@@ -176,6 +176,22 @@ Left:
 and so on.
 
 
+It worked out OK so far.
+
+Player states
+
+Currently
+
+Idle:
+
+MoveLeft:
+MoveRight:
+Jump:
+
+those last three... not really a state are they?
+
+Moving:  or Runnning, Sliding, verbing....
+Jumping:  and potentially falling, but who cares.
 
 
 

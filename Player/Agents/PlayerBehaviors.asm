@@ -8,15 +8,10 @@
 .namespace Agent{
     .namespace PlayerBehaviors {
         .const JERK = -72
-        .const ACCELERATION = 60
-        .const MAX_DX = 60
-        // friction is a signed word, fixed point, so low byte only, $00..$7f
-        // the higher friction is the less effect it has
-        .const FRICTION = $0060
+        .const SPEED = 80
         .const LEFTGLYPH = 79
         .const RIGHTGLYPH = 80
         .const IDLEGLYPH = 93
-
         .const ACTION_PRESSED_BUTTON    = %00010000
         .const ACTION_IS_JUMPING        = %00100000
 
@@ -32,7 +27,7 @@
             jsr UpdatePhysics
             jsr ReadJoystick
 
-            Call Agent.Invoke:#Agent.CurrentState
+            AgentInvoke(Agent.CurrentState)
 
             jsr UpdatePosition
             jsr Collision
@@ -48,25 +43,6 @@
             rts
         }
 
-        Idle: {
-            Set _glyph:#IDLEGLYPH
-            rts
-        }
-
-        MoveLeft: {
-            Set _glyph:#LEFTGLYPH
-            rts
-        }
-
-        MoveRight: {
-            Set _glyph:#RIGHTGLYPH
-            rts
-        }
-
-        Jump: {
-            rts
-        }
-
         UpdatePhysics: {
             // dy is signed and must be clamped to prevent overflow,
             // dy+=gravity
@@ -77,50 +53,7 @@
                 sta _dy
             !:
 
-            // // dx*=friction, no friction when jumping
-            // lda #ACTION_IS_JUMPING
-            // bit playerAction
-            // beq !+
-            //     jmp cont
-            // !: 
-            //     Sat16 dx: dHi
-            //     SMulW32 dx:dHi:friction:friction+1
-            //     Set dx:__val1
-                
-            //     // snap dx to zero when close to zero
-            //     lda dx
-            //     bpl !+
-            //         NegateA
-            //     !:
-            //     cmp #5
-            //     bcs !+
-            //         Set dx:#0
-            //     !:
-            // cont:
-
             rts
-        }
-
-        UpdatePosition: {
-            // StoreInitialPos
-            Set _x0+1:_x+1
-            Set _y0+1:_y+1
-
-            // update position
-            // y + dy
-            Sat16 _dy: dHi
-            Add16 _y:_y+1:_dy:dHi
-            Set _y:__val0
-            Set _y+1:__val1
-
-            // x + dx
-            Sat16 _dx: dHi
-            Add16 _x:_x+1:_dx:dHi
-            Set _x:__val0
-            Set _x+1:__val1
-
-            rts
-            dHi: .byte 0
         }
 
         // read joystick and update dx,dy and current state
@@ -137,37 +70,15 @@
             lda #Joystick.LEFT
             bit _playerAction 
             beq !+
-                lda _dx
-                sec
-                sbc #ACCELERATION
-                cmp #-MAX_DX
-                bpl !skip+
-                    lda #-MAX_DX                
-                !skip:
-                    sta _dx
-
-                SetPtr(Agent.CurrentState, MoveLeft)
+                Set _dx:#-SPEED
+                SetPtr(Agent.CurrentState, Running)
             !:
 
             lda #Joystick.RIGHT
             bit _playerAction 
             beq !+
-                lda _dx
-                clc
-                adc #ACCELERATION
-                cmp #MAX_DX
-                bmi !skip+
-                    lda #MAX_DX                
-                !skip:
-                    sta _dx
-
-                SetPtr(Agent.CurrentState, MoveRight)
-            !:
-
-            lda #Joystick.FIRE
-            bit _playerAction 
-            beq !+
-                SetBit _playerAction:#ACTION_PRESSED_BUTTON
+                Set _dx:#SPEED
+                SetPtr(Agent.CurrentState, Running)
             !:
 
             lda #ACTION_IS_JUMPING
@@ -178,50 +89,113 @@
                 beq !+
                     Set _dy:#JERK
                     SetBit _playerAction:#ACTION_IS_JUMPING
-                    SetPtr(Agent.CurrentState, Jump)
+                    SetPtr(Agent.CurrentState, Jumping)
                 !:
             !skip:
+
+            rts
+        }        
+
+        Idle: {
+            Set _glyph:#IDLEGLYPH
+            rts
+        }
+
+        Running: {
+            lda #128
+            bit _dx
+            beq !+
+                Set _glyph:#LEFTGLYPH   
+                rts
+            !:
+                Set _glyph:#RIGHTGLYPH
+                
+            rts
+        }
+
+        Jumping: {
+            rts
+        }
+
+        UpdatePosition: {
+            // StoreInitialPos
+            Set _x0+1:_x+1
+            Set _y0+1:_y+1
+
+            // update position
+            // y + dy
+            Sat16 _dy: _dHi
+            Add16 _y:_y+1:_dy:_dHi
+            Set _y:__val0
+            Set _y+1:__val1
+
+            // x + dx
+            Sat16 _dx: _dHi
+            Add16 _x:_x+1:_dx:_dHi
+            Set _x:__val0
+            Set _x+1:__val1
 
             rts
         }
 
         Collision: {
-            // very cheap and fast
-            // falls off the ceiling, but sticks to the walls
-            // what direction?
-            Call CharScreen.Read:_x+1:_y+1
-            lda __val0
-            cmp #GROUND_CHAR
-            bne !skip+
-                // set player back to position before collision
-                Set _x:_x0
-                Set _x+1:_x0+1
-                Set _y:_y0
-                Set _y+1:_y0+1
-               
-                // kill horizontal
-                // TODO: interplay with friciton, which is currently disabled
-                Set _dx:#0
+            lda _dx
+            cmp #0
+            bmi checkLeft
+            bpl checkRight
 
-                // only allow jump if we collided DOWN
-                lda _dy
-                cmp #0
-                bmi end_v
-                    setDown: 
-                        // allow jump
-                        lda _playerAction
-                        // notice ~ negate
-                        and #~ACTION_IS_JUMPING
-                        sta _playerAction
-                end_v:
+            checkLeft: 
+                Call CharScreen.Read:_x+1:_y+1
+                lda __val0
+                cmp #GROUND_CHAR
+                bne !skip+
+                    Set _x:_x0
+                    Set _x+1:_x0+1
+                    Set _dx:#0
+                !skip:
+                    jmp end_h
 
-                // kill vertical
-                Set _dy:#0
+            checkRight: 
+                Call CharScreen.Read:_x+1:_y+1
+                lda __val0
+                cmp #GROUND_CHAR
+                bne !skip+
+                    Set _x:_x0
+                    Set _x+1:_x0+1
+                    Set _dx:#0
+                !skip:
+            end_h:
 
-                Set __val0:#ACTION_HANDLED
-                rts
-            !skip:
-                Set __val0:#0
+            lda _dy
+            cmp #0
+            bmi checkUp
+            bpl checkDown
+
+            checkUp: 
+                Call CharScreen.Read:_x+1:_y+1
+                lda __val0
+                cmp #GROUND_CHAR
+                bne !skip+
+                    Set _y:_y0
+                    Set _y+1:_y0+1
+                    Set _dy:#0
+                !skip:   
+                    jmp end_v
+
+            checkDown: 
+                Call CharScreen.Read:_x+1:_y+1
+                lda __val0
+                cmp #GROUND_CHAR
+                bne end_v
+                    Set _y:_y0
+                    Set _y+1:_y0+1
+                    Set _dy:#0
+                    // allow jump
+                    lda _playerAction
+                    and #~ACTION_IS_JUMPING
+                    sta _playerAction
+            end_v:
+
             rts
          }
 
@@ -237,5 +211,6 @@
         _glyph: .byte 0
         // default state for the action flags
         _playerAction: .byte %00100000        
+        _dHi: .byte 0
     }
 }

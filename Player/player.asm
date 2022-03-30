@@ -87,14 +87,14 @@ GameUpdate: {
     sta    $d012
 
     // - set border color change for some perf indicator
-    //Set $d020:#WHITE
-    Call UpdateAgents
+    Set $d020:#WHITE
+    jsr UpdateAgents
          
-    //Set $d020:#GREEN
-    Call RenderAgents
+    Set $d020:#GREEN
+    jsr RenderAgents
     
     // - set border color change for some perf indicator
-    //Set $d020:#BLACK
+    Set $d020:#BLACK
 
     // end irq
     pla;tay;pla;tax;pla
@@ -133,13 +133,13 @@ UpdateAgents: {
             jmp exit
         !:
     
-        Call Agent.SetCurrentObject:index
-        Call Agent.IsDestroyed
+        AgentSetCurrent(index)
+        AgentIsDestroyed()
         lda __val0
         cmp #0
         bne loop
 
-        Call Agent.Invoke:#Agent.Update
+        AgentInvoke(Agent.Update)
 
         jmp loop
 
@@ -162,13 +162,13 @@ RenderAgents: {
             jmp exit
         !:
 
-        Call Agent.SetCurrentObject:index
-        Call Agent.IsDestroyed
+        AgentSetCurrent(index)
+        AgentIsDestroyed()
         lda __val0
         cmp #0 
         bne loop
         
-        Call Agent.Invoke:#Agent.Render
+        AgentInvoke(Agent.Render)
         jmp loop
 
     exit:    

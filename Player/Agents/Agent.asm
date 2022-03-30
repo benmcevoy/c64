@@ -31,14 +31,13 @@
     /* Current object */
     .label Current = __ptr3
 
-    /* @Call
+    /* @Macro @global
         Invoke method on Current object
     */
-    Invoke: {
-        .var field = __arg0
+    .macro @AgentInvoke(field){
         .var __methodPtr = __ptr1
     
-        ldy field
+        ldy #field
         lda (Current),Y
         sta __methodPtr
         iny
@@ -46,24 +45,19 @@
         sta __methodPtr + 1
 
         Call (__methodPtr)
-
-        rts
     }
 
-    /* @Call
+    /* @Macro @global
        Is Current object destroyed?
     */
-    IsDestroyed: {
+    .macro @AgentIsDestroyed() {
         Get(Agent.destroyed, __val0)
-        rts
     }
     
-    /* @Call
+    /* @Macro @global
        Set Current object via index
     */
-    SetCurrentObject: {
-        .var index = __arg0
-
+    .macro @AgentSetCurrent(index) {
         // calculate object pointer, offset by index*2 (2 bytes)
         lda index
         asl // *2
@@ -74,8 +68,6 @@
         inx
         lda __agents,x
         sta Current+1
-
-        rts
     }
 
     /* @Macro
