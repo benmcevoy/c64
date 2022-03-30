@@ -29,6 +29,7 @@
         y0: .word 0
         bgGlyph: .byte 81
         bgColor: .byte GRAY
+        CurrentState: .word PlayerBehaviors.Idle
     }
 
     PlayerGadget:{
@@ -46,5 +47,7 @@
         y0: .word 0
         bgGlyph: .byte 32
         bgColor: .byte 0
+        CurrentState: .word AgentBehaviors.NoOperation
+
     }
 }

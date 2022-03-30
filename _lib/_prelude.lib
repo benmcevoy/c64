@@ -154,7 +154,7 @@ This can have a ~40 cycle overhead.  I should probably get rid of it.
         lda #>!+;pha
         lda #<!+;pha
         jmp subroutine
-        !:rts
+        !:nop
     }
     
     .if(subroutine.getType() == AT_ABSOLUTE) {
