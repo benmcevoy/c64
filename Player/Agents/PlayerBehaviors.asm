@@ -8,22 +8,23 @@
 .namespace Agent{
     .namespace PlayerBehaviors {
         .const JERK = -72
-        .const ACCELERATION = 10
+        .const ACCELERATION = 60
         .const MAX_DX = 60
-        // similar to joystick flags
+        // similar to joystick flags, updated each time to reflect joystick
         .const ACTION_COLLIDED_UP       = %00000001
         .const ACTION_COLLIDED_DOWN     = %00000010
         .const ACTION_COLLIDED_LEFT     = %00000100
         .const ACTION_COLLIDED_RIGHT    = %00001000
         .const ACTION_PRESSED_BUTTON    = %00010000
 
+        // the high three bits are preserved during update
         .const ACTION_IS_JUMPING        = %00100000
-        .const ACTION_IS_SHOOTING        = %01000000
+        .const ACTION_IS_SHOOTING       = %01000000
         // default state for the above flags
         playerAction: .byte %00100000        
-        // signed, but positive only as negative friction is what now? 
-        // 64 is halving
-        friction: .word $007c
+        // friction is a signed word, fixed point, so low byte only, $00..$7f
+        // the higher friction is the less effect it has
+        friction: .word $0060
 
         .const LEFTGLYPH = 79
         .const RIGHTGLYPH = 80
@@ -31,7 +32,7 @@
 
         Update: {
             jsr ReadJoystick
-  
+
             GetW(Agent.x, x)
             GetW(Agent.y, y)
             Get(Agent.dx, dx)
@@ -51,15 +52,26 @@
                 sta dy
             !:
 
-            // dx*=friction, no friction when jumping
-            lda #ACTION_IS_JUMPING
-            bit playerAction
-            beq !+
-            !: jmp cont
-                Sat16 dx: dHi
-                SMulW32 dx:dHi:friction:friction+1
-                Set dx:__val1
-            cont:
+            // // dx*=friction, no friction when jumping
+            // lda #ACTION_IS_JUMPING
+            // bit playerAction
+            // beq !+
+            //     jmp cont
+            // !: 
+            //     Sat16 dx: dHi
+            //     SMulW32 dx:dHi:friction:friction+1
+            //     Set dx:__val1
+                
+            //     // snap dx to zero when close to zero
+            //     lda dx
+            //     bpl !+
+            //         NegateA
+            //     !:
+            //     cmp #5
+            //     bcs !+
+            //         Set dx:#0
+            //     !:
+            // cont:
 
             lda dx
             cmp #0
@@ -188,10 +200,11 @@
                 // set player back to position before collision
                 SetW(Agent.x, x0)
                 SetW(Agent.y, y0)
-
-                // kill horizontal movement
+               
+                // kill horizontal
+                // TODO: interplay with friciton, which is currently disabled
                 Set dx:#0
-                
+
                 // only allow jump if we collided DOWN
                 lda dy
                 cmp #0
@@ -206,8 +219,7 @@
 
                 // kill vertical
                 Set dy:#0
-                
-                Set(Agent.dx, dx)
+                Set(Agent.dx, dx)   
                 Set(Agent.dy, dy)   
 
                 Set __val0:#ACTION_HANDLED
