@@ -70,14 +70,28 @@
             lda #Joystick.LEFT
             bit _playerAction 
             beq !+
-                Set _dx:#-SPEED
+                lda #ACTION_IS_JUMPING
+                bit _playerAction
+                beq !skip+
+                    Set _dx:#-SPEED/2
+                    jmp !done+
+                !skip:
+                    Set _dx:#-SPEED
+                !done:
                 SetPtr(Agent.CurrentState, Running)
             !:
 
             lda #Joystick.RIGHT
             bit _playerAction 
             beq !+
-                Set _dx:#SPEED
+                lda #ACTION_IS_JUMPING
+                bit _playerAction
+                beq !skip+
+                    Set _dx:#SPEED/2
+                    jmp !done+
+                !skip:
+                    Set _dx:#SPEED
+                !done:
                 SetPtr(Agent.CurrentState, Running)
             !:
 
@@ -200,8 +214,6 @@
          }
 
          // current player state.  
-         // TODO: pity i have to do memcpy, still trying to have an epiphany to get rid of it
-         // the state looks like it is going to migrate from the Agent to here, at least for player.
         _dy: .byte 0
         _dx: .byte 0
         _x0: .word 0
