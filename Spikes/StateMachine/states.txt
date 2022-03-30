@@ -1,0 +1,185 @@
+﻿grapple gun
+
+playerGadget
+
+ON FIRE:
+- on fire, get the direction
+- stop updating the player, start moving towards tagetx,y
+- spawn a "bullet" with correct dx,dy, x,y etc set, will be moving in the direction fired
+- when we hit targetx,y clear that and let player update again
+
+BULLET
+Update:
+ - move
+ - check collision, if collided destroy self
+ - set player targetX,y as collision x,y (previous one)
+Render:
+ - just a dot for now
+
+
+
+cmp STATE
+bne nextstate
+
+bloke on reddit
+stores the states in a table
+
+on update does a 
+
+jsr state
+
+in the state:
+
+pushes jmp's to an absolute location
+but pushes the return address onto the stack
+then calls RTS
+which actually returns to the pushed vector
+which itself will RTS to the original state: call
+
+meh.
+
+I do this already in Call
+and another variation in Agent method invoke
+
+this is called the RTS trick, and is a variation of a jump table
+
+
+Grapple gun state machine
+
+States:
+
+Destroyed: do nothing at actually
+    destroyed flag is 1
+
+    transitions:
+        GrappleGunFired:
+
+GrappleGunFired:
+    recieves 
+
+    dec life
+    if life == 0 then GrappleGunDestroy:
+
+    update pos
+    check collision    
+        if collided then GrappleGunHitSomething:
+    
+    transitions:
+        GrappleGunHitSomething:
+        GrappleGunDestroy:
+
+GrappleGunHitSomething:
+    
+    update player state to MoveToGrappleGunTarget:
+            passing target x,y
+    transition to GrappleGunDestroy:
+    
+GrappleGunDestroy:
+
+    set destroyed flag to 1
+
+    update player state to EndGrappleGunFired: 
+    
+    we are done. 
+
+
+
+
+
+Player state machine
+
+Active: do player things
+Waiting: player is waiting for event
+    check player properties for the event  Polling.
+    props:
+        targetX,y 
+        
+
+    transitions:
+        Waiting:
+        MoveToGrappleGunTarget:
+        EndGrappleGunFired:
+
+
+StartGrappleGunFired:
+    set player state to Waiting
+    set GrappleGun state GrappleGunFired:
+        set grapplegun dx,dy,x,y,life,player vector, destroyed is 0
+        "Spawn" - find next destroyed Agent
+                set all those properties, including behaviours GrappleGunBehaviors.Update/Render
+
+    transition to Waiting:                
+
+    transitions:
+        Waiting:
+
+MoveToGrappleGunTarget:
+
+    update pos to x,y
+
+    transition to MoveToGrappleGunTarget:
+    transition to Active:
+
+EndGrappleGunFired:
+    transition to Active:
+
+
+State machine
+- has a current state
+- has a set of inputs
+- has a next state
+
+might be easier to start with a simpler set of states for player
+
+player_idle
+player_moving_left
+player_moving_right
+player_jumping
+
+i already have most of this, so lets try and refactor
+
+Player.Update:
+{
+    switch currentState
+        idle:
+        left:
+        right:
+        jumping:
+        //falling:
+
+}
+
+Player.State
+    dx,dy
+    i think that's it
+
+the States:
+
+Idle:
+    //next animation frame (maybe there is a timer)
+    readInput:
+
+    updateState:
+        transitions: idle, left, right, jumping based on dx,dy
+
+    as a benefit to this added complexity
+        idle no longer does collision check or update position etc 
+        so we get some cycles back, at the cost of determining the current state
+
+Left:
+    readInput:
+    
+    updateState:
+        transitions: idle, left, right, jumping based on dx,dy
+
+
+and so on.
+
+
+
+
+
+
+
+
+
