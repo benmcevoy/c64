@@ -2,10 +2,6 @@ BasicUpstart2(Start)
 
 // refer: https://github.com/benmcevoy/ParametricToy
 
-// - wrap
-// - point
-// - "phase"
-
 #define FASTMATH
 #define HIRES
 
@@ -18,13 +14,13 @@ BasicUpstart2(Start)
 
 .const TWOPI = 256 // 256 is two PI in BRAD's
 .const AXIS = 8
-.const TRAILS = 24
+.const TRAILS = 6
 
 #if HIRES
     .const WIDTH = 79
     .const HEIGHT = 49
 #else
-    .const WIDTH = 39
+    .const WIDTH = 24
     .const HEIGHT = 24
 #endif
 
@@ -37,49 +33,37 @@ Start: {
     // initialise
     Set CharScreen.Character:#GLYPH
     jsr ClearScreen
-    Set $d020:#BLACK
+    Set $d020:#GREY
     Set $d021:#BLACK
 
     Set phase:#0
-    Set phase+1:#0
+    Set phase+1:#6
 
     loop:
         inc time
-        // inc phase
-        // bcc !+
-        //     inc phase+1
-        // !:
         jsr UpdateState
     jmp loop
 }
 
 UpdateState: {
-    // clear the sprite data, can i do this in the loop below?
     jsr ClearScreen
 
     Set i:#0
+    Set t:time
+    Set y:#CENTERY
 
     trails:
-        jsr Point
+        Point t
         Set x:__val0
-        Set y:#CENTERY
-
-        Modulo x:#WIDTH
-        Set x:__val0
-        Modulo y:#HEIGHT
-        Set y:__val0
-
-        Set x0:x
-        Set y0:y
         
         // var a = Math.Cos(t) * ctx.Phase;
-        ldx time
+        ldx t
         lda cosine,X
         sta angle
 
         Sat16 angle:angle+1
         SMulW32 angle:angle+1:phase:phase+1
-        Set angle:__val2
+        Set angle:__val1
 
         Set j:#0
 
@@ -91,7 +75,12 @@ UpdateState: {
             ldx i
             lda palette,x
             sta CharScreen.PenColor
-                        
+
+            Wrap x1:#CENTERX
+            Set x1:__val0
+            Wrap y1:#CENTERY
+            Set y1:__val0
+          
             #if HIRES
                 Call CharScreen.PlotH:x1:y1
             #else
@@ -108,7 +97,8 @@ UpdateState: {
         bcs !+
             jmp axis
         !:
-        dec time
+        dec t
+    !:
     inc i
     lda i
     cmp #TRAILS
@@ -118,25 +108,47 @@ UpdateState: {
 exit:
 
     rts
+
     // indexes
     i: .byte 0
     j: .byte 0
-    x0: .byte 0
-    y0: .byte 0
     x: .byte 0
     y: .byte 0
     x1: .byte 0
     y1: .byte 0
     angle: .word 0
+    t: .byte 0
 }
 
-Point: {
+.pseudocommand Point t {
     lda #CENTERX
     sec
-    sbc time
+    sbc t
     sta __val0
-    
-    rts
+}
+
+.pseudocommand Wrap value :maxValue {
+    lda value
+    bmi negative
+        bpl !+
+            Modulo value:maxValue
+            jmp exit
+        !:
+            sta __val0
+            jmp exit
+
+    negative:
+        Modulo value:maxValue
+        lda __val0
+        cmp #0
+        bne !+
+            jmp exit
+        !:
+        clc
+        adc maxValue
+        sta __val0
+   
+   exit:
 }
 
 .pseudocommand Rotate angle:x:y{
@@ -193,7 +205,7 @@ Point: {
     // only care about high byte
     lda __val1
     // i do not know why i have to double it, only that it works :(
-    //asl     
+    asl     
     sta x1
 
     // var y2 = x * Math.Sin(angle) + y * Math.Cos(angle);
@@ -223,7 +235,7 @@ Point: {
     Add16 __tmp0:__tmp1:__tmp2:__tmp3
     // only care about high byte
     lda __val1
-    //asl     
+    asl     
     sta y1
 
     // convert back to "screen space"
@@ -261,10 +273,10 @@ palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06
 //palette: .byte $06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03
  
 
-*=$0900 "Signed trig tables"
+*=$4000 "Signed trig tables"
 // values range -127..127  
 cosine: .fill 256,round(127*cos(toRadians(i*360/256)))
 sine: .fill 256,round(127*sin(toRadians(i*360/256)))
-* = $0b00 "trails"
+* = $4200 "trails"
 xTrails: .fill TRAILS,0
 yTrails: .fill TRAILS,0

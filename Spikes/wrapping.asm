@@ -1,30 +1,27 @@
 BasicUpstart2(Start)
 
 #import "_prelude.lib"
+#import "_math.lib"
+
 
 Start: {
 
-    Wrap #0: #10:  #40
-    DebugPrint __val0
 
-    Wrap #39: #42:  #40
-    DebugPrint __val0
+    loop:
 
+        Wrap counter:#40
+        DebugPrint __val0
 
-    Wrap #78: #90:  #40
-    DebugPrint __val0
-
-    Modulus #0:  #40
-    DebugPrint __val0
-
-    Modulus #39:   #40
-    DebugPrint __val0
-
-
-    Modulus #78:  #40
-    DebugPrint __val0
+        dec counter
+        cmp #0
+        bne !+
+            rts
+        !:
+        jmp loop
 
     rts
+
+    counter: .byte 42
 }
 
 .pseudocommand Modulus value:modulus {
@@ -39,38 +36,26 @@ Start: {
 
 
 /* @Command */
-.pseudocommand Wrap oldValue: newValue :maxValue {
-
-    // if new value >=0 and <=max then return it
-    lda newValue
-    cmp #0
-    bmi !+
-        lda newValue
-        cmp maxValue
-        beq cont
-        bcs !+
-            cont:
-            Set __val0:newValue
+.pseudocommand Wrap value :maxValue {
+    lda value
+    bmi negative
+        bpl !+
+            Modulo value:maxValue
             jmp exit
-    !:
+        !:
+            sta __val0
+            jmp exit
 
-    // find delta/direction
-    lda newValue
-    sec
-    sbc oldValue
-    bmi decreasing
-        lda newValue
-        sec
-        sbc maxValue
-        sta __val0
-        jmp exit
-    !: 
-    
-    decreasing:
-        lda newValue
+    negative:
+        Modulo value:maxValue
+        lda __val0
+        cmp #0
+        bne !+
+            jmp exit
+        !:
         clc
         adc maxValue
         sta __val0
-        
-    exit:
+   
+   exit:
 }
