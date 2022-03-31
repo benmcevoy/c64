@@ -44,3 +44,14 @@
     sta __val1
 }
 
+/* @Command Return remainder in __val0 */
+.pseudocommand Modulo value:modulus {
+    sec
+    lda value
+subtract:
+    sbc modulus
+    bcs subtract
+    adc modulus
+    sta __val0 
+}
+
