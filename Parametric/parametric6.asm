@@ -43,7 +43,7 @@ Start: {
     Set $d020:#GREY
     Set $d021:#BLACK
 
-    Set wobbleSize:#00
+    Set wobbleSize:#0
     Set wobbleSize+1:#0
 
     loop:
@@ -64,11 +64,15 @@ UpdateState: {
     // var a = Math.Cos(t) * ctx.Phase;
     ldx time
     lda cosine,X
-    sta startAngle
+    sta wobbleAngle
 
-    Sat16 startAngle:startAngle+1
-    SMulW32 startAngle:startAngle+1:wobbleSize:wobbleSize+1
-    Set startAngle:__val1
+    Sat16 wobbleAngle:wobbleAngle+1
+    SMulW32 wobbleAngle:wobbleAngle+1:wobbleSize:wobbleSize+1
+   
+    lda startAngle
+    clc
+    adc __val1
+    sta startAngle
 
     axis:
         inc writePointer
@@ -129,7 +133,8 @@ UpdateState: {
     y: .byte CENTERY
     x1: .byte 0
     y1: .byte 0
-    startAngle: .word 0
+    startAngle: .byte 0
+    wobbleAngle: .word 0
     writePointer: .byte 0
 }
 
