@@ -43,7 +43,8 @@ Start: {
     Set $d020:#GREY
     Set $d021:#BLACK
 
-    Set wobbleSize:#0
+    Set wobbleSize:#00
+    Set wobbleSize+1:#0
 
     loop:
         inc time
@@ -52,13 +53,22 @@ Start: {
 }
 
 UpdateState: {
-    //jsr ClearScreen
+    jsr ClearScreen
 
     // set point, just moving along a line
     Set x:time
     Set y:#CENTERY
 
     Set j:#0
+
+    // var a = Math.Cos(t) * ctx.Phase;
+    ldx time
+    lda cosine,X
+    sta startAngle
+
+    Sat16 startAngle:startAngle+1
+    SMulW32 startAngle:startAngle+1:wobbleSize:wobbleSize+1
+    Set startAngle:__val1
 
     axis:
         inc writePointer
@@ -119,7 +129,7 @@ UpdateState: {
     y: .byte CENTERY
     x1: .byte 0
     y1: .byte 0
-    startAngle: .byte 0
+    startAngle: .word 0
     writePointer: .byte 0
 }
 
@@ -238,7 +248,7 @@ y1: .byte 0
 
 // state
 time: .byte 0
-wobbleSize: .byte 0
+wobbleSize: .word 0
 
 // WIP, ok for the now
 palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03
