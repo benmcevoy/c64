@@ -43,9 +43,8 @@ Start: {
 
     loop:
         inc time
-
         jsr UpdateState
-    jmp loop
+        jmp loop
 }
 
 UpdateState: {

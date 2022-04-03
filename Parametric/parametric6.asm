@@ -2,6 +2,11 @@ BasicUpstart2(Start)
 
 // refer: https://github.com/benmcevoy/ParametricToy
 
+// after lying on the couch one evening, i realise
+// my handling of time is very whack
+// phase is really "wobble the starting angle of the rotation"
+// and i think this can all be a lot simpler, linear and faster
+
 #define FASTMATH
 #define HIRES
 
@@ -13,13 +18,13 @@ BasicUpstart2(Start)
 .label ClearScreen = $E544
 
 .const TWOPI = 256 // 256 is two PI in BRAD's
-.const AXIS = 4
-.const TRAILS = 6
+.const AXIS = 8
+.const TRAILS = 1
 
 #if HIRES
-    .const WIDTH = 50
-    .const HEIGHT = 50
-    .const OFFSET = 15
+    .const WIDTH = 51
+    .const HEIGHT = 51
+    .const OFFSET = 14
 #else
     .const WIDTH = 24
     .const HEIGHT = 24
@@ -38,75 +43,73 @@ Start: {
     Set $d020:#GREY
     Set $d021:#BLACK
 
-    Set phase:#0
-    Set phase+1:#0
+    Set wobbleSize:#0
 
     loop:
         inc time
-
         jsr UpdateState
-    jmp loop
+        jmp loop
 }
 
 UpdateState: {
-    jsr ClearScreen
+    //jsr ClearScreen
 
-    Set i:#0
-    Set t:time
+    // set point, just moving along a line
+    Set x:time
+    Set y:#CENTERY
 
-    trails:
+    Set j:#0
 
-        Point t
-        Set x:__val0
-        Set y:#CENTERY
+    axis:
+        inc writePointer
 
-        Set j:#0
-        Set angle:#0
+        Rotate startAngle:x:y
+        Set x1:__val0
+        Set y1:__val1
 
-        axis:
-            Rotate angle:x:y
-            Set x1:__val0
-            Set y1:__val1
+        Modulo x1:#WIDTH
+        Set x1:__val0
+        Modulo y1:#HEIGHT
+        Set y1:__val0
 
-            Wrap x1:#WIDTH
-            Set x1:__val0
-            Wrap y1:#WIDTH
-            Set y1:__val0
+        lda x1
+        clc 
+        adc #OFFSET
+        sta x1
 
-            lda x1
-            clc 
-            adc #OFFSET
-            sta x1
+        ldx writePointer
+        sta xTrails, X
+        lda y1
+        sta yTrails, X
 
-            ldx i
-            lda palette,x
-            sta CharScreen.PenColor
-            
-            #if HIRES
-                Call CharScreen.PlotH:x1:y1
-            #else
-                Call CharScreen.Plot:x1:y1
-            #endif
+        ldx j
+        lda palette,X
+        sta CharScreen.PenColor
+        
+        #if HIRES
+            Call CharScreen.PlotH:x1:y1
+        #else
+            Call CharScreen.Plot:x1:y1
+        #endif
 
-            lda angle
-            clc
-            adc #ROTATION_ANGLE_INCREMENT 
-            sta angle
+        lda startAngle
+        clc
+        adc #ROTATION_ANGLE_INCREMENT 
+        sta startAngle
+
+        lda writePointer
+        cmp #(TRAILS*AXIS)
+        bcc !+
+            Set writePointer:#0
+        !:
+
         inc j
         lda j
         cmp #AXIS
-        bcs !+
+        beq !+
             jmp axis
         !:
-        dec t
-    !:
-    inc i
-    lda i
-    cmp #TRAILS
-    bcs exit
-    jmp trails
     exit:
-
     rts
 
     // indexes
@@ -116,30 +119,8 @@ UpdateState: {
     y: .byte CENTERY
     x1: .byte 0
     y1: .byte 0
-    angle: .word 0
-    t: .byte 0
-}
-
-.pseudocommand Point t {
-    lda #CENTERX
-    sec
-    sbc t
-
-    sta __val0
-}
-
-.pseudocommand Wrap value :maxValue {
-
-    lda value
-    cmp maxValue
-    bcs !+
-        Set __val0:value
-        jmp exit
-    !:
-
-    Modulo value:maxValue
-   
-    exit:
+    startAngle: .byte 0
+    writePointer: .byte 0
 }
 
 .pseudocommand Rotate angle:x:y{
@@ -150,9 +131,9 @@ UpdateState: {
     sta xRelative+1
     Set xRelative:#0
 
-    lda #CENTERY
+    lda y
     sec
-    sbc y
+    sbc #CENTERY
     sta yRelative+1
     Set yRelative:#0
 
@@ -236,9 +217,9 @@ UpdateState: {
     sta __val0
 
     // CENTERY - y1
-    lda #CENTERY
-    sec
-    sbc y1
+    lda y1
+    clc
+    adc #CENTERY
     sta __val1
 }
 
@@ -257,10 +238,11 @@ y1: .byte 0
 
 // state
 time: .byte 0
-phase: .word 0
+wobbleSize: .byte 0
 
 // WIP, ok for the now
-palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03
+palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03
+
 //palette: .byte $06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03
  
 
@@ -269,5 +251,6 @@ palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06
 cosine: .fill 256,round(127*cos(toRadians(i*360/256)))
 sine: .fill 256,round(127*sin(toRadians(i*360/256)))
 * = $4200 "trails"
-xTrails: .fill TRAILS,0
-yTrails: .fill TRAILS,0
+xTrails: .fill (TRAILS*AXIS),0
+yTrails: .fill (TRAILS*AXIS),0
+
