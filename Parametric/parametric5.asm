@@ -13,15 +13,17 @@ BasicUpstart2(Start)
 .label ClearScreen = $E544
 
 .const TWOPI = 256 // 256 is two PI in BRAD's
-.const AXIS = 8
+.const AXIS = 4
 .const TRAILS = 6
 
 #if HIRES
-    .const WIDTH = 79
-    .const HEIGHT = 49
+    .const WIDTH = 50
+    .const HEIGHT = 50
+    .const OFFSET = 15
 #else
     .const WIDTH = 24
     .const HEIGHT = 24
+    .const OFFSET = 8
 #endif
 
 .const CENTERX = (WIDTH/2)
@@ -37,11 +39,11 @@ Start: {
     Set $d021:#BLACK
 
     Set phase:#0
-    Set phase+1:#6
+    Set phase+1:#0
 
     loop:
         inc time
-        
+
         jsr UpdateState
     jmp loop
 }
@@ -51,37 +53,35 @@ UpdateState: {
 
     Set i:#0
     Set t:time
-    Set y:#CENTERY
 
     trails:
+
         Point t
         Set x:__val0
-        
-        // var a = Math.Cos(t) * ctx.Phase;
-        ldx t
-        lda cosine,X
-        sta angle
-
-        Sat16 angle:angle+1
-        SMulW32 angle:angle+1:phase:phase+1
-        Set angle:__val1
+        Set y:#CENTERY
 
         Set j:#0
+        Set angle:#0
 
         axis:
             Rotate angle:x:y
             Set x1:__val0
             Set y1:__val1
 
+            Wrap x1:#WIDTH
+            Set x1:__val0
+            Wrap y1:#WIDTH
+            Set y1:__val0
+
+            lda x1
+            clc 
+            adc #OFFSET
+            sta x1
+
             ldx i
             lda palette,x
             sta CharScreen.PenColor
-
-            Wrap x1:#CENTERX
-            Set x1:__val0
-            Wrap y1:#CENTERY
-            Set y1:__val0
-          
+            
             #if HIRES
                 Call CharScreen.PlotH:x1:y1
             #else
@@ -105,8 +105,7 @@ UpdateState: {
     cmp #TRAILS
     bcs exit
     jmp trails
-
-exit:
+    exit:
 
     rts
 
@@ -114,7 +113,7 @@ exit:
     i: .byte 0
     j: .byte 0
     x: .byte 0
-    y: .byte 0
+    y: .byte CENTERY
     x1: .byte 0
     y1: .byte 0
     angle: .word 0
@@ -125,31 +124,22 @@ exit:
     lda #CENTERX
     sec
     sbc t
+
     sta __val0
 }
 
 .pseudocommand Wrap value :maxValue {
-    lda value
-    bmi negative
-        bpl !+
-            Modulo value:maxValue
-            jmp exit
-        !:
-            sta __val0
-            jmp exit
 
-    negative:
-        Modulo value:maxValue
-        lda __val0
-        cmp #0
-        bne !+
-            jmp exit
-        !:
-        clc
-        adc maxValue
-        sta __val0
+    lda value
+    cmp maxValue
+    bcs !+
+        Set __val0:value
+        jmp exit
+    !:
+
+    Modulo value:maxValue
    
-   exit:
+    exit:
 }
 
 .pseudocommand Rotate angle:x:y{
@@ -206,7 +196,7 @@ exit:
     // only care about high byte
     lda __val1
     // i do not know why i have to double it, only that it works :(
-    asl     
+    //asl     
     sta x1
 
     // var y2 = x * Math.Sin(angle) + y * Math.Cos(angle);
@@ -236,7 +226,7 @@ exit:
     Add16 __tmp0:__tmp1:__tmp2:__tmp3
     // only care about high byte
     lda __val1
-    asl     
+    //asl     
     sta y1
 
     // convert back to "screen space"
