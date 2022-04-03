@@ -16,12 +16,12 @@ BasicUpstart2(Start)
 #import "_joystick.lib"
 
 
-.const TRAILS = 255
+.const TRAILS = 25
 
 t: .byte 0
 
-xf: .byte 2
-yf: .byte 3
+xf: .byte 1
+yf: .byte 2
 
 xFreq: .byte $00
 yFreq: .byte $0
@@ -48,46 +48,49 @@ Start:{
     // TODO: set IRQ to use a raster and see 
     // if we can get rid of the flicker
     // start main loop
-    sei
-        lda #<Draw            
-        sta $0314
-        lda #>Draw
-        sta $0315
-    cli
-
+    // sei
+    //     lda #<Draw            
+    //     sta $0314
+    //     lda #>Draw
+    //     sta $0315
+    // cli
+loop:
+    jsr Draw
     // infinite loop
-    jmp *
+    jmp loop
 }
 
 
 Draw:{
     loop:
     inc t
-    inc xtime
-    inc ytime
+    inc xFreq
+    inc yFreq;inc yFreq
+    // inc xtime
+    // inc ytime
 
-    jsr ReadInput
+    // jsr ReadInput
 
-    // now run slower than the clock
-    lda xtime
-    cmp xf
-    bcc !+
-        Set xtime:#0
-        inc xFreq
-    !:
+    // // now run slower than the clock
+    // lda xtime
+    // cmp xf
+    // bcc !+
+    //     Set xtime:#0
+    //     inc xFreq
+    // !:
 
-    lda ytime
-    cmp yf
-    bcc !+
-        Set ytime:#0
-        inc yFreq
-    !:
+    // lda ytime
+    // cmp yf
+    // bcc !+
+    //     Set ytime:#0
+    //     inc yFreq
+    // !:
 
-    Call Lissajou:xFreq:yFreq
+     Lissajou xFreq:yFreq
 
-    // end irq
-    pla;tay;pla;tax;pla
-    rti 
+    // // end irq
+    // pla;tay;pla;tax;pla
+    rts 
 }
 
 ReadInput: {
@@ -173,9 +176,9 @@ ReadInput: {
     rts
 }
 
-Lissajou: {
-    .var xf = __arg0
-    .var yf = __arg1
+.pseudocommand Lissajou xf:yf {
+    // .var xf = __arg0
+    // .var yf = __arg1
     
     inc i
     inc j
@@ -192,14 +195,14 @@ Lissajou: {
     sta y
     // clear previous
     Set CharScreen.PenColor:#BLACK
-    Call CharScreen.Plot:x:y
+    Call CharScreen.PlotH:x:y
    
     lda xf
     clc
     adc xPhase
     tax
     lda sine,X
-    lsr;lsr;lsr;
+    lsr;lsr;
     clc
     adc xOffset
     sta x
@@ -219,7 +222,7 @@ Lissajou: {
     sta yTrails, X
 
     Set CharScreen.PenColor:t
-    Call CharScreen.Plot:x:y
+    Call CharScreen.PlotH:x:y
 
     lda i
     cmp #TRAILS
@@ -229,8 +232,8 @@ Lissajou: {
 
     rts
 
-    xOffset: .byte 6
-    yOffset: .byte -4
+    xOffset: .byte 8
+    yOffset: .byte 8
     x: .byte 0
     y: .byte 0
     i: .byte 0

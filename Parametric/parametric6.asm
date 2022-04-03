@@ -16,35 +16,34 @@ BasicUpstart2(Start)
 #import "_math.lib"
 
 .label ClearScreen = $E544
-
-.const TWOPI = 256 // 256 is two PI in BRAD's
 .const AXIS = 8
-.const TRAILS = 1
+.const TRAILS = 12
+.const PALETTE_LENGTH = 16
 
 #if HIRES
     .const WIDTH = 51
     .const HEIGHT = 51
-    .const OFFSET = 14
+    .const OFFSET = 15
 #else
-    .const WIDTH = 24
-    .const HEIGHT = 24
+    .const WIDTH = 25
+    .const HEIGHT = 25
     .const OFFSET = 8
 #endif
 
 .const CENTERX = (WIDTH/2)
 .const CENTERY = (HEIGHT/2)
-.const ROTATION_ANGLE_INCREMENT = (TWOPI/AXIS)  
+.const ROTATION_ANGLE_INCREMENT = (256/AXIS)  
 .const GLYPH = 204 // a little square
 
 Start: {
     // initialise
     Set CharScreen.Character:#GLYPH
     jsr ClearScreen
-    Set $d020:#GREY
+    Set $d020:#BLACK
     Set $d021:#BLACK
 
     Set wobbleSize:#0
-    Set wobbleSize+1:#0
+    Set wobbleSize+1:#1
 
     loop:
         inc time
@@ -53,21 +52,18 @@ Start: {
 }
 
 UpdateState: {
-    jsr ClearScreen
-
     // set point, just moving along a line
     Set x:time
     Set y:#CENTERY
 
     Set j:#0
-
     // var a = Math.Cos(t) * ctx.Phase;
     ldx time
     lda cosine,X
-    sta wobbleAngle
+    sta startAngle
 
-    Sat16 wobbleAngle:wobbleAngle+1
-    SMulW32 wobbleAngle:wobbleAngle+1:wobbleSize:wobbleSize+1
+    Sat16 startAngle:startAngle+1
+    SMulW32 startAngle:startAngle+1:wobbleSize:wobbleSize+1
    
     lda startAngle
     clc
@@ -76,7 +72,21 @@ UpdateState: {
 
     axis:
         inc writePointer
+        inc erasePointer
 
+        ldx erasePointer
+        cpx #(TRAILS*AXIS)
+        bcc !+
+            Set erasePointer:#0
+        !:
+
+        lda xTrails,X
+        sta x1    
+        lda yTrails,X
+        sta y1
+        // clear previous
+        Set CharScreen.PenColor:#BLACK
+        Plot x1:y1
         Rotate startAngle:x:y
         Set x1:__val0
         Set y1:__val1
@@ -96,15 +106,11 @@ UpdateState: {
         lda y1
         sta yTrails, X
 
-        ldx j
+        Modulo writePointer:#PALETTE_LENGTH
+        ldx __val0
         lda palette,X
         sta CharScreen.PenColor
-        
-        #if HIRES
-            Call CharScreen.PlotH:x1:y1
-        #else
-            Call CharScreen.Plot:x1:y1
-        #endif
+        Plot x1:y1
 
         lda startAngle
         clc
@@ -136,6 +142,8 @@ UpdateState: {
     startAngle: .byte 0
     wobbleAngle: .word 0
     writePointer: .byte 0
+    erasePointer: .byte 0
+    p: .byte 0
 }
 
 .pseudocommand Rotate angle:x:y{
@@ -192,7 +200,7 @@ UpdateState: {
     // only care about high byte
     lda __val1
     // i do not know why i have to double it, only that it works :(
-    //asl     
+    asl
     sta x1
 
     // var y2 = x * Math.Sin(angle) + y * Math.Cos(angle);
@@ -222,7 +230,7 @@ UpdateState: {
     Add16 __tmp0:__tmp1:__tmp2:__tmp3
     // only care about high byte
     lda __val1
-    //asl     
+    asl
     sta y1
 
     // convert back to "screen space"
@@ -236,6 +244,14 @@ UpdateState: {
     clc
     adc #CENTERY
     sta __val1
+}
+
+.pseudocommand Plot x:y {
+    #if HIRES
+        Call CharScreen.PlotH:x:y
+    #else
+        Call CharScreen.Plot:x:y
+    #endif
 }
 
 // relative to origin at centerx,y
@@ -256,7 +272,8 @@ time: .byte 0
 wobbleSize: .word 0
 
 // WIP, ok for the now
-palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03
+palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9
+//,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03
 
 //palette: .byte $06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03
  
