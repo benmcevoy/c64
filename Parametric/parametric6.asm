@@ -48,6 +48,7 @@ Start: {
     loop:
         inc time
         jsr UpdateState
+
         jmp loop
 }
 
@@ -139,8 +140,7 @@ UpdateState: {
     y: .byte CENTERY
     x1: .byte 0
     y1: .byte 0
-    startAngle: .byte 0
-    wobbleAngle: .word 0
+    startAngle: .word 0
     writePointer: .byte 0
     erasePointer: .byte 0
     p: .byte 0
