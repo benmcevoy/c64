@@ -69,7 +69,7 @@ Start: {
 
 // very clever, i learnt something from the bit manipulation when drawing lo-res text
 // low bit's skip a frame
-rotor: .byte %10101010
+rotor: .byte %00000000
 
 Update:{
     // ack irq
@@ -102,6 +102,7 @@ Update:{
     // end irq
     pla;tay;pla;tax;pla
     rti 
-    palette: .byte 2,6,2,6,2,6,2,6,2,6,2,6,2,6,2,6
+    //palette: .byte 2,6,2,6,2,6,2,6,2,6,2,6,2,6,2,6
+    palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9
 
 }

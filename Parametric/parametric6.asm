@@ -17,13 +17,13 @@ BasicUpstart2(Start)
 
 .label ClearScreen = $E544
 .const AXIS = 8
-.const TRAILS = 12
+.const TRAILS = 4
 .const PALETTE_LENGTH = 16
 
 #if HIRES
     .const WIDTH = 51
     .const HEIGHT = 51
-    .const OFFSET = 15
+    .const OFFSET = 16
 #else
     .const WIDTH = 25
     .const HEIGHT = 25
@@ -42,13 +42,9 @@ Start: {
     Set $d020:#BLACK
     Set $d021:#BLACK
 
-    Set wobbleSize:#0
-    Set wobbleSize+1:#1
-
     loop:
         inc time
         jsr UpdateState
-
         jmp loop
 }
 
@@ -56,20 +52,8 @@ UpdateState: {
     // set point, just moving along a line
     Set x:time
     Set y:#CENTERY
-
     Set j:#0
-    // var a = Math.Cos(t) * ctx.Phase;
-    ldx time
-    lda cosine,X
-    sta startAngle
-
-    Sat16 startAngle:startAngle+1
-    SMulW32 startAngle:startAngle+1:wobbleSize:wobbleSize+1
-   
-    lda startAngle
-    clc
-    adc __val1
-    sta startAngle
+    inc startAngle
 
     axis:
         inc writePointer
@@ -107,7 +91,7 @@ UpdateState: {
         lda y1
         sta yTrails, X
 
-        Modulo writePointer:#PALETTE_LENGTH
+        Modulo time:#PALETTE_LENGTH
         ldx __val0
         lda palette,X
         sta CharScreen.PenColor
@@ -134,7 +118,6 @@ UpdateState: {
     rts
 
     // indexes
-    i: .byte 0
     j: .byte 0
     x: .byte 0
     y: .byte CENTERY
@@ -143,7 +126,6 @@ UpdateState: {
     startAngle: .word 0
     writePointer: .byte 0
     erasePointer: .byte 0
-    p: .byte 0
 }
 
 .pseudocommand Rotate angle:x:y{
@@ -269,14 +251,7 @@ y1: .byte 0
 
 // state
 time: .byte 0
-wobbleSize: .word 0
-
-// WIP, ok for the now
 palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9
-//,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9,$06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03
-
-//palette: .byte $06,$06,$06,$0e,$06,$0e,$0e,$06,$0e,$0e,$0e,$03,$0e,$03,$03,$0e,$03,$03
- 
 
 *=$4000 "Signed trig tables"
 // values range -127..127  
