@@ -86,7 +86,24 @@ UpdateState: {
         adc #OFFSET
         sta x1
 
+        lda #%00000001
+        bit x1
+        bne !+
+            lda x1
+            eor #1
+            sta x1
+        !:
+
+        lda #%00000001
+        bit y1
+        bne !+
+            lda y1
+            eor #1
+            sta y1
+        !:
+
         ldx writePointer
+        lda x1
         sta xTrails, X
         lda y1
         sta yTrails, X
