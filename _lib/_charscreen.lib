@@ -400,7 +400,6 @@
         rts
         xScreen: .byte 0
         yScreen: .byte 0
-        //            20,7e, 7c, e2, 7b, 61,ff, ec, 6c, 7f, e1, fb, 62,fc, fe, a0
         sixels: .byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
         sixel0: .byte 0
         sixel1: .byte 0

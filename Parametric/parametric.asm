@@ -2,32 +2,42 @@ BasicUpstart2(Start)
 
 // refer: https://github.com/benmcevoy/ParametricToy
 
-// ahhhh... so many issues
-// 16 bit math, i am not doing it
-// an angle is expressed as BRAD's e.g. 0..2PI => 0..255
-// but size, time, phase? what the hell units are they in? not BRAD's, not "normalized" to 0..255 ...
+// allow joystick control to control a couple of parameters
+// tune up the parameters so we can get nice variety when we twiddle the knobs
+// move away from Call and _prelude.lib
+// consider
+// - more than one label can be applied to a zero page address, as long as the labels are orthognal or not used at the same time then you should be ok (non simulataneous? )
+// - the carry flag can be used as a status flag by your own code, e.g.
+// - start and end labels can be applied to a struct (or table) so you can have dynamically sized "objects", i think
 
-// from reading my own code (in C#)
-// time - is a value that increases.  I think it is OK if it just loops around from 0 to 255.
-//  it mostly just passed to a trig function, so it would be fine. I also seem to add/subtract from time
-//  which acts like phase
-// 
+// MyFunction: {
+//     ... do stuff ...
+//
+//     exit_false:
+//         clc
+//         rts
+//     exit_true:
+//         sec
+//         rts
+// }
 
-// phase - I do this - var a = Math.Cos(t) * ctx.Phase;
-//  which is not phase at all :) Phase also ranges from 0 .. 0.01  (1/100)
-//  it greatly reduces the angle.  at a phase of zero angle is zero.
-//  I don't know what this is, it's not phase, that's for sure
-//  but it looks cool.  leave at zero for now
+// beginning to learn the "idioms" of this language
+// and how to better use it
 
-// size - ranges from 0..2. Seems I only use it in calulating the next point
-//  it seems to act like some kind of horizontal offset
-//  yeah it does.  in conjuntion with the trails it looks cool
-//  I can simply remove phase and size form my c# code and it still looks neat
-//  so for now - set size=1 so it does nothing...
+// the .A should mostly contain the result of a macro/jsr
+// the three registers should be used AS MUCH AS POSSIBLE, remember tay/tax and txa etc for holding a state temporarily
+// there is a design:
 
-// speed - not even using it.  it was used to control the speed that time increases at.
+// .macro expose the public API, it handles setting up any registers, state etc, calls a JSR, handles the results if required
+// jsr is a routine in a MODULE or FEATURE. I have heard it called a SYSTEM, which I kinda like better than feature, as one system may have several features
+// sub routines should expect to be passed things in the registers
+// and should return things in the registers
+// avoid temporary state where possible
 
-// so lets commit the work right now.  and then rip out speed, phase and size and see what happens
+// i need to review this pattern and try and document it somewhere. in code. Spike!
+
+
+#define FASTMATH
 
 #import "_prelude.lib"
 #import "_charscreen.lib"
@@ -36,346 +46,236 @@ BasicUpstart2(Start)
 
 .label ClearScreen = $E544
 
-.const TWOPI = 256 // 256 is two PI in BRAD's
-.const DELAY = 1
 .const AXIS = 8
-.const TRAILS = 12
-.const WIDTH = 40
-.const HEIGHT = 24
+.const TRAILS = 6
+.const PALETTE_LENGTH = 16
+.const WIDTH = 51
+.const HEIGHT = 51
+.const OFFSET = 16
 .const CENTERX = (WIDTH/2)
 .const CENTERY = (HEIGHT/2)
-.const ROTATION_ANGLE_INCREMENT = (TWOPI/AXIS)  
-.const GLYPH = 204 // a little square
-
-.print CENTERX
+.const ROTATION_ANGLE_INCREMENT = (256/AXIS)  
 
 Start: {
     // initialise
-    Set CharScreen.Character:#GLYPH
     jsr ClearScreen
     Set $d020:#BLACK
     Set $d021:#BLACK
 
-    // TODO: no idea what values to put yet
-    // // Set size:#1
-    // // Set phase:#0
-    // // Set speed:#1
-
-    // start main loop
-    sei
-        lda #<Update            
-        sta $0314
-        lda #>Update
-        sta $0315
-    cli
-
-    // infinite loop
-    jmp *
+    loop:
+        inc time
+        jsr Update
+    jmp loop
 }
 
 Update: {
-    inc delayCounter
-    lda delayCounter
-    cmp #DELAY
-    bne !+
-        Set delayCounter:#0
+    // set point, just moving along a line
+    .var y = CENTERY
+    .var x = time
 
-        // TODO: update time? can i use TOD clock? seems not on vice...
-        inc time
-        
-        jsr ReadInput
-        Call UpdateState:time
-    !:
-
-    // end irq
-    pla;tay;pla;tax;pla
-    rti 
-}
-
-UpdateState: {
-    .var time = __arg0
-
-    // clear the sprite data, can i do this in the loop below?
-    /*
-    lda #0
-    Set __ptr0:#>sprite
-    Set __ptr0+1:#<sprite
-    !:
-        sta (__ptr0),Y
-            
-        dey
-        bne !-
-    */
     Set i:#0
-trails:
-        Call Point:time
-        Set x:__val0
-        Set y:__val1
-        
-        // var a = Math.Cos(t) * ctx.Phase;
-        ldx time
-        lda cosine,X
-        sta angle
+    inc startAngle
 
-        //Call Mult_U8_U16:angle:phase
-        // TODO: yeah not really... result is 16 bit
-        Set angle:__val0
+    axis:
+        inc writePointer
+        inc erasePointer
 
-        Set j:#0
-axis:
-            Call Rotate:angle:x:y
-            Set x1:__val0
-            Set y1:__val1
+        ldx erasePointer
+        cpx #(TRAILS*AXIS)
+        bcc !+
+            Set erasePointer:#0
+        !:
 
-            Call Wrap:x:x1:#WIDTH
-            Set x1:__val0
-            Call Wrap:y:y1:#HEIGHT
-            Set y1:__val0
+        lda xTrails,X
+        sta x1    
+        lda yTrails,X
+        sta y1
+        // clear previous
+        Set CharScreen.PenColor:#BLACK
+        Call CharScreen.PlotH:x1:y1
 
-            // sprite[Wrap(x1,Sprite.Width), Wrap(y2, Sprite.Height)] = i % Sprite.PaletteLength;
-            // TODO: set the sprite x,y with i % palette
-            // should just Call Plot, but set colour first
-            Set CharScreen.PenColor:i
-            Call CharScreen.Plot:x1:y1
-                            
-            lda angle
-            clc
-            adc #ROTATION_ANGLE_INCREMENT 
-            sta angle
-        inc j
-        lda j
+        Rotate startAngle:x:#y
+        Modulo __val0:#WIDTH
+        Set x1:__val0
+        Modulo __val1:#HEIGHT
+        Set y1:__val0
+
+        lda x1
+        clc 
+        adc #OFFSET
+        sta x1
+
+        // make even
+        lda #%00000001
+        bit x1
+        bne !+
+            dec x1
+        !:
+
+        lda #%00000001
+        bit y1
+        bne !+
+            dec y1
+        !:
+
+        ldx writePointer
+        lda x1
+        sta xTrails, X
+        lda y1
+        sta yTrails, X
+
+        Modulo time:#PALETTE_LENGTH
+        ldx __val0
+        lda palette,X
+        sta CharScreen.PenColor
+        Call CharScreen.PlotH:x1:y1
+
+        lda startAngle
+        clc
+        adc #ROTATION_ANGLE_INCREMENT 
+        sta startAngle
+
+        lda writePointer
+        cmp #(TRAILS*AXIS)
+        bcc !+
+            Set writePointer:#0
+        !:
+
+        inc i
+        lda i
         cmp #AXIS
-        bcs !+
+        beq !+
             jmp axis
         !:
-        dec time
-    inc i
-    lda i
-    cmp #TRAILS
-    bcs exit
-    jmp trails
-
-exit:
+    exit:
     rts
-
-    // indexes
+    
     i: .byte 0
-    j: .byte 0
-    x: .byte 0
-    y: .byte 0
     x1: .byte 0
     y1: .byte 0
-    angle: .byte 0
+    startAngle: .word 0
+    writePointer: .byte 0
+    erasePointer: .byte 0
 }
 
-/* Calulate new point x,y are signed */
-Point: {
-    .var time = __arg0
-
-    // var x = centerX - time * ctx.Size;
-    // Mul16 time:size
-    // __val0 is already set by call to 
-    lda #CENTERX
-    sec
-    sbc time 
-    sta __val0
-    
-    Set __val1:#CENTERY
-
-    rts
-}
-
-Rotate: {
-    .var angle = __arg0
-    .var x = __arg1
-    .var y = __arg2
-
-    // var x1 = x - centerX;
+.pseudocommand Rotate angle:x:y{
+    // xRelative is signed and relative to the origin at (CENTERX, CENTERY)
     lda x
     sec
-    sbc CENTERX
-    sta x1
+    sbc #CENTERX
+    sta xRelative+1
+    Set xRelative:#0
 
-    // var y1 = y - centerY;
     lda y
     sec
-    sbc CENTERY
-    sta y1
+    sbc #CENTERY
+    sta yRelative+1
+    Set yRelative:#0
 
-    // var x2 = x1 * Math.Cos(angle) - y1 * Math.Sin(angle);
     ldx angle
-    lda cosine,x
-    sta __tmp0
+    lda cosine,X
+    sta cosineAngle
+    Sat16 cosineAngle:cosineAngle+1
+
+    ldx angle
+    lda sine,X
+    sta sineAngle
+    Sat16 sineAngle:sineAngle+1
+
+    // var x2 = xRel * Math.Cos(angle) - yRel * Math.Sin(angle);
+    Set __tmp0:xRelative
+    Set __tmp1:xRelative+1
+    Set __tmp2:cosineAngle
+    Set __tmp3:cosineAngle+1
     
-    Mul16 x:__tmp0
-    Set __tmp0:__val0
+    SMulW32 __tmp0:__tmp1:__tmp2:__tmp3
+    Set x2:__val1
+    Set x2+1:__val2
 
-    lda sine,x
-    sta __tmp1
-    Mul16 y:__tmp1
-    Set __tmp1:__val0
+    Set __tmp0:yRelative
+    Set __tmp1:yRelative+1
+    Set __tmp2:sineAngle
+    Set __tmp3:sineAngle+1
 
-    lda __tmp0
-    sec
-    sbc __tmp1
+    SMulW32 __tmp0:__tmp1:__tmp2:__tmp3
+
+    Set y2:__val1
+    Set y2+1:__val2
+
+    Set __tmp0:x2
+    Set __tmp1:x2+1
+    Set __tmp2:y2
+    Set __tmp3:y2+1
+    
+    Sub16 __tmp0:__tmp1:__tmp2:__tmp3
+    // only care about high byte
+    lda __val1
+    asl
     sta x1
 
-    // var y2 = x1 * Math.Sin(angle) + y1 * Math.Cos(angle);
-    lda sine,x
-    sta __tmp0
-    
-    Mul16 x:__tmp0
-    Set __tmp0:__val0
+    // var y2 = x * Math.Sin(angle) + y * Math.Cos(angle);
+    Set __tmp0:xRelative
+    Set __tmp1:xRelative+1
+    Set __tmp2:sineAngle
+    Set __tmp3:sineAngle+1
 
-    lda cosine,x
-    sta __tmp1
-    Mul16 y:__tmp1
-    Set __tmp1:__val0
+    SMulW32 __tmp0:__tmp1:__tmp2:__tmp3
+    Set x2:__val1
+    Set x2+1:__val2
 
-    lda __tmp0
-    clc
-    adc __tmp1
+    Set __tmp0:yRelative
+    Set __tmp1:yRelative+1
+    Set __tmp2:cosineAngle
+    Set __tmp3:cosineAngle+1
+
+    SMulW32 __tmp0:__tmp1:__tmp2:__tmp3
+    Set y2:__val1
+    Set y2+1:__val2
+
+    Set __tmp0:x2
+    Set __tmp1:x2+1
+    Set __tmp2:y2
+    Set __tmp3:y2+1
+
+    Add16 __tmp0:__tmp1:__tmp2:__tmp3
+    lda __val1
+    asl
     sta y1
 
-    Set __val0:x1 
-    Set __val1:y1 
+    // convert back to "screen space"
+    lda x1
+    clc
+    adc #CENTERX
+    sta __val0
 
-    rts
-    x1: .byte 0
-    y1: .byte 0
+    lda y1
+    clc
+    adc #CENTERY
+    sta __val1
 }
 
-Wrap: {
-    .var oldValue = __arg0
-    .var newValue = __arg1
-    .var maxValue = __arg2
-    
-    Set __val0:newValue
+// relative to origin at centerx,y
+xRelative: .word 0
+yRelative: .word 0
 
-    // if new value >0 and <max then return it
-    lda newValue
-    cmp #0
-    bmi !+
-        cmp maxValue
-        beq !+
-        bmi !+
-        rts
-    !:
+sineAngle: .word 0
+cosineAngle: .word 0
 
-    // find delta/direction
-    lda newValue
-    sec
-    sbc oldValue
-    bmi decreasing
-        lda newValue
-        cmp maxValue
-        beq wrap1
-        bpl !+
-        wrap1:
-            sec
-            sbc maxValue
-            sta __val0
-            rts
-    !: 
-    decreasing:
-        lda newValue
-        clc
-        adc maxValue
-        sta __val0
+x2: .word 0
+y2: .word 0
 
-    rts
-}
-
-ReadInput: {
-    Call Joystick.Read:playerAction
-    Set playerAction:__val0
-
-    .const V = 100
-    .const H = 100
-
-    lda #Joystick.UP
-    and playerAction
-    cmp #Joystick.UP
-    bne !skip+
-        inc latchedUp
-        Set latchedDown:#0
-    !skip:
-
-    lda #Joystick.DOWN
-    and playerAction
-    cmp #Joystick.DOWN
-    bne !skip+
-        inc latchedDown
-        Set latchedUp:#0
-    !skip:
-
-    lda #Joystick.LEFT
-    and playerAction
-    cmp #Joystick.LEFT
-    bne !skip+
-        inc latchedLeft
-        Set latchedRight:#0
-    !skip:
-
-    lda #Joystick.RIGHT
-    and playerAction
-    cmp #Joystick.RIGHT
-    bne !skip+
-        inc latchedRight
-        Set latchedLeft:#0
-    !skip:
-
-    lda latchedUp
-    cmp #V
-    bne !+
-        //inc size
-        Set latchedUp:#0
-    !:
-
-    lda latchedDown
-    cmp #V
-    bne !+
-       // dec size
-        Set latchedDown:#0
-    !:
-
-    lda latchedLeft
-    cmp #H
-    bne !+
-       // inc phase
-        Set latchedLeft:#0
-    !:
-
-    lda latchedRight
-    cmp #H
-    bne !+
-        //dec phase
-        Set latchedRight:#0
-    !:
-
-    rts
-
-    playerAction: .byte 0
-    latchedUp: .byte 0
-    latchedDown: .byte 0
-    latchedLeft: .byte 0
-    latchedRight: .byte 0
-}
+x1: .byte 0
+y1: .byte 0
 
 // state
-delayCounter: .byte 0
-
 time: .byte 0
-// size: .byte 0
-// phase: .word 0
-// speed: .byte 0
+palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9
 
-// unsigned trig tables
-*=$1300 "Data"
-sine: .fill 256,round(127.5+127.5*sin(toRadians(i*360/256)))
-cosine: .fill 256,round(127.5+127.5*cos(toRadians(i*360/256)))
-
-// WIP, ok for the now
-palette: .byte 0,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9
-
+*=$4000 "Signed trig tables"
+// values range -127..127  
+cosine: .fill 256,round(127*cos(toRadians(i*360/256)))
+sine: .fill 256,round(127*sin(toRadians(i*360/256)))
+* = $4200 "trails"
+xTrails: .fill (TRAILS*AXIS),0
+yTrails: .fill (TRAILS*AXIS),0
 
