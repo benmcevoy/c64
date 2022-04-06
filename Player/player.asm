@@ -135,9 +135,7 @@ UpdateAgents: {
     
         AgentSetCurrent(index)
         AgentIsDestroyed()
-        lda __val0
-        cmp #0
-        bne loop
+        bcs loop
 
         AgentInvoke(Agent.Update)
 
@@ -164,9 +162,7 @@ RenderAgents: {
 
         AgentSetCurrent(index)
         AgentIsDestroyed()
-        lda __val0
-        cmp #0 
-        bne loop
+        bcs loop
         
         AgentInvoke(Agent.Render)
         jmp loop

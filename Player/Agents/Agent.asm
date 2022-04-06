@@ -48,10 +48,15 @@
     }
 
     /* @Macro @global
-       Is Current object destroyed?
+       Carry set is if current object destroyed.
     */
     .macro @AgentIsDestroyed() {
-        Get(Agent.destroyed, __val0)
+        clc
+        lda Agent.Current
+        beq!+
+            // true
+            sec
+        !:
     }
     
     /* @Macro @global
@@ -71,11 +76,18 @@
     }
 
     /* @Macro
+       Get field from Current into .A
+    */
+    .macro GetA(y){
+        ldy #y
+        lda (Agent.Current),Y
+    }
+
+    /* @Macro
        Get field from Current into target byte
     */
     .macro Get(y, target){
-        ldy #y
-        lda (Agent.Current),Y
+        GetA(y)
         sta target
     }
 

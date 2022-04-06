@@ -1,0 +1,55 @@
+learning from https://www.youtube.com/watch?v=UU7_rbGC3Bo
+
+AREA: {
+        Data: {
+            // reserved space and variables, arrays, indexes, etc
+            index: .byte 0
+            x: .fill ARRAY_SIZE, 0
+            y: .fill ARRAY_SIZE, 0
+            height:           etc...
+
+
+            so we can access
+            index into the array
+
+            ldx index
+            lda (Data.height), X
+
+        }
+        Init: { 
+            jmp Reset
+            we have jumped (GOTO), so the Reset rts will act as this subroutines rts, if that makes sense.
+
+        }
+        Reset: {
+            // do reset stuff
+            rts
+        }
+        Add: { 
+           the .X register is used in this SYSTEM as the current index
+           so  
+           set .X to the current value
+           ldx Data.nextIndex
+           inc Data.nextIndex
+
+           now .X has the current index and Data.nextIndex lives up to it's name
+       
+        }
+        Check: { 
+            is a bool return
+            uses clc/sec - when carry set then true
+        }
+}
+
+.macro SM_AddArea (x,y,w,h) {
+    jsr AREA.Add
+    now .X has the current index
+    // set AREA.Data with x,y,w,h etc
+}
+
+In the system AREA 
+- it is *like* a static module
+- macros handle the "leaky abstraction" part of setting up the data etc
+- .X which is an *indexing register* is use as the *index* - duh.
+- boolean methods use the carry flag to return the boolean result
+- the SYSTEM is accessed via the .macros, like a public wrapper
