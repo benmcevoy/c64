@@ -7,8 +7,10 @@
 
 .namespace Agent{
     .namespace PlayerBehaviors {
-        .const JERK = -72
-        .const SPEED = 80
+        .const JERK = -96
+        .const MAX_SPEED = 80
+        .const ACCELERATION = 4
+        .const FRICTION = 2
         .const LEFTGLYPH = 79
         .const RIGHTGLYPH = 80
         .const IDLEGLYPH = 93
@@ -53,6 +55,25 @@
                 sta _dy
             !:
 
+            // friction
+            lda #ACTION_IS_JUMPING
+            bit _playerAction
+            bne exit
+                lda _dx
+                beq exit
+                bpl case1
+                    clc
+                    adc #FRICTION
+                    sta _dx
+                    jmp exit
+                
+                case1: 
+                    sec
+                    sbc #FRICTION
+                    sta _dx
+
+            exit:
+
             rts
         }
 
@@ -70,28 +91,30 @@
             lda #Joystick.LEFT
             bit _playerAction 
             beq !+
-                lda #ACTION_IS_JUMPING
-                bit _playerAction
-                beq !skip+
-                    Set _dx:#-SPEED/2
-                    jmp !done+
-                !skip:
-                    Set _dx:#-SPEED
-                !done:
+                lda _dx
+                sec
+                sbc #ACCELERATION
+                sta _dx
+                cmp #-MAX_SPEED
+                bpl !skip_clamp+
+                    Set _dx:#-MAX_SPEED
+                !skip_clamp:
+
                 SetPtr(Agent.CurrentState, Running)
             !:
 
             lda #Joystick.RIGHT
             bit _playerAction 
             beq !+
-                lda #ACTION_IS_JUMPING
-                bit _playerAction
-                beq !skip+
-                    Set _dx:#SPEED/2
-                    jmp !done+
-                !skip:
-                    Set _dx:#SPEED
-                !done:
+                lda _dx
+                clc
+                adc #ACCELERATION
+                cmp #MAX_SPEED
+                sta _dx
+                bmi !skip_clamp+
+                    Set _dx:#MAX_SPEED
+                !skip_clamp:
+
                 SetPtr(Agent.CurrentState, Running)
             !:
 
@@ -165,7 +188,7 @@
                 bne !skip+
                     Set _x:_x0
                     Set _x+1:_x0+1
-                    Set _dx:#0
+                   // Set _dx:#0
                 !skip:
                     jmp end_h
 
@@ -176,7 +199,7 @@
                 bne !skip+
                     Set _x:_x0
                     Set _x+1:_x0+1
-                    Set _dx:#0
+                  //  Set _dx:#0
                 !skip:
             end_h:
 

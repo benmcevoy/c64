@@ -20,9 +20,11 @@
     .label y0 = 16 // word
     .label bgGlyph = 18
     .label bgColor = 19
-    .label CurrentState = 20 // word
+    .label bgX = 20
+    .label bgY = 21
+    .label CurrentState = 22 // word
     
-    .label Length = 22
+    .label Length = 24
 
     // PICO-8 uses "flags" to associate behaviours, e.g. a tile or char with flag0 set is "collidable", a tile with flag1 set is a health buff, etc.
     // consider if we could use the top nibble of colour ram to store flags per character tile?  Thought about WALL, ANIM0, ANIM1, ANIM2 or WALL, BOUNCY, SLOW, ???

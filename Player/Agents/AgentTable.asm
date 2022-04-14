@@ -29,11 +29,13 @@
         y0: .word 0
         bgGlyph: .byte 81
         bgColor: .byte GRAY
+        bgX: .byte 0
+        bgY: .byte 0
         CurrentState: .word PlayerBehaviors.Idle
     }
 
     PlayerGadget:{
-        destroyed: .byte 1
+        destroyed: .byte 0
         x: .word $0a00
         y: .word $0200
         z: .byte 0
@@ -47,6 +49,8 @@
         y0: .word 0
         bgGlyph: .byte 32
         bgColor: .byte 0
+        bgX: .byte 0
+        bgY: .byte 0        
         CurrentState: .word AgentBehaviors.NoOperation
 
     }

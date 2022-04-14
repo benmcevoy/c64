@@ -16,6 +16,12 @@ BasicUpstart2(Start)
 //#import "./Backgrounds/jungle.asm"
 //#import "./Backgrounds/clouds.asm"
 
+
+.const DELAY = 20;
+_delay: .byte DELAY
+_delay1: .byte 0
+_semaphore: .byte 0
+
 Start: {
     jsr Kernal.ClearScreen
 
@@ -24,9 +30,9 @@ Start: {
   
     // Raster IRQ
     sei
-        lda #<GameUpdate            
+        lda #<Render            
         sta $0314
-        lda #>GameUpdate
+        lda #>Render
         sta $0315
 
         // clear high bit of raster flag
@@ -44,41 +50,29 @@ Start: {
     cli
 
     loop:
-        // TODO: I should be able to move the Update and Collision
-        // code here and just render on the IRQ
-        // when I try that it looks like my pointers get clobbered, which is expected
-        // need more ZP space and setup a pointer per method, hello globals :)
+        lda _semaphore
+        bne RenderRequested
 
-        // a lot of the work could be scheduled, e.g. readjoystick only needs to happen like every 2ms or less
-        // you can create a budget over the raster lines, e.g. allocate 20% to render, 1% for inputs, etc
-        // or maybe a scheduler runs first, tracking timeout till next piece of work
-        // and allocates the scan lines accordingly.  sounds complicated.
+            dec _delay
+            bne !++
+                Set _delay:#DELAY
+                dec _delay1
+                bne !+
+                    Set _delay1:#DELAY
+                    jsr UpdateAgents
+                !:
+            !:
 
-        // for scheduling, the "simple" approach i just thought of
-        // is to have a flag that toggles the next piece of work between Update/Render
-        // so each subroutine gets a full frame each
-        // raster IRQ is 50Hz for PAL, so you are getting 25fps which is OK
-        // this could be extended to interleave things, e.g. Render every 2nd frame, but the odd frames can be distributed amongst other things?
-        // might do a little reading on scheduling in an OS.
-        // consider
-        //  - priority
-        //  - frequency
-        //  - rentrancy or concurrency - CLOBBERING, lol. each worker needs it's own state
-        //      is there reentrancy?  on an IRQ the current PC is pushed to the stack, then RTI lets it resume
+            jmp loop
 
-        // schedule
-        // update
-        // render
-        // cleanup
+        RenderRequested:
+            jsr RenderAgents
+            Set _semaphore:#0
 
-        // the version player9 has a nice feel, i think because it updates on the cia timer instead, seems like it is updating more than 50 fps
-        // also the jump speed is half
-
-    // infinite loop
     jmp loop
 }
 
-GameUpdate: {
+Render: {
     // ack irq
     lda    #$01
     sta    $d019
@@ -86,18 +80,13 @@ GameUpdate: {
     lda    #00
     sta    $d012
 
-    // - set border color change for some perf indicator
-    Set $d020:#WHITE
-    jsr UpdateAgents
-         
-    Set $d020:#GREEN
-    jsr RenderAgents
-    
-    // - set border color change for some perf indicator
-    Set $d020:#BLACK
-
-    // end irq
-    pla;tay;pla;tax;pla
+    lda _semaphore
+    bne !skip+
+        // request render
+        Set _semaphore:#1
+    !skip:
+        // end irq
+        pla;tay;pla;tax;pla
     rti 
 }
 

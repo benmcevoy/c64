@@ -2,7 +2,7 @@
 
 #define FASTMATH
 
-.const GRAVITY = 2
+.const GRAVITY = 4
 .const GROUND_CHAR = 224
 .const GROUND_COLOR = BLACK
 

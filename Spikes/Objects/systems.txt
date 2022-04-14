@@ -53,3 +53,9 @@ In the system AREA
 - .X which is an *indexing register* is use as the *index* - duh.
 - boolean methods use the carry flag to return the boolean result
 - the SYSTEM is accessed via the .macros, like a public wrapper
+
+
+Self modifing code
+
+// reserve two bytes and give it a silly memorable value
+Label: #$BEEF
