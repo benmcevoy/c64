@@ -10,7 +10,7 @@
         .const JERK = -96
         .const MAX_SPEED = 80
         .const ACCELERATION = 4
-        .const FRICTION = 2
+        FRICTION: .byte 100 // about 80% - value is signed, so we only have 0-127 to represent 0..1
         .const LEFTGLYPH = 79
         .const RIGHTGLYPH = 80
         .const IDLEGLYPH = 93
@@ -58,20 +58,14 @@
             // friction
             lda #ACTION_IS_JUMPING
             bit _playerAction
-            bne exit
-                lda _dx
-                beq exit
-                bpl case1
-                    clc
-                    adc #FRICTION
-                    sta _dx
-                    jmp exit
-                
-                case1: 
-                    sec
-                    sbc #FRICTION
-                    sta _dx
-
+            beq apply
+                jmp exit
+                apply:
+                    Set __tmp0:#0
+                    Set __tmp1:#0
+                    // fixed point:  dx.0 * 0.FRICTION
+                    SMulW32 __tmp0:_dx:FRICTION:__tmp1
+                    Set _dx:__val2
             exit:
 
             rts
@@ -91,30 +85,28 @@
             lda #Joystick.LEFT
             bit _playerAction 
             beq !+
-                lda _dx
-                sec
-                sbc #ACCELERATION
-                sta _dx
-                cmp #-MAX_SPEED
-                bpl !skip_clamp+
-                    Set _dx:#-MAX_SPEED
-                !skip_clamp:
-
+                lda #ACTION_IS_JUMPING
+                bit _playerAction
+                bne !skip+
+                    lda _dx
+                    sec
+                    sbc #ACCELERATION
+                    sta _dx
+                !skip:
                 SetPtr(Agent.CurrentState, Running)
             !:
 
             lda #Joystick.RIGHT
             bit _playerAction 
             beq !+
-                lda _dx
-                clc
-                adc #ACCELERATION
-                cmp #MAX_SPEED
-                sta _dx
-                bmi !skip_clamp+
-                    Set _dx:#MAX_SPEED
-                !skip_clamp:
-
+                lda #ACTION_IS_JUMPING
+                bit _playerAction
+                bne !skip+
+                    lda _dx
+                    clc
+                    adc #ACCELERATION
+                    sta _dx
+                !skip:
                 SetPtr(Agent.CurrentState, Running)
             !:
 

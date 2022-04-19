@@ -59,3 +59,64 @@ Self modifing code
 
 // reserve two bytes and give it a silly memorable value
 Label: #$BEEF
+
+
+
+# subroutines
+
+bool Foo(A,X,Y,c)
+
+accepts and returns
+
+{empty set}
+bool
+byte
+byte, bool
+byte, byte
+byte, byte, bool
+byte, byte, byte
+byte, byte, byte, bool
+word
+word, bool
+byte, word
+byte, word, bool
+word, byte
+word, byte, bool
+
+returns upto 24 bits and carry
+carry normally signifies success/fail
+
+always be using registers
+avoid state
+state belongs to a SYSTEM not a FUNCTION
+temporay storage is available as ZP memory (__tmp0-3)
+
+ use registers and avoid memory usage 
+    stack pha/pla is about same speed as sta/lda
+    zero page is fastest
+ avoid branches (hard but optimal)
+
+
+# .macro
+
+
+.macro Foo(a,b,c,d,etc)
+{
+    Setup registers, understands the conventions of the target routine
+    jsr routine  upto 25 bits
+    optionally teardown or cleanup
+}
+
+# Data types
+
+Pick a lane!  only 8bit and 16 bit values.  for multiplication we can "decimate" (binarate?) 32 bit results to 16 bit.
+
+
+# an extra flag
+
+CLV clear overflow
+
+can be set :
+
+lda #%00100000
+bit (memory address that contains $60)

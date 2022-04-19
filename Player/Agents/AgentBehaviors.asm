@@ -63,5 +63,14 @@
         NoOperation: {
             rts
         }
+
+        ColorCycle: {
+            
+             Get(Agent.color, color)
+             inc color
+             Set(Agent.color, color)
+             rts
+             color: .byte 0
+        }
     }
 }

@@ -34,24 +34,25 @@
         CurrentState: .word PlayerBehaviors.Idle
     }
 
-    PlayerGadget:{
+    Agent2:{
         destroyed: .byte 0
         x: .word $0a00
         y: .word $0200
         z: .byte 0
         dx: .byte 0
         dy: .byte 0
-        Update: .word AgentBehaviors.NoOperation 
+        Update: .word AgentBehaviors.ColorCycle 
         Render: .word AgentBehaviors.DefaultRender 
-        glyph: .byte 36 // .
+        glyph: .byte 81 // .
         color: .byte GREEN
         x0: .word 0
         y0: .word 0
         bgGlyph: .byte 32
-        bgColor: .byte 0
+        bgColor: .byte GRAY
         bgX: .byte 0
         bgY: .byte 0        
         CurrentState: .word AgentBehaviors.NoOperation
 
     }
+  
 }

@@ -16,6 +16,8 @@ BasicUpstart2(Start)
 //#import "./Backgrounds/jungle.asm"
 //#import "./Backgrounds/clouds.asm"
 
+.var music = LoadSid("A_Mind_Is_Born.sid")	
+
 
 .const DELAY = 20;
 _delay: .byte DELAY
@@ -24,6 +26,7 @@ _semaphore: .byte 0
 
 Start: {
     jsr Kernal.ClearScreen
+    jsr music.init	
 
     Call Background.Draw
     Call DrawGameField
@@ -52,7 +55,6 @@ Start: {
     loop:
         lda _semaphore
         bne RenderRequested
-
             dec _delay
             bne !++
                 Set _delay:#DELAY
@@ -62,10 +64,10 @@ Start: {
                     jsr UpdateAgents
                 !:
             !:
-
             jmp loop
 
         RenderRequested:
+            jsr music.play
             jsr RenderAgents
             Set _semaphore:#0
 
@@ -77,7 +79,7 @@ Render: {
     lda    #$01
     sta    $d019
     // set next irq line number
-    lda    #00
+    lda    #100
     sta    $d012
 
     lda _semaphore
@@ -85,8 +87,9 @@ Render: {
         // request render
         Set _semaphore:#1
     !skip:
-        // end irq
-        pla;tay;pla;tax;pla
+
+    // end irq
+    pla;tay;pla;tax;pla
     rti 
 }
 
@@ -115,9 +118,6 @@ UpdateAgents: {
 
     loop:
         dec index
-    
-        lda index
-        cmp #0
         bpl !+
             jmp exit
         !:
@@ -127,7 +127,6 @@ UpdateAgents: {
         bcs loop
 
         AgentInvoke(Agent.Update)
-
         jmp loop
 
     exit:    
@@ -142,9 +141,6 @@ RenderAgents: {
 
     loop:
         dec index
-        
-        lda index
-        cmp #0
         bpl !+
             jmp exit
         !:
@@ -161,3 +157,8 @@ RenderAgents: {
 
     index: .byte 0
 }
+
+
+//---------------------------------------------------------
+			*=music.location "Music"
+			.fill music.size, music.getData(i)	

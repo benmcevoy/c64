@@ -6,6 +6,8 @@
 .label __tmp2 = $04
 .label __tmp3 = $05
 
+.label __overflowSet = $06 
+
 // ZP arity args for macro's __arg0-3.
 .label __arg0 = $94
 .label __arg1 = $95
@@ -26,6 +28,13 @@
 
 /* indicates if a pointer action was handled successfully */
 .const ACTION_HANDLED = $FF
+
+/* set overflow flag, CLV clears.  Must call Set __overflowSet:#$60 at least once before using this */
+.pseudocommand sev {
+    lda #%00100000
+    bit __overflowSet
+}
+
 
 /* @Command Negate the operand two's complement value in place. op is updated with the negated value. */
 .pseudocommand Negate op {

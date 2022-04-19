@@ -33,7 +33,7 @@
     /* Current object */
     .label Current = __ptr3
 
-    /* @Macro @global
+    /* @Macro
         Invoke method on Current object
     */
     .macro @AgentInvoke(field){
@@ -49,19 +49,19 @@
         Call (__methodPtr)
     }
 
-    /* @Macro @global
+    /* @Macro
        Carry set is if current object destroyed.
     */
     .macro @AgentIsDestroyed() {
         clc
-        lda Agent.Current
-        beq!+
+        GetA(Agent.destroyed)
+        beq !+
             // true
             sec
         !:
     }
     
-    /* @Macro @global
+    /* @Macro
        Set Current object via index
     */
     .macro @AgentSetCurrent(index) {
