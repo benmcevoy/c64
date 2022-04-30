@@ -7,10 +7,8 @@
 
 .namespace Agent{
     .namespace PlayerBehaviors {
-        .const JERK = -96
-        .const MAX_SPEED = 80
-        .const ACCELERATION = 4
-        FRICTION: .byte 100 // about 80% - value is signed, so we only have 0-127 to represent 0..1
+        .const JERK = -120
+        .const SPEED = 80
         .const LEFTGLYPH = 79
         .const RIGHTGLYPH = 80
         .const IDLEGLYPH = 93
@@ -55,19 +53,6 @@
                 sta _dy
             !:
 
-            // friction
-            lda #ACTION_IS_JUMPING
-            bit _playerAction
-            beq apply
-                jmp exit
-                apply:
-                    Set __tmp0:#0
-                    Set __tmp1:#0
-                    // fixed point:  dx.0 * 0.FRICTION
-                    SMulW32 __tmp0:_dx:FRICTION:__tmp1
-                    Set _dx:__val2
-            exit:
-
             rts
         }
 
@@ -85,13 +70,11 @@
             lda #Joystick.LEFT
             bit _playerAction 
             beq !+
+                Set _dx:#-SPEED/2
                 lda #ACTION_IS_JUMPING
                 bit _playerAction
                 bne !skip+
-                    lda _dx
-                    sec
-                    sbc #ACCELERATION
-                    sta _dx
+                    Set _dx:#-SPEED
                 !skip:
                 SetPtr(Agent.CurrentState, Running)
             !:
@@ -99,13 +82,11 @@
             lda #Joystick.RIGHT
             bit _playerAction 
             beq !+
+                Set _dx:#SPEED/2
                 lda #ACTION_IS_JUMPING
                 bit _playerAction
                 bne !skip+
-                    lda _dx
-                    clc
-                    adc #ACCELERATION
-                    sta _dx
+                    Set _dx:#SPEED
                 !skip:
                 SetPtr(Agent.CurrentState, Running)
             !:
@@ -113,9 +94,12 @@
             lda #ACTION_IS_JUMPING
             bit _playerAction
             bne !skip+
+                // lda #Joystick.FIRE
+                // bit _playerAction 
+                // beq !+
                 lda #Joystick.UP
                 bit _playerAction 
-                beq !+
+                beq !+                
                     Set _dy:#JERK
                     SetBit _playerAction:#ACTION_IS_JUMPING
                     SetPtr(Agent.CurrentState, Jumping)
@@ -169,7 +153,6 @@
 
         Collision: {
             lda _dx
-            cmp #0
             bmi checkLeft
             bpl checkRight
 
@@ -180,7 +163,7 @@
                 bne !skip+
                     Set _x:_x0
                     Set _x+1:_x0+1
-                   // Set _dx:#0
+                    Set _dx:#0
                 !skip:
                     jmp end_h
 
@@ -191,12 +174,11 @@
                 bne !skip+
                     Set _x:_x0
                     Set _x+1:_x0+1
-                  //  Set _dx:#0
+                    Set _dx:#0
                 !skip:
             end_h:
 
             lda _dy
-            cmp #0
             bmi checkUp
             bpl checkDown
 
@@ -219,6 +201,7 @@
                     Set _y:_y0
                     Set _y+1:_y0+1
                     Set _dy:#0
+                    Set _dx:#0
                     // allow jump
                     lda _playerAction
                     and #~ACTION_IS_JUMPING

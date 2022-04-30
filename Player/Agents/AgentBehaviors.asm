@@ -64,13 +64,36 @@
             rts
         }
 
-        ColorCycle: {
+        Animate: {
+            Get(Agent.z, z)
+            Get(Agent.color, color)
+            Get(Agent.data, data)
             
-             Get(Agent.color, color)
-             inc color
-             Set(Agent.color, color)
-             rts
-             color: .byte 0
+            dec z
+            bne !+
+                Set z:#12
+                
+                inc data
+                Modulo data:#4
+                lda __val0
+                sta data
+                tax
+                lda palette,x
+                sta color
+
+                Set(Agent.color, color)
+                Set(Agent.data, data)
+            !:
+            
+            
+            Set(Agent.z, z)
+            
+            rts
+            
+            color: .byte 0
+            z: .byte 0
+            data: .byte 0
+            palette: .byte GREY,GREY,GREY,WHITE
         }
     }
 }

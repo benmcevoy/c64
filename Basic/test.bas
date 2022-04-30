@@ -49,7 +49,7 @@
 460 poke sid+14,flo
 
 550 print chr$(19)
-560 print fhi,pw,ff,flo
+560 print str$(fhi) + "  " ,str$(pw) + "  ",str$(ff)+ "  ",str$(flo)+ "  "
 
 600 goto 200
 

@@ -18,7 +18,6 @@ BasicUpstart2(Start)
 
 .var music = LoadSid("A_Mind_Is_Born.sid")	
 
-
 .const DELAY = 20;
 _delay: .byte DELAY
 _delay1: .byte 0
@@ -67,9 +66,11 @@ Start: {
             jmp loop
 
         RenderRequested:
+            //inc $d020
             jsr music.play
             jsr RenderAgents
             Set _semaphore:#0
+            //dec $d020
 
     jmp loop
 }
