@@ -3,6 +3,6 @@
 #define FASTMATH
 
 .namespace Global {
-    time: .byte 0    
+    time: .byte 0   
 }
 

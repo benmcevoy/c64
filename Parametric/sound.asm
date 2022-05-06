@@ -102,9 +102,9 @@
     }
 
     Play: {
-        inc Global.time
+        inc     Global.time
 
-        dec v1Clock
+        dec     v1Clock
         bne !+
             Set     v1Clock:#v1ClockSpeed
             
@@ -120,7 +120,7 @@
             lda     v1NoteIndex
             cmp     #Bars
             bne     !+
-                Set v1NoteIndex:#0
+                Set     v1NoteIndex:#0
         !:
 
         dec v2Clock
@@ -139,10 +139,10 @@
             lda     v2NoteIndex
             cmp     #Bars
             bne     !+
-                Set v2NoteIndex:#0
+                Set     v2NoteIndex:#0
         !:   
 
-        dec v3Clock
+        dec     v3Clock
         bne !+
             Set     v3Clock:#v3ClockSpeed
 
@@ -158,7 +158,7 @@
             lda     v3NoteIndex
             cmp     #MelodyBars
             bne     !+
-                Set v3NoteIndex:#0
+                Set     v3NoteIndex:#0
         !:   
 
         lda upDown
@@ -170,7 +170,7 @@
         
         down:
             dec clock3
-            // don';'t let the filter bottom out
+            // don't let the filter bottom out
             lda clock3
             cmp #16
             bne updateFilter
@@ -187,12 +187,11 @@
     v2NoteIndex: .byte 0
     v3NoteIndex: .byte 0
 
-    v1Clock:      .byte v1ClockSpeed
-    v2Clock:      .byte v2ClockSpeed
-    v3Clock:      .byte v3ClockSpeed
-    clock3:      .byte 0
-    clock4:      .byte 0
-    upDown:      .byte 0
+    v1Clock:    .byte v1ClockSpeed
+    v2Clock:    .byte v2ClockSpeed
+    v3Clock:    .byte v3ClockSpeed
+    clock3:     .byte 0
+    upDown:     .byte 0
 
     freq_msb:
     .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$01
@@ -211,6 +210,6 @@
     .byte $da,$76,$39,$26,$40,$89,$04,$b4,$9c,$c0,$23,$c8,$b4,$eb,$72,$4c
     .byte $80,$12,$08,$68,$39,$80,$45,$90,$68,$d6,$e3,$99,$00,$24,$10
 
-    bass:    .byte E3, Gb3, B4, Db4, D4, Gb3, E3, Db4, B4, Gb3, D4, Db4
-    melody:     .byte B5, A5, D5, Db5, B5, A5, D5, Db5
+    bass:       .byte E3, Gb3, B4, Db4, D4, Gb3, E3, Db4, B4, Gb3, D4, Db4
+    melody:     .byte B5, A5, D5, E5, B5, A5, D5, Db5
 }
