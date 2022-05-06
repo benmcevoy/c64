@@ -47,7 +47,7 @@
         Set SID+2*7+PW_HI:#$20
         Set SID+2*7+CONTROL:#%01110000
         Set SID+2*7+ATTACK_DECAY:#$10
-        Set SID+2*7+SUSTAIN_RELEASE:#$63       
+        Set SID+2*7+SUSTAIN_RELEASE:#$6A      
     
         // filters and whatnot
         Set SID+3*7+FILTER_CUT_OFF_LO:#%00000111
@@ -58,10 +58,7 @@
         rts
     }
 
-
     .const BARS = 256
-    .const TEMPO = 8
-    .const SUSTAIN_DURATION = 4
 
     beat: .byte 3
 
@@ -118,7 +115,7 @@
     .macro PlayVoice(voiceNumber, clock, noteIndex, pattern) {
         inc     clock
         lda     clock
-        cmp     #TEMPO
+        cmp     Global.tempo
         bne     !skipBeat+
             // reset clock
             Set clock:#0
@@ -149,7 +146,7 @@
 
         !skipBeat:
             lda     clock
-            cmp     #SUSTAIN_DURATION
+            cmp     Global.sustainDuration
             bne !+
                 // trigger off
                 lda SID+voiceNumber*7+CONTROL
@@ -250,7 +247,7 @@
     filter: 
     // round(resolution + dcOffset + resolution * sin(toradians(i * 360 * f / resolution )))
     // e.g. fill sine wave offset 16 with 4 bit resolution
-    .var speed = 1; .var low = 1; .var high = 8
+    .var speed = 16; .var low = 1; .var high = 8
 
     .fill 16,round(high+low+high*sin(toRadians(i*360*(speed+3)/high)))
     .fill 16,round(high+low+high*sin(toRadians(i*360*(speed+3)/high)))

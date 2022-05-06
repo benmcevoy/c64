@@ -5,6 +5,8 @@
 .namespace Global {
     time: .byte 0   
     startAngle: .word 0
+    tempo: .byte 12
+    sustainDuration: .byte 8
 }
 
 // notes
