@@ -123,9 +123,9 @@
 
 // couldn't work out ClearBit using #~value?
 /* Clear bit(s) at address */
-// .pseudocommand ClearBit address:value {
+// .macro ClearBit (address, value) {
 //     lda address
-//     and ~value
+//     and #~value
 //     sta address
 // }
 

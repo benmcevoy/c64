@@ -22,6 +22,25 @@
     .const FILTER_CONTROL = 2
     .const VOLUME = 3
     
+    .const REST = 0
+    .const G1 = $23
+    .const Ab2 = $24
+    .const A2 = $25
+    .const Bb2 = $26
+    .const B2 = $27
+    .const C2 = $28   
+    .const Db2 = $29
+    .const D2 = $2a
+    .const Eb2 = $2b
+    .const E2 = $2c
+    .const F2 = $2d
+    .const Gb2 = $2e
+    .const G2 = $2f
+    .const Ab3 = $30
+    .const A3 = $31
+    .const Bb3 = $32
+    .const B3 = $33
+    .const C3 = $34    
     .const Db3 = $35
     .const D3 = $36
     .const Eb3 = $37
@@ -63,135 +82,134 @@
     .const Eb6 = $5b
     .const E6 = $5c
 
-    .const v1ClockSpeed = 10
-    .const v2ClockSpeed = 11
-    .const v3ClockSpeed = 2*v1ClockSpeed*v2ClockSpeed
-    .const Bars = 12
-    .const MelodyBars = 8
+    .const Bars = 64
+    .const TEMPO = 8
+    .const SUSTAIN_DURATION = 4
 
     Init: {
-        // voice 1
-        Set SID+0*7+FREQ_HI:#$00
+        // voice 1 instrument
         Set SID+0*7+PW_LO:#$00
-        Set SID+0*7+PW_HI:#$80
-        Set SID+0*7+CONTROL:#%01010001
-        Set SID+0*7+ATTACK_DECAY:#$12
-        Set SID+0*7+SUSTAIN_RELEASE:#$60
+        Set SID+0*7+PW_HI:#$F0
+        Set SID+0*7+CONTROL:#%01100000
+        Set voiceControl+0:#%01100000
+        Set SID+0*7+ATTACK_DECAY:#$40
+        Set SID+0*7+SUSTAIN_RELEASE:#$A3
 
-        // voice 2
+        // voice 2 instrument
         Set SID+1*7+PW_LO:#$00
-        Set SID+1*7+PW_HI:#$80
-        Set SID+1*7+CONTROL:#%00110001
-        Set SID+1*7+ATTACK_DECAY:#$13
-        Set SID+1*7+SUSTAIN_RELEASE:#$60   
+        Set SID+1*7+PW_HI:#$F0
+        Set SID+1*7+CONTROL:#%01100000
+        Set voiceControl+1:#%01100000
+        Set SID+1*7+ATTACK_DECAY:#$40
+        Set SID+1*7+SUSTAIN_RELEASE:#$A3
 
-        // voice 3
+        // voice 3 instrument
         Set SID+2*7+PW_LO:#$00
-        Set SID+2*7+PW_HI:#$A0
-        Set SID+2*7+CONTROL:#%01010001
-        Set SID+2*7+ATTACK_DECAY:#$90
-        Set SID+2*7+SUSTAIN_RELEASE:#$30            
-
+        Set SID+2*7+PW_HI:#$F0
+        Set SID+2*7+CONTROL:#%01010000
+        Set voiceControl+2:#%01010000
+        Set SID+2*7+ATTACK_DECAY:#$40
+        Set SID+2*7+SUSTAIN_RELEASE:#$A3        
+    
         // filters and whatnot
         Set SID+3*7+FILTER_CUT_OFF_LO:#%00000111
         Set SID+3*7+FILTER_CUT_OFF_HI:#%00001111
-        Set SID+3*7+FILTER_CONTROL:#%11110111
-        Set SID+3*7+VOLUME:#%00111111
+        Set SID+3*7+FILTER_CONTROL:#%11110100
+        Set SID+3*7+VOLUME:#%00011111
 
         rts
     }
 
-    Play: {
-        inc     Global.time
-
-        dec     v1Clock
-        bne !+
-            Set     v1Clock:#v1ClockSpeed
-            
-            ldx     v1NoteIndex
-            lda     bass,x  
-            tax
-            lda     freq_msb,x
-            sta     SID+0*7+FREQ_HI         
-            lda     freq_lsb,x
-            sta     SID+0*7+FREQ_LO               
-
-            inc     v1NoteIndex
-            lda     v1NoteIndex
-            cmp     #Bars
-            bne     !+
-                Set     v1NoteIndex:#0
-        !:
-
-        dec v2Clock
-        bne !+
-            Set     v2Clock:#v2ClockSpeed
-
-            ldx     v2NoteIndex               
-            lda     bass,x   
-            tax
-            lda     freq_msb,x
-            sta     SID+1*7+FREQ_HI         
-            lda     freq_lsb,x
-            sta     SID+1*7+FREQ_LO 
-
-            inc     v2NoteIndex
-            lda     v2NoteIndex
-            cmp     #Bars
-            bne     !+
-                Set     v2NoteIndex:#0
-        !:   
-
-        dec     v3Clock
-        bne !+
-            Set     v3Clock:#v3ClockSpeed
-
-            ldx     v3NoteIndex               
-            lda     melody,x   
-            tax
-            lda     freq_msb,x
-            sta     SID+2*7+FREQ_HI         
-            lda     freq_lsb,x
-            sta     SID+2*7+FREQ_LO 
-
-            inc     v3NoteIndex
-            lda     v3NoteIndex
-            cmp     #MelodyBars
-            bne     !+
-                Set     v3NoteIndex:#0
-        !:   
-
-        lda upDown
-        bne down
-            inc clock3
-            bne updateFilter
-                inc upDown
-                jmp updateFilter
-        
-        down:
-            dec clock3
-            // don't let the filter bottom out
-            lda clock3
-            cmp #16
-            bne updateFilter
-                dec upDown
-
-        updateFilter:
-            Set SID+3*7+FILTER_CUT_OFF_HI:clock3
-            Set SID+2*7+PW_HI:clock3
-
-        jmp     $ea31                  
-    }
+    voiceControl: .byte 0,0,0
+    beat: .byte 0
+    bar: .byte 0
 
     v1NoteIndex: .byte 0
     v2NoteIndex: .byte 0
     v3NoteIndex: .byte 0
 
-    v1Clock:    .byte v1ClockSpeed
-    v2Clock:    .byte v2ClockSpeed
-    v3Clock:    .byte v3ClockSpeed
-    clock3:     .byte 0
-    upDown:     .byte 0
+    v1Clock:    .byte 0
+    v2Clock:    .byte SUSTAIN_DURATION/2
+    v3Clock:    .byte 2
+
+    Play: {
+        inc     Global.time
+
+        // The tempo
+        // 4 beats to a bar
+        // The Play routine is called on the CIA clock at 60Hz
+        // for a given BPM we have n "ticks"  
+        // the below is wrong...
+        // BPM = 14400/n
+        // e.g for 96 BPM is  n = 14400/96 or 150 ticks
+
+        PlayVoice(0, v1Clock, v1NoteIndex, arp)
+        PlayVoice(1, v2Clock, v2NoteIndex, arp1)
+        PlayVoice(2, v3Clock, v3NoteIndex, arp2)
+
+        PlayFilter(v1Clock, v1NoteIndex, filter)
+        
+        jmp     $ea31                  
+    }
+
+    .macro PlayVoice(voiceNumber, clock, noteIndex, pattern) {
+        inc     clock
+        lda     clock
+        cmp     #TEMPO
+        bne     !skipBeat+
+            // reset clock
+            Set clock:#0
+
+            // read note
+            ldx     noteIndex
+            lda     pattern,x  
+            // if REST then skip it
+            beq     !nextNote+
+            tax
+            lda     freq_msb,x
+            sta     SID+voiceNumber*7+FREQ_HI         
+            lda     freq_lsb,x
+            sta     SID+voiceNumber*7+FREQ_LO             
+            
+            // trigger on
+            lda voiceControl+voiceNumber
+            clc
+            adc #1
+            sta SID+voiceNumber*7+CONTROL
+
+        !nextNote:
+            inc     noteIndex
+            lda     noteIndex
+            cmp     #Bars
+            bne     !+
+                Set     noteIndex:#0
+            !:
+
+        !skipBeat:
+            lda     clock
+            cmp     #SUSTAIN_DURATION
+            bne !+
+                // trigger off
+                lda voiceControl+voiceNumber
+                sta SID+voiceNumber*7+CONTROL
+        !:
+    }
+
+    .macro PlayFilter(clock, noteIndex, pattern) {
+        lda     clock
+        bne     !skipBeat+
+           
+            // read note
+            ldx     noteIndex
+            lda     pattern,x  
+            // if REST then skip it
+            beq     !nextNote+
+            
+            sta     SID+3*7+FILTER_CUT_OFF_HI         
+
+        !nextNote:
+        !skipBeat:
+    }
 
     freq_msb:
     .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$01
@@ -210,6 +228,24 @@
     .byte $da,$76,$39,$26,$40,$89,$04,$b4,$9c,$c0,$23,$c8,$b4,$eb,$72,$4c
     .byte $80,$12,$08,$68,$39,$80,$45,$90,$68,$d6,$e3,$99,$00,$24,$10
 
-    bass:       .byte E3, Gb3, B4, Db4, D4, Gb3, E3, Db4, B4, Gb3, D4, Db4
-    melody:     .byte B5, A5, D5, E5, B5, A5, D5, Db5
+    arp: 
+    .byte A3,A4,C5,A3, A4,C5,A3,C5, A3,B4,A3,C5, B4,A3,G3,C5
+    .byte A3,A4,A3,C5, A3,A4,C5,A3, B4,C5,A3,B4, A3,C5,B4,G3
+    .byte A3,A4,C5,A3, A4,C5,A3,C5, A3,B4,A3,C5, B4,A3,G3,C5
+    .byte A3,A4,A3,C5, A3,A4,C5,A3, B4,C5,A3,B4, A3,C5,B4,G3
+
+    arp1: 
+    .byte A3,A4,C5,A3, A4,C5,A3,C5, A3,B4,A3,C5, B4,A3,G3,C5
+    .byte A3,A4,A3,C5, A3,A4,C5,A3, B4,C5,A3,B4, A3,C5,B4,G3
+    .byte A3,A4,C5,A3, A4,C5,A3,C5, A3,B4,A3,C5, B4,A3,G3,C5
+    .byte A3,A4,A3,C5, A3,A4,C5,A3, B4,C5,A3,B4, A3,C5,B4,G3
+
+    arp2: 
+    .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2
+    .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2 
+    .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2
+    .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2 
+
+    filter: 
+    .fill 64,round(127+127*sin(toRadians(i*360/64)))
 }
