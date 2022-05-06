@@ -19,7 +19,7 @@
 
     Update: {
         Set i:#0
-        inc startAngle
+        inc Global.startAngle
         // xRelative is signed and relative to the origin at (CENTERX, CENTERY)
         lda  Global.time
         sec
@@ -45,7 +45,7 @@
             Set CharScreen.PenColor:#BLACK
             Call CharScreen.PlotH:x1:y1
 
-            Rotate startAngle
+            Rotate Global.startAngle
             Modulo __val0:#WIDTH
             Set x1:__val0
             Modulo __val1:#HEIGHT
@@ -81,10 +81,10 @@
             sta CharScreen.PenColor
             Call CharScreen.PlotH:x1:y1
 
-            lda startAngle
+            lda Global.startAngle
             clc
             adc #ROTATION_ANGLE_INCREMENT 
-            sta startAngle
+            sta Global.startAngle
 
             lda writePointer
             cmp #(TRAILS*AXIS)
@@ -104,7 +104,7 @@
         i: .byte 0
         x1: .byte 0
         y1: .byte 0
-        startAngle: .word 0
+
         writePointer: .byte 0
         erasePointer: .byte 0
     }

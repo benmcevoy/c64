@@ -5,7 +5,12 @@
     #import "_math.lib"
     #import "globals.asm"
 
-    .const SID        = 54272
+    // point to chip
+    .const SID_ACTUAL = 54272
+    // point to framebuffer
+    .const SID        = $4000
+    // reserve space for "frame buffer"
+    .pseudopc SID { .fill 24,0 }
 
     // voice
     .const FREQ_LO = 0
@@ -21,116 +26,53 @@
     .const FILTER_CUT_OFF_HI = 1
     .const FILTER_CONTROL = 2
     .const VOLUME = 3
-    
-    .const REST = 0
-    .const G1 = $23
-    .const Ab2 = $24
-    .const A2 = $25
-    .const Bb2 = $26
-    .const B2 = $27
-    .const C2 = $28   
-    .const Db2 = $29
-    .const D2 = $2a
-    .const Eb2 = $2b
-    .const E2 = $2c
-    .const F2 = $2d
-    .const Gb2 = $2e
-    .const G2 = $2f
-    .const Ab3 = $30
-    .const A3 = $31
-    .const Bb3 = $32
-    .const B3 = $33
-    .const C3 = $34    
-    .const Db3 = $35
-    .const D3 = $36
-    .const Eb3 = $37
-    .const E3 = $38
-    .const F3 = $39
-    .const Gb3 = $3a
-    .const G3 = $3b
-    .const Ab4 = $3c
-    .const A4 = $3d
-    .const Bb4 = $3e
-    .const B4 = $3f
-    .const C4 = $40
-    .const Db4 = $41
-    .const D4 = $42
-    .const Eb4 = $43
-    .const E4 = $44
-    .const F4 = $45
-    .const Gb4 = $46
-    .const G4 = $47
-    .const Ab5 = $48
-    .const A5 = $49
-    .const Bb5 = $4a
-    .const B5 = $4b
-    .const C5 = $4c
-    .const Db5 = $4d
-    .const D5 = $4e
-    .const Eb5 = $4f
-    .const E5 = $50
-    .const F5 = $51
-    .const Gb5 = $52
-    .const G5 = $53
-    .const Ab6 = $54
-    .const A6 = $55
-    .const Bb6 = $56
-    .const B6 = $57
-    .const C6 = $58
-    .const Db6 = $59
-    .const D6 = $5a
-    .const Eb6 = $5b
-    .const E6 = $5c
-
-    .const Bars = 64
-    .const TEMPO = 8
-    .const SUSTAIN_DURATION = 4
 
     Init: {
         // voice 1 instrument
         Set SID+0*7+PW_LO:#$00
-        Set SID+0*7+PW_HI:#$F0
-        Set SID+0*7+CONTROL:#%01100000
-        Set voiceControl+0:#%01100000
+        Set SID+0*7+PW_HI:#$40
+        Set SID+0*7+CONTROL:#%00110000
         Set SID+0*7+ATTACK_DECAY:#$40
-        Set SID+0*7+SUSTAIN_RELEASE:#$A3
+        Set SID+0*7+SUSTAIN_RELEASE:#$AA
 
         // voice 2 instrument
         Set SID+1*7+PW_LO:#$00
-        Set SID+1*7+PW_HI:#$F0
-        Set SID+1*7+CONTROL:#%01100000
-        Set voiceControl+1:#%01100000
-        Set SID+1*7+ATTACK_DECAY:#$40
-        Set SID+1*7+SUSTAIN_RELEASE:#$A3
+        Set SID+1*7+PW_HI:#$00
+        Set SID+1*7+CONTROL:#%00010010
+        Set SID+1*7+ATTACK_DECAY:#$20
+        Set SID+1*7+SUSTAIN_RELEASE:#$88
 
         // voice 3 instrument
         Set SID+2*7+PW_LO:#$00
-        Set SID+2*7+PW_HI:#$F0
-        Set SID+2*7+CONTROL:#%01010000
-        Set voiceControl+2:#%01010000
-        Set SID+2*7+ATTACK_DECAY:#$40
-        Set SID+2*7+SUSTAIN_RELEASE:#$A3        
+        Set SID+2*7+PW_HI:#$20
+        Set SID+2*7+CONTROL:#%01110000
+        Set SID+2*7+ATTACK_DECAY:#$10
+        Set SID+2*7+SUSTAIN_RELEASE:#$63       
     
         // filters and whatnot
         Set SID+3*7+FILTER_CUT_OFF_LO:#%00000111
         Set SID+3*7+FILTER_CUT_OFF_HI:#%00001111
-        Set SID+3*7+FILTER_CONTROL:#%11110100
+        Set SID+3*7+FILTER_CONTROL:#%11110101
         Set SID+3*7+VOLUME:#%00011111
 
         rts
     }
 
-    voiceControl: .byte 0,0,0
-    beat: .byte 0
-    bar: .byte 0
+
+    .const BARS = 256
+    .const TEMPO = 8
+    .const SUSTAIN_DURATION = 4
+
+    beat: .byte 3
 
     v1NoteIndex: .byte 0
     v2NoteIndex: .byte 0
     v3NoteIndex: .byte 0
 
-    v1Clock:    .byte 0
-    v2Clock:    .byte SUSTAIN_DURATION/2
-    v3Clock:    .byte 2
+    // set some skew
+    v1Clock:    .byte 2
+    v2Clock:    .byte 0
+    v3Clock:    .byte 1
 
     Play: {
         inc     Global.time
@@ -149,7 +91,28 @@
 
         PlayFilter(v1Clock, v1NoteIndex, filter)
         
+        jsr Render
+
         jmp     $ea31                  
+    }
+
+    Render: {
+        // memcpy SID 0..24
+        ldx #24
+        loop:
+            lda SID,x
+            sta SID_ACTUAL,x
+            dex
+            bne loop
+
+        // unroll the last iteration, saves some cmp/bra
+        lda SID,x
+        sta SID_ACTUAL,x
+
+        // lda     SID+3*7+FILTER_CUT_OFF_HI
+        // sta     Global.startAngle
+
+        rts
     }
 
     .macro PlayVoice(voiceNumber, clock, noteIndex, pattern) {
@@ -172,15 +135,14 @@
             sta     SID+voiceNumber*7+FREQ_LO             
             
             // trigger on
-            lda voiceControl+voiceNumber
-            clc
-            adc #1
+            lda SID+voiceNumber*7+CONTROL
+            ora #%00000001
             sta SID+voiceNumber*7+CONTROL
 
         !nextNote:
             inc     noteIndex
             lda     noteIndex
-            cmp     #Bars
+            cmp     #BARS
             bne     !+
                 Set     noteIndex:#0
             !:
@@ -190,7 +152,8 @@
             cmp     #SUSTAIN_DURATION
             bne !+
                 // trigger off
-                lda voiceControl+voiceNumber
+                lda SID+voiceNumber*7+CONTROL
+                and #%11111110
                 sta SID+voiceNumber*7+CONTROL
         !:
     }
@@ -229,23 +192,81 @@
     .byte $80,$12,$08,$68,$39,$80,$45,$90,$68,$d6,$e3,$99,$00,$24,$10
 
     arp: 
-    .byte A3,A4,C5,A3, A4,C5,A3,C5, A3,B4,A3,C5, B4,A3,G3,C5
-    .byte A3,A4,A3,C5, A3,A4,C5,A3, B4,C5,A3,B4, A3,C5,B4,G3
-    .byte A3,A4,C5,A3, A4,C5,A3,C5, A3,B4,A3,C5, B4,A3,G3,C5
-    .byte A3,A4,A3,C5, A3,A4,C5,A3, B4,C5,A3,B4, A3,C5,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3 
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3             
 
     arp1: 
-    .byte A3,A4,C5,A3, A4,C5,A3,C5, A3,B4,A3,C5, B4,A3,G3,C5
-    .byte A3,A4,A3,C5, A3,A4,C5,A3, B4,C5,A3,B4, A3,C5,B4,G3
-    .byte A3,A4,C5,A3, A4,C5,A3,C5, A3,B4,A3,C5, B4,A3,G3,C5
-    .byte A3,A4,A3,C5, A3,A4,C5,A3, B4,C5,A3,B4, A3,C5,B4,G3
+    .byte REST,REST,REST,REST, REST,REST,REST,REST, REST,REST,REST,REST, REST,REST,REST,REST
+    .byte REST,REST,REST,REST, REST,REST,REST,REST, REST,REST,REST,REST, REST,REST,REST,REST
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3   
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3               
 
     arp2: 
+    // copied from arp
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
+    // end
+    .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2
+    .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2 
+    .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2
+    .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2    
+    .byte E1,E1,E1,E1, E1,E1,E1,E1, E1,E1,E1,E1, E1,E1,E1,E1
+    .byte C1,C1,C1,C1, C1,C1,C1,C1, C1,C1,C1,C1, C1,C1,C1,C1 
+    .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2
+    .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2 
     .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2
     .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2 
     .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2
     .byte A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2, A2,A2,A2,A2 
 
     filter: 
-    .fill 64,round(127+127*sin(toRadians(i*360/64)))
+    // round(resolution + dcOffset + resolution * sin(toradians(i * 360 * f / resolution )))
+    // e.g. fill sine wave offset 16 with 4 bit resolution
+    .var speed = 1; .var low = 1; .var high = 8
+
+    .fill 16,round(high+low+high*sin(toRadians(i*360*(speed+3)/high)))
+    .fill 16,round(high+low+high*sin(toRadians(i*360*(speed+3)/high)))
+
+    .eval high = 12
+    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+3)/high)))
+    
+    .eval high = 8
+    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+3)/high)))
+    
+    .eval high = 12
+    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+8)/high)))
+
+    .eval high = 8
+    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+4)/high)))
+    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+8)/high)))
+    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+8)/high)))
+    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
 }
