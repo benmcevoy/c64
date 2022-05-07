@@ -72,8 +72,11 @@
     v3Clock:    .byte 1
 
     Play: {
-        inc     Global.time
 
+        jsr Render
+
+        inc     Global.time
+ 
         // The tempo
         // 4 beats to a bar
         // The Play routine is called on the CIA clock at 60Hz
@@ -88,8 +91,6 @@
 
         PlayFilter(v1Clock, v1NoteIndex, filter)
         
-        jsr Render
-
         jmp     $ea31                  
     }
 
