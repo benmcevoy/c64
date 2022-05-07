@@ -107,9 +107,6 @@
         lda SID,x
         sta SID_ACTUAL,x
 
-        // lda     SID+3*7+FILTER_CUT_OFF_HI
-        // sta     Global.startAngle
-
         rts
     }
 
@@ -166,7 +163,8 @@
             // if REST then skip it
             beq     !nextNote+
             
-            sta     SID+3*7+FILTER_CUT_OFF_HI         
+            sta     SID+3*7+FILTER_CUT_OFF_HI    
+            sta     Global.time
 
         !nextNote:
         !skipBeat:
