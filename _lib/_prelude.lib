@@ -96,11 +96,29 @@
 
 // TODO: often called mov
 /* @Command Set memory address to value. */
-.pseudocommand Set address:value {
-    .errorif address.getType() == AT_IMMEDIATE, "address must not be IMMEDIATE."
+.pseudocommand Set destination:value {
+    .errorif destination.getType() == AT_IMMEDIATE, "destination must not be IMMEDIATE."
     
     lda value
-    sta address
+    sta destination
+}
+
+.pseudocommand MCopy source:destination {
+    .errorif source.getType() == AT_IMMEDIATE, "source must not be IMMEDIATE."
+    .errorif destination.getType() == AT_IMMEDIATE, "destination must not be IMMEDIATE."
+    
+    lda source
+    sta destination
+}
+
+.pseudocommand MSwap source:destination {
+    .errorif source.getType() == AT_IMMEDIATE, "source must not be IMMEDIATE."
+    .errorif destination.getType() == AT_IMMEDIATE, "destination must not be IMMEDIATE."
+    
+    lda source
+    ldx destination
+    sta destination
+    stx source
 }
 
 /* @Command Set bit(s) high at address. */

@@ -6,7 +6,6 @@
     time: .byte 0   
     startAngle: .word 0
     tempo: .byte 11
-    sustainDuration: .byte 10 
 }
 
 // notes

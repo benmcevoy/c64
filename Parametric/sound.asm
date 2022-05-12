@@ -6,54 +6,51 @@
     #import "globals.asm"
 
     // point to chip
-    .const SID_ACTUAL = 54272
+    .const SID_ACTUAL = $D400
     // point to framebuffer
     .const SID        = $4000
     // reserve space for "frame buffer"
-    .pseudopc SID { .fill 24,0 }
+    .pseudopc SID { .fill 27,0 }
+
+    .const VOICE1 = 0
+    .const VOICE2 = 1
+    .const VOICE3 = 2
+    .const MIX = 3
 
     // voice
     .const FREQ_LO = 0
     .const FREQ_HI = 1
     .const PW_LO = 2
     .const PW_HI = 3
+    
+    /* MSB Noise, Square, Saw, Triangle, Disable/Reset, Ring, Sync, Trigger LSB  */
     .const CONTROL = 4
+    
     .const ATTACK_DECAY = 5
     .const SUSTAIN_RELEASE = 6
 
     // mix
+    /* Low bits 0-2 only */
     .const FILTER_CUT_OFF_LO = 0
     .const FILTER_CUT_OFF_HI = 1
+    /* MSB Resonance3, Resonance2, Resonance1, Resonance0, Ext voice filtered, v3 filter, v2 filter, v1 filter LSB */
     .const FILTER_CONTROL = 2
+    /* MSB v3 disable, High pass filter, band pass filter, low pass filter, volume3, volume2, volume1, volume0 LSB */
     .const VOLUME = 3
 
+    // extras for the voice
+    .const SUSTAIN_DURATION = 25
+
     Init: {
-        // voice 1 instrument
-        Set SID+0*7+PW_LO:#$00
-        Set SID+0*7+PW_HI:#$40
-        Set SID+0*7+CONTROL:#%00110000
-        Set SID+0*7+ATTACK_DECAY:#$40
-        Set SID+0*7+SUSTAIN_RELEASE:#$AA
+        SetInstrument(VOICE1, instrument0)
+        SetInstrument(VOICE2, instrument1)
+        SetInstrument(VOICE3, bassInstrument)                
 
-        // voice 2 instrument
-        Set SID+1*7+PW_LO:#$00
-        Set SID+1*7+PW_HI:#$00
-        Set SID+1*7+CONTROL:#%00010010
-        Set SID+1*7+ATTACK_DECAY:#$20
-        Set SID+1*7+SUSTAIN_RELEASE:#$88
-
-        // voice 3 instrument
-        Set SID+2*7+PW_LO:#$00
-        Set SID+2*7+PW_HI:#$20
-        Set SID+2*7+CONTROL:#%01110000
-        Set SID+2*7+ATTACK_DECAY:#$10
-        Set SID+2*7+SUSTAIN_RELEASE:#$6A      
-    
         // filters and whatnot
-        Set SID+3*7+FILTER_CUT_OFF_LO:#%00000111
-        Set SID+3*7+FILTER_CUT_OFF_HI:#%00001111
-        Set SID+3*7+FILTER_CONTROL:#%11110101
-        Set SID+3*7+VOLUME:#%00011111
+        Set SID+MIX*7+FILTER_CUT_OFF_LO:#%00000111
+        Set SID+MIX*7+FILTER_CUT_OFF_HI:#%00001111
+        Set SID+MIX*7+FILTER_CONTROL:#%11110101
+        Set SID+MIX*7+VOLUME:#%00011111
 
         rts
     }
@@ -68,26 +65,18 @@
 
     // set some skew
     v1Clock:    .byte 2
-    v2Clock:    .byte 0
-    v3Clock:    .byte 1
+    v2Clock:    .byte 1
+    v3Clock:    .byte 0
 
     Play: {
 
         jsr Render
 
         inc     Global.time
- 
-        // The tempo
-        // 4 beats to a bar
-        // The Play routine is called on the CIA clock at 60Hz
-        // for a given BPM we have n "ticks"  
-        // the below is wrong...
-        // BPM = 14400/n
-        // e.g for 96 BPM is  n = 14400/96 or 150 ticks
 
-        PlayVoice(0, v1Clock, v1NoteIndex, arp)
-        PlayVoice(1, v2Clock, v2NoteIndex, arp1)
-        PlayVoice(2, v3Clock, v3NoteIndex, arp2)
+        PlayVoice(VOICE1, v1Clock, v1NoteIndex, arp)
+        PlayVoice(VOICE2, v2Clock, v2NoteIndex, arp1)
+        PlayVoice(VOICE3, v3Clock, v3NoteIndex, arp2)
 
         PlayFilter(v1Clock, v1NoteIndex, filter)
         
@@ -110,6 +99,20 @@
         rts
     }
 
+    .macro SetInstrument (voiceNumber, instrument) {
+        ldx #0
+        loop:
+            lda instrument,X
+            sta SID+voiceNumber*7+PW_LO, X
+            inx
+            cpx #5
+            bne loop
+
+        lda instrument,X
+        // sustain duration
+        sta SID+SUSTAIN_DURATION+voiceNumber
+    }
+
     .macro PlayVoice(voiceNumber, clock, noteIndex, pattern) {
         inc     clock
         lda     clock
@@ -127,7 +130,9 @@
             lda     freq_msb,x
             sta     SID+voiceNumber*7+FREQ_HI         
             lda     freq_lsb,x
-            sta     SID+voiceNumber*7+FREQ_LO             
+            sta     SID+voiceNumber*7+FREQ_LO    
+
+            // add detune here                
             
             // trigger on
             lda SID+voiceNumber*7+CONTROL
@@ -144,13 +149,22 @@
 
         !skipBeat:
             lda     clock
-            cmp     Global.sustainDuration
+            cmp     SID+SUSTAIN_DURATION+voiceNumber
             bne !+
                 // trigger off
                 lda SID+voiceNumber*7+CONTROL
                 and #%11111110
                 sta SID+voiceNumber*7+CONTROL
         !:
+
+        //sweet detune, nice on an lfo, mix with clock skew so fat
+        lda #voiceNumber
+        cmp #2
+        bne !+
+            inc    SID+voiceNumber*7+FREQ_LO
+            inc    SID+voiceNumber*7+FREQ_LO
+
+        !:    
     }
 
     .macro PlayFilter(clock, noteIndex, pattern) {
@@ -169,6 +183,12 @@
         !nextNote:
         !skipBeat:
     }
+
+    // pw_low, pw_hi, control, AD, SR, sustain duration
+    instrument0: .byte  $00, $40, %00110000, $40, $AA, $09
+    instrument1: .byte  $00, $00, %00010010, $20, $88, $0A
+    bassInstrument: .byte  $00, $20, %01110000, $00, $6A, $06
+
 
     freq_msb:
     .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$01
@@ -203,7 +223,7 @@
     .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
     .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3
     .byte A3,A4,C4,A3, A4,C4,A3,C4, A3,B4,A3,C4, B4,A3,G3,C4
-    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3             
+    .byte A3,A4,A3,C4, A3,A4,C4,A3, B4,C4,A3,B4, A3,C4,B4,G3   
 
     arp1: 
     .byte REST,REST,REST,REST, REST,REST,REST,REST, REST,REST,REST,REST, REST,REST,REST,REST
@@ -246,16 +266,16 @@
     filter: 
     // round(resolution + dcOffset + resolution * sin(toradians(i * 360 * f / resolution )))
     // e.g. fill sine wave offset 16 with 4 bit resolution
-    .var speed = 16; .var low = 1; .var high = 8
+    .var speed = 1; .var low = 3; .var high = 7
 
-    .fill 16,round(high+low+high*sin(toRadians(i*360*(speed+3)/high)))
-    .fill 16,round(high+low+high*sin(toRadians(i*360*(speed+3)/high)))
+    .fill 16,round(high+low+high*sin(toRadians(i*360*(speed+0)/high)))
+    .fill 16,round(high+low+high*sin(toRadians(i*360*(speed+0)/high)))
 
     .eval high = 12
-    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+3)/high)))
+    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
     
     .eval high = 8
-    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+3)/high)))
+    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
     
     .eval high = 12
     .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+8)/high)))
@@ -263,6 +283,6 @@
     .eval high = 8
     .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+4)/high)))
     .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+8)/high)))
-    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+8)/high)))
+    .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
     .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
 }
