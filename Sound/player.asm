@@ -29,13 +29,26 @@ Start: {
     jsr $E544
     jsr Sound.Init
 
-    // TODO: try move to a raster irq see if that sounds better
+    // Raster IRQ
     sei
-        lda #<Sound.Play
-        sta $0314    
+        lda #<Sound.Play            
+        sta $0314
         lda #>Sound.Play
         sta $0315
+
+        // clear high bit of raster flag
+        lda    #$1b
+        sta    $d011
+        // enable raster irq
+        lda    #$01
+        sta    $d01a
+        // disable cia timers
+        lda    #$7f
+        sta    $dc0d
+        sta    $dc0c
+        lda    $dc0d
+        lda    $dc0c
     cli
 
-    rts
+    jmp *
 }

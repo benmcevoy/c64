@@ -2,12 +2,14 @@
 
 .namespace Sound {
 
-       // point to chip
+    .const TEMPO = 6
+
+    // point to chip
     .const SID_ACTUAL = $D400
     // point to framebuffer
     .const SID        = $4000
     // reserve space for "frame buffer"
-    .pseudopc SID { .fill 27,0 }
+    .pseudopc SID { .fill 30,0 }
 
     .const VOICE1 = 0
     .const VOICE2 = 1
@@ -36,7 +38,9 @@
     .const VOLUME = 3
 
     // extras for the voice
-    .const SUSTAIN_DURATION = 25
+    .const TUNE = 25
+    .const DURATION = 28
+    
 
 
     freq_msb:

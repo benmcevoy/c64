@@ -57,7 +57,7 @@ music:
 
 initmusic:
 
-  lda #$00         // music num
+  lda #$01         // music num
   ldy #$00
   asl
   sta tempstore
