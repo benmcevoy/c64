@@ -1,0 +1,9 @@
+  10 s=54272
+  20 forl=0to24:pokes+l,0:next
+  30 pokes+1,130
+  40 pokes+5,9
+  50 pokes+15,30
+  60 pokes+24,15
+  70 forl=1to12:pokes+4,21
+  80 fort=1to1000:next:pokes+4,20
+  90 fort=1to1000:next:next

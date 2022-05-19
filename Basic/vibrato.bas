@@ -1,0 +1,24 @@
+10 s=54272
+  20 forl=0to24:pokes+l,0:next
+  30 pokes+3,8
+  40 pokes+5,41:pokes+6,89
+  50 pokes+14,117
+  60 pokes+18,16
+  70 pokes+24,143
+  80 readfr,dr
+  90 iffr=0thenend
+  100 pokes+4,65
+  110 fort=1todr*2
+  120 fq=fr+peek(s+27)/2
+  130 hf=int(fq/256):lf=lqand255
+  140 pokes+0,lf:pokes+1,hf
+  150 next
+  160 pokes+4,64
+  170 goto80
+  500 data4817,2,5103,2,5407,2
+  510 data8583,4,5407,2,8583,4
+  520 data5407,4,8583,12,9634,2
+  530 data10207,2,10814,2,8583,2
+  540 data9634,4,10814,2,8583,2
+  550 data8583,12
+  560 data0,0

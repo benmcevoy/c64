@@ -12,16 +12,34 @@
     .const E5 = $50;    .const F5 = $51;    .const Gb5 = $52;    .const G5 = $53;    .const Ab6 = $54;    .const A6 = $55;    .const Bb6 = $56;    .const B6 = $57;    .const C6 = $58;    .const Db6 = $59;    .const D6 = $5a;    .const Eb6 = $5b
     .const E6 = $5c;
 
-    piano1: 
-    .byte Ab4, TEMPO*4, G3, TEMPO*2, G3, TEMPO*2, $ff
-    piano_oct: 
-    .byte Ab5, TEMPO*4, G4, TEMPO*2, G4, TEMPO*2, $ff
-    
-    metronome: 
-    .byte F4,TEMPO*4,$ff
+  
 
     psytrance: 
     .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+    .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+    .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+    .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+
+    .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
+    .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
+    .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
+    .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
+
+    .byte D2, TEMPO*1, D3, TEMPO*1, D2, TEMPO*1, REST, TEMPO*1, F3, TEMPO*1, D2, TEMPO*1,REST, TEMPO*1,A4, TEMPO*1
+    .byte D2, TEMPO*1, D3, TEMPO*1, D2, TEMPO*1, REST, TEMPO*1, F3, TEMPO*1, D2, TEMPO*1,REST, TEMPO*1,A4, TEMPO*1
+    .byte D2, TEMPO*1, D3, TEMPO*1, D2, TEMPO*1, REST, TEMPO*1, F3, TEMPO*1, D2, TEMPO*1,REST, TEMPO*1,A4, TEMPO*1
+    .byte D2, TEMPO*1, D3, TEMPO*1, D2, TEMPO*1, REST, TEMPO*1, F3, TEMPO*1, D2, TEMPO*1,REST, TEMPO*1,A4, TEMPO*1
+
+    // .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+    // .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+    // .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+    // .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+
+    .byte REST, TEMPO*1, E3, TEMPO*1, REST, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, REST, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+    .byte REST, TEMPO*1, E3, TEMPO*1, REST, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, REST, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+    .byte REST, TEMPO*1, E3, TEMPO*1, REST, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, REST, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+    .byte REST, TEMPO*1, E3, TEMPO*1, REST, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, REST, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+
     .byte $ff
     psytrance1: 
     .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, B3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,C3, TEMPO*1
@@ -30,25 +48,16 @@
     psytranceLead: 
     .byte REST, TEMPO*64
     .byte E4, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-    
-    
     .byte $ff
                    
-
-    bass1:
-    .byte F2,TEMPO*4, F2,TEMPO*4, F2,TEMPO*4, Ab3, TEMPO*2, Bb3, TEMPO*2
-    // .byte F2,TEMPO*4, F2,TEMPO*4, F2,TEMPO*4, F2,TEMPO*1, Ab3,TEMPO*1, Bb3,TEMPO*1, C3, TEMPO*1
-
-    .byte F2,TEMPO*4,F2,TEMPO*4,F2,TEMPO*4, F2,TEMPO*1, F3,TEMPO*1, Ab3,TEMPO*1, Ab4,TEMPO*1  
-    .byte $ff
 
     filter: 
     // round(resolution + dcOffset + resolution * sin(toradians(i * 360 * f / resolution )))
     // =3+(1+SIN(A1*PI()/180*10))*2
     // e.g. fill sine wave offset 16 with 4 bit resolution
-    .var speed = 4; .var low = 4; .var high = 24
+    .var speed = 2; .var low = 4; .var high = 24
 
-    .fill 64,round(low+(1+sin(i*(360/256)*speed))*(high-low)/2)
+    .fill 32,round(low+(1+sin(i*(360/256)*speed))*(high-low)/2)
     
     .byte $ff
 
