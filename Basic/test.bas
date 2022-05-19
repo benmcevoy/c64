@@ -49,6 +49,7 @@
 460 poke sid+14,flo
 
 550 print chr$(19)
+555 print "f-hi-v1" ,"pw-v3","fil-fhi","flo-v3"
 560 print str$(fhi) + "  " ,str$(pw) + "  ",str$(ff)+ "  ",str$(flo)+ "  "
 
 600 goto 200

@@ -12,8 +12,6 @@
     .const E5 = $50;    .const F5 = $51;    .const Gb5 = $52;    .const G5 = $53;    .const Ab6 = $54;    .const A6 = $55;    .const Bb6 = $56;    .const B6 = $57;    .const C6 = $58;    .const Db6 = $59;    .const D6 = $5a;    .const Eb6 = $5b
     .const E6 = $5c;
 
-  
-
     psytrance: 
     .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
     .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
@@ -42,8 +40,11 @@
 
     .byte $ff
     psytrance1: 
-    .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, B3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,C3, TEMPO*1
+    .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
     .byte $ff
+    psytrance2: 
+    .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
+    .byte $ff    
 
     psytranceLead: 
     .byte REST, TEMPO*64
@@ -63,5 +64,7 @@
 
     /* *************************************************************************** */
     voice1: 
-        .word psytrance, psytrance, psytrance, psytrance, psytrance1, psytrance1, $ffff
+        .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2,psytrance2, $ffff
+    voice2: 
+        .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2,psytrance2, $ffff
 }

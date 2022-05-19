@@ -8,24 +8,34 @@
 
     .const NOTEINDEX = 0
     .const CLOCK = 1
-    .const PATTERN = 2
+    .const PATTERNSTART = 2
+    .const PATTERNINDEX = 4
+    .const PATTERN = 5
 
     Song: {
         v1NoteIndex: .byte 0
         v1Clock:    .byte 0
-        v1CurrentPattern: .word $0000
+        v1PatternStart: .word voice1
+        v1PatternIndex: .byte 0
+        v1Pattern: .word $0000
 
         v2NoteIndex: .byte 0
         v2Clock:    .byte 0
-        v2CurrentPattern: .word $0000
+        v2PatternStart: .word voice2
+        v2PatternIndex: .byte 0
+        v2Pattern: .word $0000
 
         v3NoteIndex: .byte 0
         v3Clock:    .byte 0
-        v3CurrentPattern: .word $0000
+        v3PatternStart: .word $0000
+        v3PatternIndex: .byte 0
+        v3Pattern: .word $0000
 
         controlChannelIndex: .byte 0
         controlChannelClock:    .byte 0
-        controlChannelCurrentPattern: .word $0000
+        controlChannelPatternStart: .word $0000
+        controlChannelPatternIndex: .byte 0
+        controlChannelPattern: .word $0000
     }
 
     Init: {
@@ -33,11 +43,8 @@
         SetInstrument(VOICE2, sawDetune)
         SetInstrument(VOICE3, bass)      
 
-        // TODO: not working
-        lda #<psytrance
-        sta Song+0*4+PATTERN
-        lda #>psytrance
-        sta Song+0*4+PATTERN+1
+        NextPattern(VOICE1)
+        NextPattern(VOICE2)
 
         // filters and whatnot
         Set SID+MIX*7+FILTER_CUT_OFF_LO:#%00000111
@@ -62,9 +69,9 @@
         dec $d020
         UpdateChannel(VOICE1)
         UpdateChannel(VOICE2)
-        UpdateChannel(VOICE3)
+        // UpdateChannel(VOICE3)
 
-        PlayFilter(MIX, filter)
+        // PlayFilter(MIX, filter)
 
         inc $d020
         inc $d020
@@ -74,80 +81,110 @@
     }
     
     .macro UpdateChannel(channelNo) {
+        .var noteClock = Song+channelNo*7+CLOCK
+        .var noteIndex = Song+channelNo*7+NOTEINDEX
+        .var noteFreqLo = SID+channelNo*7+FREQ_LO
+        .var noteFreqHi = SID+channelNo*7+FREQ_HI
+        .var noteControl = SID+channelNo*7+CONTROL
 
-        // TODO: the current pattern .word - need to check addressing modes as this may need to be ZP?
-        // the voice needs to point at the patternList and jump a couple of bytes
-        // or use hi-lo lookups
-        .var pattern = psytrance//Song+voiceNumber*4+PATTERN
+        .var instrumentDuration = SID+channelNo+DURATION
+        .var instrumentTune = SID+channelNo+TUNE
+        
+        .var songPattern = Song+channelNo*7+PATTERN
+        .var songPatternIndex = Song+channelNo*7+PATTERNINDEX
 
-        inc     Song+channelNo*4+CLOCK
-        lda     Song+channelNo*4+CLOCK
-        cmp     SID+channelNo+DURATION
-        bne     !skipBeat+
+        .var pattern = __ptr1
+
+        Set pattern:songPattern
+        Set pattern+1:songPattern+1
+
+        inc     noteClock
+        lda     noteClock
+        cmp     instrumentDuration
+        beq     cont
+        jmp     !skip+
+
+            cont:
             // reset clock
-            Set Song+channelNo*4+CLOCK:#0
+            Set noteClock:#0
 
             !readNote:
-                ldx     Song+channelNo*4+NOTEINDEX
-                lda     pattern,x  
+                ldy     noteIndex
+                lda     (pattern),y  
                 // if REST then skip setting the tone
                 beq     !noteExtras+
                 // if end of pattern reset note index
                 cmp     #$ff
-                bne     !+
-                    Set     Song+channelNo*4+NOTEINDEX:#0
+                bne     !++
+                    // reset noteIndex
+                    Set     noteIndex:#0
+                    
+                    NextPattern(channelNo)
+
+                    // check for song end $ffff
+                    lda songPattern
+                    cmp #$ff
+                    bne !+
+                         lda songPattern+1
+                         cmp #$ff
+                         bne !+
+                            // TODO: start song again?
+                            Set     songPatternIndex:#0
+                            NextPattern(channelNo)
+                    !:
+
                     jmp     !readNote-
                 !:
 
                 // set tone
                 tax
                 lda     freq_msb,x
-                sta     SID+channelNo*7+FREQ_HI         
+                sta     noteFreqHi  
                 lda     freq_lsb,x
                 // detune is property of instrument
                 clc
-                adc     SID+channelNo+TUNE
-                sta     SID+channelNo*7+FREQ_LO
+                adc     instrumentTune
+                sta     noteFreqLo
                 
                 // trigger on
-                lda SID+channelNo*7+CONTROL
+                lda noteControl
                 ora #%00000001
-                sta SID+channelNo*7+CONTROL
+                sta noteControl
 
             !noteExtras:
-                inc     Song+channelNo*4+NOTEINDEX
-                ldx     Song+channelNo*4+NOTEINDEX
-                lda     pattern,x  
+                inc     noteIndex
+                ldy     noteIndex
+                lda     (pattern),y  
                 // expect duration in the high-low nibbles
-                sta     SID+channelNo+DURATION         
+                sta     instrumentDuration         
             
                 // next note, command or data
-                inc     Song+channelNo*4+NOTEINDEX
+                inc     noteIndex
 
                 // MORE COMMANDS HERE I THINK
 
                 jmp !end+
 
-        !skipBeat:
-            lda     SID+channelNo+DURATION
+        !skip:
+            lda     instrumentDuration
             sec
             sbc     #2
-            cmp     Song+channelNo*4+CLOCK
+            cmp     noteClock
             bne !end+
                 // trigger off
-                lda SID+channelNo*7+CONTROL
+                lda noteControl
                 and #%11111110
-                sta SID+channelNo*7+CONTROL
+                sta noteControl
         !end:
     }
 
     .macro PlayFilter(channelNo,  pattern) {
-        inc     Song+channelNo*4+CLOCK
-        lda     Song+channelNo*4+CLOCK
+        inc     Song+channelNo*7+CLOCK
+        lda     Song+channelNo*7+CLOCK
         cmp     #TEMPO
         bne     !skipBeat+
             !readNote:
-            ldx     Song+channelNo*4+NOTEINDEX
+            ldx     Song+channelNo*7+NOTEINDEX
             lda     pattern,x  
             // if REST then skip it
             beq     !next+
@@ -155,15 +192,41 @@
             // if end of pattern reset note index
             cmp     #$ff
             bne     !+
-                Set      Song+channelNo*4+NOTEINDEX:#0
+                Set      Song+channelNo*7+NOTEINDEX:#0
                 jmp     !readNote-
             !:
 
             sta     SID+3*7+FILTER_CUT_OFF_HI    
         !next:
-            inc      Song+channelNo*4+NOTEINDEX
+            inc      Song+channelNo*7+NOTEINDEX
         !skipBeat:
     }
+
+    .macro NextPattern(channelNo) {
+
+        .var index = Song+channelNo*7+PATTERNINDEX
+        .var patternStart = Song+channelNo*7+PATTERNSTART
+        .var currentPattern = Song+channelNo*7+PATTERN
+
+        // copy to ZP
+        Set __ptr0:patternStart
+        Set __ptr0+1:patternStart+1
+
+        // calculate object pointer, offset by index*2 (2 bytes)
+        lda     index
+        asl     // *2
+        tay
+        
+        lda     (__ptr0),y
+        sta     currentPattern
+        iny
+        lda     (__ptr0),y
+        sta     currentPattern+1
+ 
+        // increment to next
+        inc     index
+    }
+
 
     .macro Render() {
         // memcpy SID 0..24
