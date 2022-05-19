@@ -12,59 +12,36 @@
     .const E5 = $50;    .const F5 = $51;    .const Gb5 = $52;    .const G5 = $53;    .const Ab6 = $54;    .const A6 = $55;    .const Bb6 = $56;    .const B6 = $57;    .const C6 = $58;    .const Db6 = $59;    .const D6 = $5a;    .const Eb6 = $5b
     .const E6 = $5c;
 
-    psytrance: 
-    .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-    .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-    .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-    .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-
-    .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
-    .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
-    .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
-    .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
-
-    .byte D2, TEMPO*1, D3, TEMPO*1, D2, TEMPO*1, REST, TEMPO*1, F3, TEMPO*1, D2, TEMPO*1,REST, TEMPO*1,A4, TEMPO*1
-    .byte D2, TEMPO*1, D3, TEMPO*1, D2, TEMPO*1, REST, TEMPO*1, F3, TEMPO*1, D2, TEMPO*1,REST, TEMPO*1,A4, TEMPO*1
-    .byte D2, TEMPO*1, D3, TEMPO*1, D2, TEMPO*1, REST, TEMPO*1, F3, TEMPO*1, D2, TEMPO*1,REST, TEMPO*1,A4, TEMPO*1
-    .byte D2, TEMPO*1, D3, TEMPO*1, D2, TEMPO*1, REST, TEMPO*1, F3, TEMPO*1, D2, TEMPO*1,REST, TEMPO*1,A4, TEMPO*1
-
-    // .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-    // .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-    // .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-    // .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-
-    .byte REST, TEMPO*1, E3, TEMPO*1, REST, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, REST, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-    .byte REST, TEMPO*1, E3, TEMPO*1, REST, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, REST, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-    .byte REST, TEMPO*1, E3, TEMPO*1, REST, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, REST, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-    .byte REST, TEMPO*1, E3, TEMPO*1, REST, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, REST, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-
-    .byte $ff
     psytrance1: 
     .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
     .byte $ff
     psytrance2: 
     .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
-    .byte $ff    
-
-    psytranceLead: 
-    .byte REST, TEMPO*64
-    .byte E4, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-    .byte $ff
-                   
+    .byte $ff   
+    psytrance3: 
+    .byte D2, TEMPO*1, D3, TEMPO*1, D2, TEMPO*1, REST, TEMPO*1, F3, TEMPO*1, D2, TEMPO*1,REST, TEMPO*1,A4, TEMPO*1
+    .byte $ff       
 
     filter: 
     // round(resolution + dcOffset + resolution * sin(toradians(i * 360 * f / resolution )))
     // =3+(1+SIN(A1*PI()/180*10))*2
     // e.g. fill sine wave offset 16 with 4 bit resolution
-    .var speed = 2; .var low = 4; .var high = 24
+    .var speed = 1; .var low = 3; .var high = 7
 
-    .fill 32,round(low+(1+sin(i*(360/256)*speed))*(high-low)/2)
+    .fill 16, i
+    .fill 16, 16-i
     
     .byte $ff
 
-    /* *************************************************************************** */
+    /* ***************************** SONG ***************************** */
     voice1: 
-        .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2,psytrance2, $ffff
+        .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff
     voice2: 
-        .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2,psytrance2, $ffff
+        .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff
+    voice3: 
+        .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff        
+    controlChannel:
+        .word filter, $ffff
+
+        .print filter
 }
