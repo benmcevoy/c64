@@ -190,6 +190,8 @@
         .var filterCutOffHi = SID+MIX*7+FILTER_CUT_OFF_HI
         .var pattern = __ptr1
 
+        // TODO: a lot of this looks like it can be DRYed up with UpdateChannel
+
         Set pattern:songPattern
         Set pattern+1:songPattern+1
 
@@ -228,6 +230,9 @@
 
             sta     filterCutOffHi    
         !next:
+            // TODO: should probably support duration too?
+            // control channel is on the beat/TEMPO only at the moment
+
             inc      noteIndex
         !skipBeat:
     }
