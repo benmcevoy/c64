@@ -71,11 +71,29 @@ Start: {
     // v3 off, max volume, lpf on
     Set SID+MIX*7+VOLUME:#%10011111
 
-    VCF()
+    PWM()
 
     rts
+}
 
-     trigger: .byte 0
+.macro Ring(){
+    // TODO: not sure what this will sound like, but basically it's like AM amplitude mod
+}
+
+.macro PWM(){
+    // v3 freq
+    Set SID+VOICE3*7+FREQ_LO:#04
+    Set SID+VOICE3*7+FREQ_HI:#0
+    // ensure square wave on v1
+    Set SID+CONTROL:#%01000001
+
+    loop:
+        // v3 amplitude/waveform output
+        // could also use envelope
+        lda $D41B
+        sta SID+PW_LO
+
+    jmp loop
 }
 
 .macro VCO(){
@@ -133,11 +151,13 @@ Start: {
 }
 
 .macro GateControl(){
+    .const threshold = 180
+
      loop:
         // v3 amplitude/waveform output
         lda $D41B
         // cmompare the v3 output to a threshold
-        cmp #180
+        cmp #threshold
         // less than then branch
         bcc !+ 
             // passed the trigger voltage/value
