@@ -39,9 +39,17 @@
         .byte Eb2, TEMPO*2, $1f
         .byte $ff
     ifeellove2:
-        .byte Ab3,TEMPO*2, Ab3,TEMPO*2, Eb2, TEMPO*2, Gb2, TEMPO*2, $ff
+        .byte Ab3,TEMPO*2, $00
+        .byte Ab3,TEMPO*2, $00
+        .byte Eb2, TEMPO*2, $00
+        .byte Gb2, TEMPO*2, $00
+        .byte $ff
     ifeellove3:
-        .byte Bb3,TEMPO*2, Bb3,TEMPO*2, F2, TEMPO*2, Ab3, TEMPO*2, $ff
+        .byte Bb3,TEMPO*2 ,$00
+        .byte Bb3,TEMPO*2, $00
+        .byte F2, TEMPO*2, $00
+        .byte Ab3, TEMPO*2, $00
+        .byte $ff
 
     arpUpDown1: 
         .byte C3, beat2, $00 
@@ -107,10 +115,16 @@
     //     .word ifeellove3,ifeellove3,ifeellove3,ifeellove3
     //     .word $ffff
 
-    voice1: .word pulse, $ffff
+    voice1: 
+    voice2:
+    voice3:
+    .word ifeellove1,ifeellove1,ifeellove1,ifeellove1
+    .word ifeellove2,ifeellove2,ifeellove2,ifeellove2
+    .word ifeellove3,ifeellove3,ifeellove3,ifeellove3
+    .word $ffff
 
-    voice2: .word pulseAlt, $ffff
-    voice3:        .word silence, $ffff
+    
+   // voice3:        .word silence, $ffff
 
     // voice1:         
     //      .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff

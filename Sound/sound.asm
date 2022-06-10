@@ -20,13 +20,13 @@
         v1Pattern: .word $0000
 
         v2NoteIndex: .byte 0
-        v2Clock:    .byte 0
+        v2Clock:    .byte 2
         v2PatternStart: .word voice2
         v2PatternIndex: .byte 0
         v2Pattern: .word $0000
 
         v3NoteIndex: .byte 0
-        v3Clock:    .byte 0
+        v3Clock:    .byte 3
         v3PatternStart: .word voice3
         v3PatternIndex: .byte 0
         v3Pattern: .word $0000
@@ -51,7 +51,7 @@
         // filters and whatnot
         Set SID+MIX*7+FILTER_CUT_OFF_LO:#%00000111
         Set SID+MIX*7+FILTER_CUT_OFF_HI:#%00001111
-        Set SID+MIX*7+FILTER_CONTROL:#%11110101
+        Set SID+MIX*7+FILTER_CONTROL:#%11110111
         Set SID+MIX*7+VOLUME:#%00011111
 
         rts
@@ -73,7 +73,7 @@
         UpdateChannel(VOICE2)
         UpdateChannel(VOICE3)
 
-        //UpdateControlChannel()
+        UpdateControlChannel()
 
         inc $d020
         inc $d020
@@ -194,17 +194,22 @@
                 lda     (pattern),y  
                 // expect duration in the high-low nibbles
                 sta     instrumentDuration         
-            
-                
+               
                 // MORE COMMANDS HERE I THINK
+                // TODO: this is not a very good structure I think, 
+                // how would you have many commands?
+                // think about midi again , noteOn - noteNumber, velocity or cc,control,data
+                // more like command, data, data
+                // packing it into a single byte is a hassle
                 inc     noteIndex
                 ldy     noteIndex
                 lda     (pattern),y  
 
                 // .A contains command
                 // high nibble is command, low is data
-
-                and #%00010000 // set instrument sustain volume
+                // $00 do nothing
+                // $1x - set instrument sustain volume
+                and #%00010000 
                 beq !+
                     lda     (pattern),y  
                     and #%00001111
@@ -217,9 +222,10 @@
                 jmp !end+
 
         !skip:
+            // testing for noteOff, but this is very arbitrary
             lda     instrumentDuration
             sec
-            sbc     #2
+            sbc     #TEMPO/2
             cmp     noteClock
             bne !end+
                 // trigger off
