@@ -12,15 +12,82 @@
     .const E5 = $50;    .const F5 = $51;    .const Gb5 = $52;    .const G5 = $53;    .const Ab6 = $54;    .const A6 = $55;    .const Bb6 = $56;    .const B6 = $57;    .const C6 = $58;    .const Db6 = $59;    .const D6 = $5a;    .const Eb6 = $5b
     .const E6 = $5c;
 
+    // beats
+    .const beatQuarter=TEMPO/4
+    .const beatHalf=TEMPO/2
+    .const beat1=TEMPO
+    .const beat2=TEMPO*2
+    .const beat3=TEMPO*3
+    .const beat4=TEMPO*4
+
     psytrance1: 
-    .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
-    .byte $ff
+        .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+        .byte $ff
     psytrance2: 
-    .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
-    .byte $ff   
+        .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
+        .byte $ff   
     psytrance3: 
-    .byte D2, TEMPO*1, D3, TEMPO*1, D2, TEMPO*1, REST, TEMPO*1, F3, TEMPO*1, D2, TEMPO*1,REST, TEMPO*1,A4, TEMPO*1
-    .byte $ff       
+        .byte D2, TEMPO*1, D3, TEMPO*1, D2, TEMPO*1, REST, TEMPO*1, F3, TEMPO*1, D2, TEMPO*1,REST, TEMPO*1,A4, TEMPO*1
+        .byte $ff   
+
+    silence: .byte REST,TEMPO,$00,$ff  
+
+    ifeellove1:
+        .byte F2,TEMPO*2, $00
+        .byte F2,TEMPO*2, $1f
+        .byte C2, TEMPO*2, $00
+        .byte Eb2, TEMPO*2, $1f
+        .byte $ff
+    ifeellove2:
+        .byte Ab3,TEMPO*2, Ab3,TEMPO*2, Eb2, TEMPO*2, Gb2, TEMPO*2, $ff
+    ifeellove3:
+        .byte Bb3,TEMPO*2, Bb3,TEMPO*2, F2, TEMPO*2, Ab3, TEMPO*2, $ff
+
+    arpUpDown1: 
+        .byte C3, beat2, $00 
+        .byte E3, beat2, $1f
+        .byte G3, beat2, $00
+        .byte C4, beat2, $00
+        .byte G3, beat2, $00
+        .byte E3, beat2, $1f
+        .byte $ff
+    arpUpDown2: 
+        .byte C3, beat2, $00 
+        .byte E3, beat2, $00
+        .byte G3, beat2, $1f
+        .byte C4, beat2, $00
+        .byte G3, beat2, $1f
+        .byte E3, beat2, $00
+        .byte $ff
+    arpUpDown3: 
+        .byte C3, beat2, $1f
+        .byte E3, beat2, $00
+        .byte G3, beat2, $00
+        .byte C4, beat2, $1f
+        .byte G3, beat2, $00
+        .byte E3, beat2, $00
+        .byte $ff 
+
+    pulse: 
+        .byte C3, beat1, $00
+        .byte C3, beat1, $00
+        .byte C3, beat2, $1f
+        .byte C3, beat1, $00
+        .byte C3, beat1, $00
+        .byte C3, beat1, $00
+        .byte C3, beat1, $00
+        .byte $ff    
+
+    pulseAlt: 
+        .byte E3, beat1, $1f
+        .byte E3, beat1, $18
+        .byte E3, beat1, $1f
+        .byte E3, beat1, $18
+        .byte E3, beat1, $1f
+        .byte E3, beat1, $1f
+        .byte E3, beat1, $18
+        .byte E3, beat1, $1f
+        .byte $ff                                   
 
     filter: 
     // round(resolution + dcOffset + resolution * sin(toradians(i * 360 * f / resolution )))
@@ -28,20 +95,29 @@
     // e.g. fill sine wave offset 16 with 4 bit resolution
     .var speed = 1; .var low = 3; .var high = 7
 
-    .fill 16, i
-    .fill 16, 16-i
+    .fill 16, 2+i
+    .fill 16, 18-i
     
     .byte $ff
 
     /* ***************************** SONG ***************************** */
-    voice1: 
-        .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff
-    voice2: 
-        .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff
-    voice3: 
-        .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff        
+    // voice1: 
+    //     .word ifeellove1,ifeellove1,ifeellove1,ifeellove1
+    //     .word ifeellove2,ifeellove2,ifeellove2,ifeellove2
+    //     .word ifeellove3,ifeellove3,ifeellove3,ifeellove3
+    //     .word $ffff
+
+    voice1: .word pulse, $ffff
+
+    voice2: .word pulseAlt, $ffff
+    voice3:        .word silence, $ffff
+
+    // voice1:         
+    //      .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff
+    // voice2: 
+    //     .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff
+    // voice3: 
+    //     .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff        
     controlChannel:
         .word filter, $ffff
-
-        .print filter
 }

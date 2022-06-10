@@ -9,7 +9,7 @@
     // point to framebuffer
     .const SID        = $4000
     // reserve space for "frame buffer"
-    .pseudopc SID { .fill 30,0 }
+    .pseudopc SID { .fill 37,0 }
 
     .const VOICE1 = 0
     .const VOICE2 = 1
@@ -38,10 +38,13 @@
     .const VOLUME = 3
 
     // extras for the voice
-    .const TUNE = 25
-    .const DURATION = 28
-    
-
+    // laid out like v1Tune, v2Tune, v3Tune, v1Duration, v2Duraition, v3Duration, etc
+    // 
+    .const TUNE = 25  
+    .const DURATION = 28 
+    // pointer to instrument
+    .const INSTRUMENT_LO = 31
+    .const INSTRUMENT_HI = 34
 
     freq_msb:
     .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$01

@@ -73,7 +73,7 @@
         UpdateChannel(VOICE2)
         UpdateChannel(VOICE3)
 
-        UpdateControlChannel()
+        //UpdateControlChannel()
 
         inc $d020
         inc $d020
@@ -88,9 +88,16 @@
         .var noteFreqLo = SID+channelNo*7+FREQ_LO
         .var noteFreqHi = SID+channelNo*7+FREQ_HI
         .var noteControl = SID+channelNo*7+CONTROL
+        .var noteAD = SID+channelNo*7+ATTACK_DECAY
+        .var noteSR = SID+channelNo*7+SUSTAIN_RELEASE
+        .var notePWLo = SID+channelNo*7+PW_LO
+        .var notePWHi = SID+channelNo*7+PW_HI
+
 
         .var instrumentDuration = SID+channelNo+DURATION
         .var instrumentTune = SID+channelNo+TUNE
+        .var instrumentPtrLo = SID+channelNo+INSTRUMENT_LO
+        .var instrumentPtrHi = SID+channelNo+INSTRUMENT_HI
         
         .var songPattern = Song+channelNo*7+PATTERN
         .var songPatternIndex = Song+channelNo*7+PATTERNINDEX
@@ -114,7 +121,9 @@
                 ldy     noteIndex
                 lda     (pattern),y  
                 // if REST then skip setting the note
-                beq     !noteExtras+
+                bne     !+
+                    jmp !noteExtras+
+                !:
                 // if end of pattern reset note index
                 cmp     #$ff
                 bne     !++
@@ -138,11 +147,37 @@
                     jmp     !readNote-
                 !:
 
+                pha
+                // apply instrument
+                {
+                    // some self modifying whatnot now
+                    lda instrumentPtrLo
+                    sta instrumentPtr1
+                    sta instrumentPtr2
+                    lda instrumentPtrHi
+                    sta instrumentPtr1+1
+                    sta instrumentPtr2+1
+
+                    ldx #0
+                    loop:
+                        lda instrumentPtr1:$BEEF,X
+                        sta SID+channelNo*7+PW_LO, X
+                        inx
+                        cpx #5
+                        bne loop
+
+                    lda instrumentPtr2:$BEEF,X
+                    sta SID+TUNE+channelNo
+                }
+                pla
+
                 // set tone
                 tax
                 lda     freq_msb,x
                 sta     noteFreqHi  
                 lda     freq_lsb,x
+
+                // apply extras
                 // detune is property of instrument
                 clc
                 adc     instrumentTune
@@ -160,11 +195,25 @@
                 // expect duration in the high-low nibbles
                 sta     instrumentDuration         
             
+                
+                // MORE COMMANDS HERE I THINK
+                inc     noteIndex
+                ldy     noteIndex
+                lda     (pattern),y  
+
+                // .A contains command
+                // high nibble is command, low is data
+
+                and #%00010000 // set instrument sustain volume
+                beq !+
+                    lda     (pattern),y  
+                    and #%00001111
+                    asl;asl;asl;asl
+                    sta noteSR
+                !:
+                
                 // next note, command or data
                 inc     noteIndex
-
-                // MORE COMMANDS HERE I THINK
-
                 jmp !end+
 
         !skip:
@@ -260,7 +309,6 @@
         // increment to next
         inc     index
     }
-
 
     .macro Render() {
         // memcpy SID 0..24
