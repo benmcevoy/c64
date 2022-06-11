@@ -33,20 +33,26 @@
     silence: .byte REST,TEMPO,$00,$ff  
 
     ifeellove1:
-        .byte F2,TEMPO*2, $00
-        .byte F2,TEMPO*2, $1f
+        .byte F2,beat1, $00
+        .byte F2,beat1, $1f
+        .byte F2,beat1, $00
+        .byte F2,beat1, $1f
         .byte C2, TEMPO*2, $00
         .byte Eb2, TEMPO*2, $1f
         .byte $ff
     ifeellove2:
-        .byte Ab3,TEMPO*2, $00
-        .byte Ab3,TEMPO*2, $00
+        .byte Ab3,beat1, $00
+        .byte Ab3,beat1, $1f
+        .byte Ab3,beat1, $00
+        .byte Ab3,beat1, $1f
         .byte Eb2, TEMPO*2, $00
         .byte Gb2, TEMPO*2, $00
         .byte $ff
     ifeellove3:
-        .byte Bb3,TEMPO*2 ,$00
-        .byte Bb3,TEMPO*2, $00
+        .byte Bb3,beat1, $00
+        .byte Bb3,beat1, $1f
+        .byte Bb3,beat1, $00
+        .byte Bb3,beat1, $1f
         .byte F2, TEMPO*2, $00
         .byte Ab3, TEMPO*2, $00
         .byte $ff

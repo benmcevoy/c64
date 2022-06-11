@@ -71,7 +71,7 @@ Start: {
     // v3 off, max volume, lpf on
     Set SID+MIX+VOLUME:#%10011111
 
-    VCO()
+    Ratchet()
 
     rts
 }
@@ -84,15 +84,139 @@ Start: {
 //  the instrument default afterwards
 // test bit - strobe test bit continously with noise, yeah nah
 
-.macro Jiffy(){
-    // investigate the JIFFY clock
-    
-    
-}
-
 .macro Ratchet(){
     // and ratcheting
     // https://github.com/RohanM/clock-with-shift/blob/master/clockwithshift.ino
+
+    // i read that code, it's a bit of a fricking mess to be honest
+    // ratcheting is beat generation off a master clock (or in that case an external clock)
+
+    // if we have a beat we can easily DIVIDE by counting beats
+    // and updating our derived clock every n beats
+
+    // to get more beats per beat, e.g. multiplier then we need a WALL CLOCK (they use the arduino millis())
+    // we ain't got no real time clock, but we do have a CIA clock telling us elapsed time since power on
+    // in i think 10th of a second increments
+
+    // BUT we run on either a raster clock at 50Hz or a CIA clock at whatever Hz we want....
+    // so our external clock or master clock is already smoking fast
+
+    // if we DIVIDE that 50Hz clock down to 120bpm or 2Hz we can now use this new clock as the
+    // reference clock and multiply/divide as we like
+
+    // OR... we use the voice 3 amplitude as the external clock and just set the frequency we want
+    // and use a square wave with 50% duty
+
+
+    // v3 freq
+    // if you set the frequency too high this skitz out and misses the beat
+    // noticeable about f_lo=80 (which is who knows what Hz)
+    // a value of f_lo=34 is supposed to be 2Hz on a PAL machine
+    // sounds like it when I compare to a metronome
+    Set SID+VOICE3+FREQ_LO:#134
+    Set SID+VOICE3+FREQ_HI:#0
+    // set square wave 50% duty
+    Set SID+VOICE3+CONTROL:#%01000000
+    // pw is 12 bit, 0-100% or 0-4096
+    // so 50% = 2048
+    Set SID+VOICE3+PW_HI:#%00001000
+    Set SID+VOICE3+PW_LO:#%00000000
+
+    // loop:
+    //     // v3 amplitude/waveform output
+    //     lda $D41B
+    //     // as it square it's either 0 or 1
+    //     beq !+ 
+    //         // passed the trigger voltage/value
+    //         // set v1 on
+    //         Set SID+CONTROL:#%00100001
+    //         jmp loop
+    //     !:
+    //     // set v1 off
+    //     Set SID+CONTROL:#%00100000
+
+    // jmp loop
+
+    // the above is fine
+    // but how to DIVIDE?  let's get some book-keeping, use slow_clock to track the slower beat
+
+    // loop:
+    //     // v3 amplitude/waveform output
+    //     lda $D41B
+    //     // as it square it's either 0 or 1
+    //     beq !+ 
+    //         // passed the trigger voltage/value
+    //         // set v1 on
+    //         inc slow_clock
+    //     !:
+        
+    //     // now mask bit 0 as the slow clock beat
+    //     lda slow_clock
+    //     and #%00000001
+    //     beq !+ 
+    //         Set slow_clock:#0
+    //         Set SID+CONTROL:#%00100001
+    //         jmp loop
+    //     !:
+        
+    //     Set SID+CONTROL:#%00100000
+    // jmp loop
+
+    // the above does NOT work as we are inc slow_clock A LOT, lol
+    // want to track the "edge" or if it's high or low
+    // more bookkeeping - clock_hi
+    // and more bookkeeping for the edge transitions
+
+    loop:
+        Set clock_hi:#0
+        // v3 amplitude/waveform output
+        lda $D41B
+        // as it square it's either 0 or 1
+        beq !+ 
+            Set clock_hi:#1
+        !:
+        
+        lda clock_hi
+        cmp clock_prev
+        beq !+
+            Set clock_prev:clock_hi
+            // i guess i could gate v2 here and have two beats, @120 bpm and at e.g. 60 bpm
+            // or speed up the master clock/v3 Hz 
+            inc slow_clock
+        !:
+        
+        lda slow_clock
+        // by moving the high bit we get 120,60,30, etc bpm
+        // so this is 60 bpm
+        //and #%00000010  // <-- beat mask
+        // this is kind of dit-dit (rest) dit-dit (rest)
+        and #%00001010  
+        bne !+ 
+            Set SID+CONTROL:#%00100001
+            jmp loop
+        !:
+        
+        Set SID+CONTROL:#%00100000
+    jmp loop
+
+    // well that is sorta kinda what I was thinking of
+    // there is another implementation in the spike/sine5.asm
+    // in a musical sense this should step a sequence
+    // i imagine an arp pattern as the sequence, looping, and the beat moves fast or slow
+    // this implementation is also pretty convoluted...
+    // can I just use a counter? if I used a timer yes.  This has extra malarky as we are in a tight loop
+    // watching for a "pin" (v3 osc) to go high/low
+    // inefficient too
+
+    // if i speed up the v3 osc to say f_lo=136
+    // and set the "beat mask" to #%00001010  
+    // it's kinda neat.  we get that pattern repeatedly as we count up to 255, it's like xx--xx-- dit-dit  dit-dit
+
+    // i abandon this now.
+
+    clock_prev: .byte 0
+    clock_hi: .byte 0
+    slow_clock: .byte 0
 }
 
 .macro Reverb(){

@@ -10,7 +10,7 @@
     bass: .byte  $80, $09, %01000000, $06, $0F, 0
 
     saw: .byte  $80, $09, %00100000, $00, $81, 0
-    sawDetune: .byte  $80, $09, %00110000, $00, $F1, 3
+    sawDetune: .byte  $80, $09, %00110000, $00, $81, 3
 
     .macro SetInstrument (voiceNumber, instrument) {
         ldx #0
