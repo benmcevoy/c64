@@ -1,8 +1,7 @@
 #importonce
 #import "_prelude.lib"
 #import "sid.asm"
-#import "instruments.asm"
-#import "patterns.asm"
+#import "parametric.song.asm"
 
 .namespace Sound {
 
@@ -14,19 +13,19 @@
 
     Song: {
         v1NoteIndex: .byte 0
-        v1Clock:    .byte 0
+        v1Clock:    .byte 2
         v1PatternStart: .word voice1
         v1PatternIndex: .byte 0
         v1Pattern: .word $0000
 
         v2NoteIndex: .byte 0
-        v2Clock:    .byte 2
+        v2Clock:    .byte 1
         v2PatternStart: .word voice2
         v2PatternIndex: .byte 0
         v2Pattern: .word $0000
 
         v3NoteIndex: .byte 0
-        v3Clock:    .byte 3
+        v3Clock:    .byte 0
         v3PatternStart: .word voice3
         v3PatternIndex: .byte 0
         v3Pattern: .word $0000
@@ -39,9 +38,9 @@
     }
 
     Init: {
-        SetInstrument(VOICE1, saw)
-        SetInstrument(VOICE2, sawDetune)
-        SetInstrument(VOICE3, bass)      
+        SetInstrument(VOICE1, instrument0)
+        SetInstrument(VOICE2, instrument1)
+        SetInstrument(VOICE3, bassInstrument)      
 
         NextPattern(VOICE1)
         NextPattern(VOICE2)
@@ -51,7 +50,7 @@
         // filters and whatnot
         Set SID+MIX*7+FILTER_CUT_OFF_LO:#%00000111
         Set SID+MIX*7+FILTER_CUT_OFF_HI:#%00001111
-        Set SID+MIX*7+FILTER_CONTROL:#%11110111
+        Set SID+MIX*7+FILTER_CONTROL:#%11110101
         Set SID+MIX*7+VOLUME:#%00011111
 
         rts

@@ -2,7 +2,7 @@
 
 .namespace Sound {
 
-    .const TEMPO = 6
+    .const TEMPO = 10
 
     // point to chip
     .const SID_ACTUAL = $D400
@@ -38,7 +38,7 @@
     .const VOLUME = 3
 
     // extras for the voice
-    // laid out like v1Tune, v2Tune, v3Tune, v1Duration, v2Duraition, v3Duration, etc
+    // laid out like v1Tune, v2Tune, v3Tune, v1Duration, v2Duration, v3Duration, etc
     // 
     .const TUNE = 25  
     .const DURATION = 28 
@@ -62,4 +62,25 @@
     .byte $67,$70,$89,$b2,$ed,$3b,$9c,$13,$a0,$45,$02,$da,$ce,$e0,$11,$64
     .byte $da,$76,$39,$26,$40,$89,$04,$b4,$9c,$c0,$23,$c8,$b4,$eb,$72,$4c
     .byte $80,$12,$08,$68,$39,$80,$45,$90,$68,$d6,$e3,$99,$00,$24,$10
+
+    .macro SetInstrument (voiceNumber, instrument) {
+        ldx #0
+        loop:
+            lda instrument,X
+            sta SID+voiceNumber*7+PW_LO, X
+            inx
+            cpx #5
+            bne loop
+
+        lda instrument,X
+        sta SID+TUNE+voiceNumber
+        
+        lda #TEMPO
+        sta SID+DURATION+voiceNumber
+
+        lda #<instrument
+        sta SID+INSTRUMENT_LO+voiceNumber
+        lda #>instrument
+        sta SID+INSTRUMENT_HI+voiceNumber
+    }
 }
