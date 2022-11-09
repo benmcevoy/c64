@@ -24,7 +24,7 @@
         Update: .word PlayerBehaviors.Update 
         Render: .word AgentBehaviors.DefaultRender 
         glyph: .byte 93 // vertical bar
-        color: .byte WHITE
+        color: .byte RED
         x0: .word 0
         y0: .word 0
         bgGlyph: .byte 81

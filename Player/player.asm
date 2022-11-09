@@ -10,11 +10,12 @@ BasicUpstart2(Start)
 #import "_prelude.lib"
 #import "_charscreen.lib"
 #import "./Agents/Agent.asm"
-#import "./Backgrounds/weave.asm"
+//#import "./Backgrounds/weave.asm"
 //#import "./Backgrounds/honeycomb.asm"
-//#import "./Backgrounds/colours.asm"
+#import "./Backgrounds/colours.asm"
 //#import "./Backgrounds/jungle.asm"
 //#import "./Backgrounds/clouds.asm"
+//#import "./Backgrounds/city.asm"
 
 .var music = LoadSid("A_Mind_Is_Born.sid")	
 

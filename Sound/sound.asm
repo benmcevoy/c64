@@ -2,6 +2,12 @@
 #import "_prelude.lib"
 #import "sid.asm"
 #import "parametric.song.asm"
+// #import "instruments.asm"
+// #import "patterns.asm"
+
+
+
+
 
 .namespace Sound {
 

@@ -4,26 +4,28 @@
 
 .namespace Sound {
     /// pw_low, pw_hi, control, AD, SR, tune
-    instrument0: .byte  $00, $40, %00110000, $40, $AA, $0
-    instrument1: .byte  $00, $00, %00010010, $20, $88, $0
-    bassInstrument: .byte  $00, $20, %01110000, $00, $6A, $0
+    instrument0: .byte  $00, $40, %00100000, $40, $AA, $0
+    instrument1: .byte  $00, $00, %00010010, $20, $88, $8
+    bassInstrument: .byte  $00, $20, %01110000, $00, $6A, $14
 
     arp: 
     .byte A3, beat1, $00, A4, beat1, $00,C4, beat1, $00,A3, beat1, $00, A4, beat1, $00,C4, beat1, $00,A3, beat1, $00,C4, beat1, $00, A3, beat1, $00,B4, beat1, $00,A3, beat1, $00,C4, beat1, $00, B4, beat1, $00,A3, beat1, $00,G3, beat1, $00,C4, beat1, $00
     .byte A3, beat1, $00,A4, beat1, $00,A3, beat1, $00,C4, beat1, $00, A3, beat1, $00,A4, beat1, $00,C4, beat1, $00,A3, beat1, $00, B4, beat1, $00,C4, beat1, $00,A3, beat1, $00,B4, beat1, $00, A3, beat1, $00,C4, beat1, $00,B4, beat1, $00,G3, beat1, $00
     .byte $ff
 
-    rest: .byte REST, beat1, $00,REST, beat1, $00,REST, beat1, $00,REST, beat1, $00, REST, beat1, $00,REST, beat1, $00,REST, beat1, $00,REST, beat1, $00, REST, beat1, $00,REST, beat1, $00,REST, beat1, $00,REST, beat1, $00, REST, beat1, $00,REST, beat1, $00,REST, beat1, $00,REST, beat1, $00
+    rest: .byte REST, beat4, $00, REST, beat4, $00, REST, beat4, $00, REST, beat4, $00
     .byte $ff
 
     bass1: 
-    .byte A2, beat1, $00,A2, beat1, $00,A2, beat1, $00,A2, beat1, $00, A2, beat1, $00,A2, beat1, $00,A2, beat1, $00,A2, beat1, $00, A2, beat1, $00,A2, beat1, $00,A2, beat1, $00,A2, beat1, $00, A2, beat1, $00,A2, beat1, $00,A2, beat1, $00,A2, beat1, $00
+    .byte A2, beat1, $00,A2, beat1, $00,A2, beat2, $1f, A2, beat1, $00,A2, beat1, $00,A2, beat1, $00,A2, beat1, $00, A2, beat1, $00,A2, beat1, $00,A2, beat2, $1f, A2, beat1, $00,A2, beat1, $00,A2, beat1, $00,A2, beat1, $00
     .byte $ff
+
     bass2: 
-    .byte E1, beat1, $00,E1, beat1, $00,E1, beat1, $00,E1, beat1, $00, E1, beat1, $00,E1, beat1, $00,E1, beat1, $00,E1, beat1, $00, E1, beat1, $00,E1, beat1, $00,E1, beat1, $00,E1, beat1, $00, E1, beat1, $00,E1, beat1, $00,E1, beat1, $00,E1, beat1, $00
+    .byte E1, beat1, $00,E1, beat1, $00,E1, beat2, $1f, E1, beat1, $00,E1, beat1, $00,E1, beat1, $00,E1, beat1, $00, E1, beat1, $00,E1, beat1, $00,E1, beat2, $1f, E1, beat1, $00,E1, beat1, $00,E1, beat1, $00,E1, beat1, $00
     .byte $ff
+    
     bass3: 
-    .byte C1, beat1, $00,C1, beat1, $00,C1, beat1, $00,C1, beat1, $00, C1, beat1, $00,C1, beat1, $00,C1, beat1, $00,C1, beat1, $00, C1, beat1, $00,C1, beat1, $00,C1, beat1, $00,C1, beat1, $00, C1, beat1, $00,C1, beat1, $00,C1, beat1, $00,C1, beat1, $00 
+    .byte C1, beat1, $00,C1, beat1, $00,C1, beat2, $1f, C1, beat1, $00,C1, beat1, $00,C1, beat1, $00,C1, beat1, $00, C1, beat1, $00,C1, beat1, $00,C1, beat2, $1f, C1, beat1, $00,C1, beat1, $00,C1, beat1, $00,C1, beat1, $00 
     .byte $ff
     
     filter: 

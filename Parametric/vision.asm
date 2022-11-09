@@ -166,6 +166,10 @@
 
     // state
     palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9
+    // TODO:  i thought about filling color ram with 
+    // concentric circles of colors and then just poke the char
+    // for a little speed, meh maybe
+    // 00 06 04 0e  0c 03 07 0d  01 07 0f 0a  0c 08 0b 09
 
     *=$3700 "Signed trig tables"
     // values range -127..127  
