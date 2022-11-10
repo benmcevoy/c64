@@ -4,24 +4,28 @@
 #import "_debug.lib"
 
 .namespace Tempo {
-    .const NOTEDURATION = 20
-    .const BEATINTERVAL = 40
+    .const NOTE_ON_DURATION = 5
 
-    OnBeat: {
-        inc $d021
+    ReadJoystick: {
+        .const PORT2 = $dc00
+        .const UP      = %00000001
+        .const DOWN    = %00000010
+        .const LEFT    = %00000100
+        .const RIGHT   = %00001000
+        .const FIRE    = %00010000        
 
-        // 1. Metronome, call Trigger() and play sound with release only
-        // 2. change BPM via input
-        // 3. step sequencer - c2, c3, D#2/Eb2, D#3/Eb3, f3, f2, g3, g2
+        // left
+        lda #LEFT
+        bit PORT2
+        bne !+
+            dec _frameInterval
+        !:
 
-
-
-        // trigger on
-        lda SID_V1_CONTROL
-        ora #%00000001
-        sta SID_V1_CONTROL
-
-        MCopy _noteHold:_noteHoldCounter
+        lda #RIGHT
+        bit PORT2
+        bne !+
+            inc _frameInterval
+        !:
 
         rts
     }
@@ -42,7 +46,7 @@
         Set SID_V1_PW_LO:#$00
         Set SID_V1_PW_HI:#$00
         Set SID_V1_ATTACK_DECAY:#$00
-        Set SID_V1_SUSTAIN_RELEASE:#$A1
+        Set SID_V1_SUSTAIN_RELEASE:#$F0
 
         Set SID_V1_CONTROL:#%00010000
 
@@ -57,28 +61,39 @@
         dec _frameCounter
         bne !+
             MCopy _frameInterval:_frameCounter
+           
+            lda _frameInterval
+            sec
+            sbc #NOTE_ON_DURATION
+            sta _noteHoldInterval
 
-            jsr OnBeat
+            inc $d020
+            // trigger on
+            Set SID_V1_CONTROL:#%00010001
+            // lda SID_V1_CONTROL
+            // ora #%00000001
+            // sta SID_V1_CONTROL
         !: 
 
-        dec _noteHoldCounter
-        
+        lda _frameCounter
+        cmp _noteHoldInterval
         bne !+
+            inc $d021
             // trigger off
-            lda SID_V1_CONTROL
-            and #%11111110
-            sta SID_V1_CONTROL
+            // lda SID_V1_CONTROL
+            // and #%11111110
+            // sta SID_V1_CONTROL
+            Set SID_V1_CONTROL:#%00010000
         !:
+
+        jsr ReadJoystick
 
         // end irq
         pla;tay;pla;tax;pla
         rti          
     }
 
-    _frameCounter: .byte 50
+    _frameCounter: .byte 30
     _frameInterval: .byte 30
-    
-    _noteHoldCounter: .byte 20
-    _noteHold: .byte 10
+    _noteHoldInterval: .byte 0
 }
-
