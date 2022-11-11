@@ -32,14 +32,16 @@ if i strobe that pin (off then on) I expect to retrigger
 oh, and it does.
 
 I set the envelope to 
+
 attack zero - it takes no time to reach MAX volume
+
 decay 7 - it takes some millisecond to decay to the sustain volume
+
 sustain zero
+
 release zero - don't care as volume was zero anyway
 
 so i have this envelope like `|\__`
 
 ok this is fine.
-
-
 
