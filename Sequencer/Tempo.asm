@@ -4,7 +4,6 @@
 #import "_debug.lib"
 
 .namespace Tempo {
-    .const NOTE_ON_DURATION = 5
 
     ReadJoystick: {
         .const PORT2 = $dc00
@@ -45,8 +44,8 @@
         Set SID_V1_FREQ_HI:#$06
         Set SID_V1_PW_LO:#$00
         Set SID_V1_PW_HI:#$00
-        Set SID_V1_ATTACK_DECAY:#$00
-        Set SID_V1_SUSTAIN_RELEASE:#$F0
+        Set SID_V1_ATTACK_DECAY:#$07
+        Set SID_V1_SUSTAIN_RELEASE:#$00
 
         Set SID_V1_CONTROL:#%00010000
 
@@ -61,30 +60,14 @@
         dec _frameCounter
         bne !+
             MCopy _frameInterval:_frameCounter
-           
-            lda _frameInterval
-            sec
-            sbc #NOTE_ON_DURATION
-            sta _noteHoldInterval
 
             inc $d020
-            // trigger on
-            Set SID_V1_CONTROL:#%00010001
-            // lda SID_V1_CONTROL
-            // ora #%00000001
-            // sta SID_V1_CONTROL
-        !: 
-
-        lda _frameCounter
-        cmp _noteHoldInterval
-        bne !+
             inc $d021
-            // trigger off
-            // lda SID_V1_CONTROL
-            // and #%11111110
-            // sta SID_V1_CONTROL
+
+            // trigger on
             Set SID_V1_CONTROL:#%00010000
-        !:
+            Set SID_V1_CONTROL:#%00010001
+        !: 
 
         jsr ReadJoystick
 
@@ -93,7 +76,6 @@
         rti          
     }
 
-    _frameCounter: .byte 30
-    _frameInterval: .byte 30
-    _noteHoldInterval: .byte 0
+    _frameCounter: .byte 1
+    _frameInterval: .byte 50
 }
