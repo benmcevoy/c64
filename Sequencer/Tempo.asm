@@ -16,15 +16,45 @@
         // left
         lda #LEFT
         bit PORT2
-        bne !+
-            dec _frameInterval
+        bne !++
+            lda _frameInterval
+            cmp #1
+            beq !+
+                dec _frameInterval
+            !:
         !:
 
         lda #RIGHT
         bit PORT2
-        bne !+
-            inc _frameInterval
+        bne !++
+            lda _frameInterval
+            cmp #$ff
+            beq !+
+                inc _frameInterval
+            !:
         !:
+
+        lda #UP
+        bit PORT2
+        bne !++
+            lda _filter
+            cmp #$A0
+            beq !+
+                inc _filter
+            !:
+        !:
+
+        lda #DOWN
+        bit PORT2
+        bne !++
+            lda _filter
+            cmp #1
+            beq !+
+                dec _filter
+            !:
+        !:
+
+        Set SID_MIX_FILTER_CUT_OFF_HI:_filter
 
         rts
     }
@@ -35,19 +65,17 @@
         sta    $d012
 
         // init SID
-        Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111
-        Set SID_MIX_FILTER_CUT_OFF_HI:#%00001111
-        Set SID_MIX_FILTER_CONTROL:#%00000000
-        Set SID_MIX_VOLUME:#%00001111
+        Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111  
+        Set SID_MIX_FILTER_CUT_OFF_HI:_filter
+        Set SID_MIX_FILTER_CONTROL:#%11110001
+        Set SID_MIX_VOLUME:#%00011111
 
         Set SID_V1_FREQ_LO:#$E8 
         Set SID_V1_FREQ_HI:#$06
         Set SID_V1_PW_LO:#$00
         Set SID_V1_PW_HI:#$00
-        Set SID_V1_ATTACK_DECAY:#$07
+        Set SID_V1_ATTACK_DECAY:#$0A
         Set SID_V1_SUSTAIN_RELEASE:#$00
-
-        Set SID_V1_CONTROL:#%00010000
 
         rts
     }
@@ -58,15 +86,32 @@
         sta    $d019
 
         dec _frameCounter
-        bne !+
+        bne !++
             MCopy _frameInterval:_frameCounter
 
             inc $d020
             inc $d021
 
+            ldx _stepIndex
+            lda _sequence, X
+
+            // set tone
+            tax
+            lda     freq_msb,x
+            sta     SID_V1_FREQ_HI  
+            lda     freq_lsb,x
+            sta     SID_V1_FREQ_LO
+
             // trigger on
-            Set SID_V1_CONTROL:#%00010000
-            Set SID_V1_CONTROL:#%00010001
+            Set SID_V1_CONTROL:#%00100000
+            Set SID_V1_CONTROL:#%00100001
+
+            inc _stepIndex
+            lda _stepIndex
+            cmp _steps
+            bne !+
+                Set _stepIndex:#0
+            !:
         !: 
 
         jsr ReadJoystick
@@ -78,4 +123,10 @@
 
     _frameCounter: .byte 1
     _frameInterval: .byte 50
+
+    _steps: .byte 8
+    _stepIndex: .byte 0
+
+    _sequence: .byte C2, C3, Eb2, Eb3, F3, F2, G3, G2
+    _filter: .byte 17
 }
