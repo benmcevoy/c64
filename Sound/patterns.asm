@@ -5,13 +5,13 @@
 .namespace Sound {
 
     psytrance1: 
-        .byte E2, TEMPO*1, E3, TEMPO*1, E2, TEMPO*1, REST, TEMPO*1, D3, TEMPO*1, E2, TEMPO*1,REST, TEMPO*1,G3, TEMPO*1
+        .byte E2, beat1, $00, E3, beat1,$00, E2, beat1, $00,REST, beat1,$00, D3, beat1,$00, E2, beat1,$00,REST, beat1,$00,G3, beat1,$00
         .byte $ff
     psytrance2: 
-        .byte A2, TEMPO*1, A3, TEMPO*1, A2, TEMPO*1, REST, TEMPO*1, C3, TEMPO*1, A2, TEMPO*1,REST, TEMPO*1,E3, TEMPO*1
+        .byte A2, beat1, $00,A3, beat1,$00, A2, beat1,$00, REST, beat1,$00, C3, beat1,$00, A2, beat1,$00,REST, beat1,$00,E3, beat1,$00
         .byte $ff   
     psytrance3: 
-        .byte D2, TEMPO*1, D3, TEMPO*1, D2, TEMPO*1, REST, TEMPO*1, F3, TEMPO*1, D2, TEMPO*1,REST, TEMPO*1,A4, TEMPO*1
+        .byte D2, beat1, $00, D3, beat1, $00, D2, beat1, $00, REST, beat1, $00, F3, beat1, $00, D2, beat1, $00,REST, beat1, $00,A4, beat1, $00
         .byte $ff   
 
     silence: .byte REST,TEMPO,$00,$ff  
@@ -105,23 +105,23 @@
     //     .word ifeellove3,ifeellove3,ifeellove3,ifeellove3
     //     .word $ffff
 
-    voice1: 
-    voice2:
-    voice3:
-    .word ifeellove1,ifeellove1,ifeellove1,ifeellove1
-    .word ifeellove2,ifeellove2,ifeellove2,ifeellove2
-    .word ifeellove3,ifeellove3,ifeellove3,ifeellove3
-    .word $ffff
+    // voice1: 
+    // voice2:
+    // voice3:
+    // .word ifeellove1,ifeellove1,ifeellove1,ifeellove1
+    // .word ifeellove2,ifeellove2,ifeellove2,ifeellove2
+    // .word ifeellove3,ifeellove3,ifeellove3,ifeellove3
+    // .word $ffff
 
     
    // voice3:        .word silence, $ffff
 
-    // voice1:         
-    //      .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff
-    // voice2: 
-    //     .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff
-    // voice3: 
-    //     .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff        
+    voice1:         
+         .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff
+    voice2: 
+        .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff
+    voice3: 
+        .word psytrance1, psytrance1, psytrance1, psytrance1, psytrance2, psytrance2, psytrance2, psytrance2, psytrance3,psytrance3,psytrance3,psytrance3, psytrance1, psytrance1, psytrance1, psytrance1,$ffff        
     controlChannel:
         .word filter, $ffff
 }

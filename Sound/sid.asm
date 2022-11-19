@@ -2,7 +2,7 @@
 
 .namespace Sound {
 
-    .const TEMPO = 10
+    .const TEMPO = 6
 
     // point to chip
     .const SID_ACTUAL = $D400
