@@ -74,22 +74,22 @@
         Set SID_V1_FREQ_HI:#$0
         Set SID_V1_PW_LO:#$00
         Set SID_V1_PW_HI:#$00
-        Set SID_V1_ATTACK_DECAY:#$4b
-        Set SID_V1_SUSTAIN_RELEASE:#$04
+        Set SID_V1_ATTACK_DECAY:#$0A
+        Set SID_V1_SUSTAIN_RELEASE:#$0
 
         Set SID_V2_FREQ_LO:#$E8 
         Set SID_V2_FREQ_HI:#$06
         Set SID_V2_PW_LO:#$00
         Set SID_V2_PW_HI:#$00
-        Set SID_V2_ATTACK_DECAY:#$4b
-        Set SID_V2_SUSTAIN_RELEASE:#$04
+        Set SID_V2_ATTACK_DECAY:#$0A
+        Set SID_V2_SUSTAIN_RELEASE:#$00
 
         Set SID_V3_FREQ_LO:#$E8 
         Set SID_V3_FREQ_HI:#$06
         Set SID_V3_PW_LO:#$00
         Set SID_V3_PW_HI:#$00
-        Set SID_V3_ATTACK_DECAY:#$4b
-        Set SID_V3_SUSTAIN_RELEASE:#$04
+        Set SID_V3_ATTACK_DECAY:#$0A
+        Set SID_V3_SUSTAIN_RELEASE:#$00
 
         rts
     }
@@ -195,6 +195,7 @@
 
     nextStep:    
         inc _voice
+        lda _voice
         cmp #3
         bne !+
             Set _voice:#0
@@ -227,11 +228,11 @@
     _stepIndex: .byte 0
 
     //_sequence: .byte C2, C3, Eb2, Eb3, F3, F2, G3, G2,     C2, C3, E2, E3, F3, F2, G3, G2
-    //_sequence: .byte E2, G2, A3, G2, D3, C3, D3, E3
-    
-    _sequence: .byte E2,E3,E2,REST,D3,E2,REST,G3
+    _sequence: .byte E2, G2, A3, G2, D3, C3, D3, E3
+    //_sequence: .byte E2,E3,E2,REST,D3,E2,REST,G3
+    //_sequence: .byte C2,E2,G2,E2,F2,G2,E2,G2,    B2,E2,G2,E2,F2,G2,E2,G2,A2,E2,G2,E2,F2,G2,E2,G2
 
-    _filter: .byte 8
+    _filter: .byte 12
 
     _scaleIndex: .byte 0
     _scale: .byte 12,5,10,11,12,5,10,11
