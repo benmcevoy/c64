@@ -5,7 +5,7 @@
 
 .namespace Tempo {
 
-    ReadJoystick: {
+    ReadInput: {
         .const PORT2 = $dc00
         .const UP      = %00000001
         .const DOWN    = %00000010
@@ -66,7 +66,7 @@
 
         // init SID
         Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111  
-        Set SID_MIX_FILTER_CUT_OFF_HI:_filter
+        Set SID_MIX_FILTER_CUT_OFF_HI:#16
         Set SID_MIX_FILTER_CONTROL:#%11110111
         Set SID_MIX_VOLUME:#%00011111
 
@@ -100,79 +100,21 @@
         sta    $d019
 
         dec _frameCounter
-        beq  !+
-            jmp nextFrame
-        !:
+        bne nextFrame
 
         MCopy _frameInterval:_frameCounter
 
         inc $d020
         inc $d021
 
-        lda _voice
-        cmp #2
-        bne !+
-            ldx _stepIndex
-            lda _sequence, X
-
-            // skip REST
-            beq !+
-
-            sta __tmp0
-
-            ldx _scaleIndex
-            lda _scale, X
-
-            clc
-            adc __tmp0
-
-            // set tone
-            tax
-            lda     freq_msb,x
-            sta     SID_V1_FREQ_HI  
-            lda     freq_lsb,x
-            sta     SID_V1_FREQ_LO
-
-            // trigger on
-            Set SID_V1_CONTROL:#%00100000
-            Set SID_V1_CONTROL:#%00100001
-
-            jmp nextStep
-        !:
-
-        lda _voice
-        cmp #1
-        bne !+
-            ldx _stepIndex
-            lda _sequence, X
-
-            beq !+
-
-            sta __tmp0
-
-            ldx _scaleIndex
-            lda _scale, X
-
-            clc
-            adc __tmp0
-
-            // set tone
-            tax
-            lda     freq_msb,x
-            sta     SID_V2_FREQ_HI  
-            lda     freq_lsb,x
-            sta     SID_V2_FREQ_LO
-
-            // trigger on
-            Set SID_V2_CONTROL:#%00100000
-            Set SID_V2_CONTROL:#%00100001
-            jmp nextStep
-        !:
+        lda _voiceIndex
+        tay
 
         ldx _stepIndex
         lda _sequence, X
-        
-        beq nextStep
+
+        // skip REST
+        beq !+
 
         sta __tmp0
 
@@ -185,20 +127,22 @@
         // set tone
         tax
         lda     freq_msb,x
-        sta     SID_V3_FREQ_HI  
+        sta     SID_V1_FREQ_HI, Y  
         lda     freq_lsb,x
-        sta     SID_V3_FREQ_LO
+        sta     SID_V1_FREQ_LO, Y
 
         // trigger on
-        Set SID_V3_CONTROL:#%00100000
-        Set SID_V3_CONTROL:#%00100001
-
-    nextStep:    
-        inc _voice
-        lda _voice
-        cmp #3
+        lda  #%00100000
+        sta SID_V1_CONTROL, Y
+        lda  #%00100001
+        sta SID_V1_CONTROL, Y
+        
+        lda _voiceIndex
+        clc; adc #7
+        sta _voiceIndex
+        cmp #21
         bne !+
-            Set _voice:#0
+            Set _voiceIndex:#0
         !:
 
         inc _stepIndex
@@ -212,7 +156,7 @@
 
         dec _readInputInterval
         bne !+
-            jsr ReadJoystick
+            jsr ReadInput
             Set _readInputInterval:#15
         !:
         // end irq
@@ -222,20 +166,17 @@
 
     _frameCounter: .byte 1
     _frameInterval: .byte 10
-    _readInputInterval: .byte 15
+    _readInputInterval: .byte 12
 
+    _voiceIndex: .byte 0
     _steps: .byte 8
     _stepIndex: .byte 0
+    _scaleIndex: .byte 0
+    
+    _scale: .byte 12,5,10,11,12,5,10,11
 
     //_sequence: .byte C2, C3, Eb2, Eb3, F3, F2, G3, G2,     C2, C3, E2, E3, F3, F2, G3, G2
     _sequence: .byte E2, G2, A3, G2, D3, C3, D3, E3
     //_sequence: .byte E2,E3,E2,REST,D3,E2,REST,G3
     //_sequence: .byte C2,E2,G2,E2,F2,G2,E2,G2,    B2,E2,G2,E2,F2,G2,E2,G2,A2,E2,G2,E2,F2,G2,E2,G2
-
-    _filter: .byte 12
-
-    _scaleIndex: .byte 0
-    _scale: .byte 12,5,10,11,12,5,10,11
-
-    _voice: .byte 0
 }
