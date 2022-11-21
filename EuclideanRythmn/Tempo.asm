@@ -17,6 +17,8 @@
 
         .const LEFT_AND_FIRE    = %00010100
         .const RIGHT_AND_FIRE    = %00011000
+        .const UP_AND_FIRE    = %00010001
+        .const DOWN_AND_FIRE    = %00010010
 
         // hold down fire to change overall tempo
         lda #LEFT_AND_FIRE
@@ -27,6 +29,7 @@
             beq !+
                 dec _frameInterval
             !:
+            jmp exit
         !:
 
         lda #RIGHT_AND_FIRE
@@ -37,6 +40,32 @@
             beq !+
                 inc _frameInterval
             !:
+            jmp exit
+        !:
+
+        lda #UP_AND_FIRE
+        bit PORT2
+        bne !++
+            lda _selectedVoice
+            tax
+            lda _voice1Offset, X
+            beq !+
+                dec _voice1Offset, X
+            !:
+            jmp exit
+        !:
+
+        lda #DOWN_AND_FIRE
+        bit PORT2
+        bne !++
+            lda _selectedVoice
+            tax
+            lda _voice1Offset, X
+            cmp _steps
+            beq !+
+                inc _voice1Offset, X
+            !:
+            jmp exit
         !:
 
         lda #UP
@@ -47,6 +76,7 @@
             beq !+
                 dec _selectedVoice
             !:
+            jmp exit
         !:
 
         lda #DOWN
@@ -57,6 +87,7 @@
             beq !+
                 inc _selectedVoice
             !:
+            jmp exit
         !:
 
         lda #LEFT
@@ -68,6 +99,7 @@
             beq !+
                 dec _voice1NumberOfBeats, X
             !:
+            jmp exit
         !:
 
         lda #RIGHT
@@ -82,6 +114,7 @@
             !:
         !:
 
+    exit:
         rts
     }
 
@@ -199,10 +232,11 @@
 
         Set _voice1On:#0
         lda _voice1NumberOfBeats
-        // *8 so shift 3 times
-        asl;asl;asl
+        // *16 so shift 3 times
+        asl;asl;asl;asl
         clc 
         adc _stepIndex
+        adc _voice1Offset
         tax
 
         lda _rhythm, X
@@ -218,10 +252,11 @@
         
         Set _voice2On:#0
         lda _voice2NumberOfBeats
-        // *8 so shift 3 times
-        asl;asl;asl
+        // *16 so shift 3 times
+        asl;asl;asl;asl
         clc 
         adc _stepIndex
+        adc _voice2Offset
         tax
 
         lda _rhythm, X
@@ -237,10 +272,11 @@
 
         Set _voice3On:#0
         lda _voice3NumberOfBeats
-        // *8 so shift 3 times
-        asl;asl;asl
+        // *16 so shift 4 times
+        asl;asl;asl;asl
         clc 
         adc _stepIndex
+        adc _voice3Offset
         tax
 
         lda _rhythm, X
@@ -281,11 +317,11 @@
     _selectedVoice: .byte 0
     _steps: .byte 8
     // between 0-8 (_steps=8)
-    _voice1NumberOfBeats: .byte 3
-    _voice2NumberOfBeats: .byte 4
+    _voice1NumberOfBeats: .byte 1
+    _voice2NumberOfBeats: .byte 0
     _voice3NumberOfBeats: .byte 0
     // offset 0-8
-    _voice1Offset: .byte 0
+    _voice1Offset: .byte 1
     _voice2Offset: .byte 0
     _voice3Offset: .byte 0
 
@@ -293,14 +329,15 @@
     _voice2On: .byte 0
     _voice3On: .byte 0
 
+    // double up the seqeunce so we can offset into it
     _rhythm: 
-        .byte 0,0,0,0,0,0,0,0
-        .byte 1,0,0,0,0,0,0,0
-        .byte 1,0,0,0,1,0,0,0
-        .byte 1,0,0,1,0,0,1,0
-        .byte 1,0,1,0,1,0,1,0
-        .byte 1,0,1,1,0,1,1,0
-        .byte 1,0,1,1,1,0,1,1
-        .byte 1,1,1,1,1,1,1,0
-        .byte 1,1,1,1,1,1,1,1
+        .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        .byte 1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
+        .byte 1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0
+        .byte 1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0
+        .byte 1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0
+        .byte 1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,0
+        .byte 1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1
+        .byte 1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0
+        .byte 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 }
