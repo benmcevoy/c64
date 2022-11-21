@@ -193,22 +193,22 @@
         Set SID_MIX_FILTER_CONTROL:#%11110111
         Set SID_MIX_VOLUME:#%00011111
 
-        Set SID_V1_FREQ_LO:#$E8 
-        Set SID_V1_FREQ_HI:#$06
+        Set SID_V1_FREQ_LO:#$b4 
+        Set SID_V1_FREQ_HI:#$08
         Set SID_V1_PW_LO:#$00
         Set SID_V1_PW_HI:#$00
         Set SID_V1_ATTACK_DECAY:#$08
         Set SID_V1_SUSTAIN_RELEASE:#$0
 
-        Set SID_V2_FREQ_LO:#$E8 
-        Set SID_V2_FREQ_HI:#$06
+        Set SID_V2_FREQ_LO:#$f7 
+        Set SID_V2_FREQ_HI:#$0a
         Set SID_V2_PW_LO:#$00
         Set SID_V2_PW_HI:#$00
         Set SID_V2_ATTACK_DECAY:#$08
         Set SID_V2_SUSTAIN_RELEASE:#$00
 
-        Set SID_V3_FREQ_LO:#$E8 
-        Set SID_V3_FREQ_HI:#$06
+        Set SID_V3_FREQ_LO:#$0a 
+        Set SID_V3_FREQ_HI:#$0d
         Set SID_V3_PW_LO:#$00
         Set SID_V3_PW_HI:#$00
         Set SID_V3_ATTACK_DECAY:#$08
