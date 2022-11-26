@@ -54,7 +54,7 @@
             !:
         !:
 
-        //Set SID_MIX_FILTER_CUT_OFF_HI:_filter
+       
 
         rts
     }
@@ -66,7 +66,7 @@
 
         // init SID
         Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111  
-        Set SID_MIX_FILTER_CUT_OFF_HI:#16
+        Set SID_MIX_FILTER_CUT_OFF_HI:#$FF
         Set SID_MIX_FILTER_CONTROL:#%11110111
         Set SID_MIX_VOLUME:#%00011111
 
@@ -153,7 +153,6 @@
         !:
 
     nextFrame:
-
         dec _readInputInterval
         bne !+
             jsr ReadInput
@@ -178,5 +177,8 @@
     //_sequence: .byte C2, C3, Eb2, Eb3, F3, F2, G3, G2,     C2, C3, E2, E3, F3, F2, G3, G2
     _sequence: .byte E2, G2, A3, G2, D3, C3, D3, E3
     //_sequence: .byte E2,E3,E2,REST,D3,E2,REST,G3
-    //_sequence: .byte C2,E2,G2,E2,F2,G2,E2,G2,    B2,E2,G2,E2,F2,G2,E2,G2,A2,E2,G2,E2,F2,G2,E2,G2
+    //_sequence: .byte C2,E2,G2,E2,F2,G2,E2,G2
+    //_sequence: .byte        B2,E2,G2,E2,F2,G2,E2,G2,A2,E2,G2,E2,F2,G2,E2,G2
 }
+
+    

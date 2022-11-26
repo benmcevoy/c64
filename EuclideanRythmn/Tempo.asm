@@ -48,9 +48,9 @@
         bne !++
             lda _selectedVoice
             tax
-            lda _voice1Offset, X
+            lda _voiceOffset, X
             beq !+
-                dec _voice1Offset, X
+                dec _voiceOffset, X
             !:
             jmp exit
         !:
@@ -60,10 +60,10 @@
         bne !++
             lda _selectedVoice
             tax
-            lda _voice1Offset, X
+            lda _voiceOffset, X
             cmp _steps
             beq !+
-                inc _voice1Offset, X
+                inc _voiceOffset, X
             !:
             jmp exit
         !:
@@ -95,9 +95,9 @@
         bne !++
             lda _selectedVoice
             tax
-            lda _voice1NumberOfBeats, X
+            lda _voiceNumberOfBeats, X
             beq !+
-                dec _voice1NumberOfBeats, X
+                dec _voiceNumberOfBeats, X
             !:
             jmp exit
         !:
@@ -107,10 +107,10 @@
         bne !++
             lda _selectedVoice
             tax
-            lda _voice1NumberOfBeats, X
+            lda _voiceNumberOfBeats, X
             cmp _steps
             beq !+
-                inc _voice1NumberOfBeats, X
+                inc _voiceNumberOfBeats, X
             !:
         !:
 
@@ -119,55 +119,57 @@
     }
 
     Render: {
-        lda _stepIndex
-
-        bne !+
-            Set CharScreen.PenColor:#BLACK
-            Call CharScreen.Plot:#17:#8
-            Call CharScreen.Plot:#17:#9
-            Call CharScreen.Plot:#17:#10
+        
+        lda x
+        beq !+
+            Set CharScreen.Character:#046
+            Set CharScreen.PenColor:#DARK_GRAY
+            Call CharScreen.Plot:x:#8
+            Call CharScreen.Plot:x:#9
+            Call CharScreen.Plot:x:#10
         !:
 
-        clc; adc #10
+        lda _stepIndex
+        clc; adc #8
         sta x
 
+        ldy #0
         Set CharScreen.Character:#046
         Set CharScreen.PenColor:#DARK_GRAY
-        lda _voice1On
-        beq !+
+        lda _voiceOn, Y
+        cmp #1
+        bne !+
             Set CharScreen.Character:#81
-            Set CharScreen.PenColor:#WHITE
+            Set CharScreen.PenColor:#GREEN
         !:
         Call CharScreen.Plot:x:#8
 
+        iny
         Set CharScreen.Character:#046
         Set CharScreen.PenColor:#DARK_GRAY
-        lda _voice2On
-        beq !+
+        lda _voiceOn, Y
+        cmp #1
+        bne !+
             Set CharScreen.Character:#81
-            Set CharScreen.PenColor:#WHITE
+            Set CharScreen.PenColor:#YELLOW
         !:
         Call CharScreen.Plot:x:#9
 
+        iny
         Set CharScreen.Character:#046
         Set CharScreen.PenColor:#DARK_GRAY
-        lda _voice3On
-        beq !+
+        lda _voiceOn, Y
+        cmp #1
+        bne !+
             Set CharScreen.Character:#81
-            Set CharScreen.PenColor:#WHITE
+            Set CharScreen.PenColor:#BLUE
         !:
         Call CharScreen.Plot:x:#10
 
-        dec x
-        Set CharScreen.PenColor:#BLACK
-        Call CharScreen.Plot:x:#8
-        Call CharScreen.Plot:x:#9
-        Call CharScreen.Plot:x:#10
-
-        
-        Call CharScreen.Plot:#8:#8
-        Call CharScreen.Plot:#8:#9
-        Call CharScreen.Plot:#8:#10
+        Set CharScreen.Character:#032
+        Call CharScreen.Plot:#6:#8
+        Call CharScreen.Plot:#6:#9
+        Call CharScreen.Plot:#6:#10
 
         lda _selectedVoice
         clc; adc #8
@@ -175,7 +177,7 @@
 
         Set CharScreen.Character:#046
         Set CharScreen.PenColor:#RED
-        Call CharScreen.Plot:#8:y
+        Call CharScreen.Plot:#6:y
 
         rts
         x: .byte 0
@@ -229,14 +231,18 @@
 
     stepStart:
         MCopy _frameInterval:_frameCounter
+        
+        // hmm... this is now an unrolled loop
 
-        Set _voice1On:#0
-        lda _voice1NumberOfBeats
-        // *16 so shift 3 times
+        ldy #0
+        lda #0
+        sta _voiceOn,Y
+        lda _voiceNumberOfBeats, Y
+        // *16 so shift 4 times
         asl;asl;asl;asl
         clc 
         adc _stepIndex
-        adc _voice1Offset
+        adc _voiceOffset, Y
         tax
 
         lda _rhythm, X
@@ -247,16 +253,21 @@
             sta SID_V1_CONTROL
             lda  #%00100001
             sta SID_V1_CONTROL
-            Set _voice1On:#1
+            
+            //inc _voiceOn,Y only works on X index
+            lda #1
+            sta _voiceOn, Y
         !:
         
-        Set _voice2On:#0
-        lda _voice2NumberOfBeats
-        // *16 so shift 3 times
+        iny
+        lda #0
+        sta _voiceOn,Y
+        lda _voiceNumberOfBeats, Y
+        // *16 so shift 4 times
         asl;asl;asl;asl
         clc 
         adc _stepIndex
-        adc _voice2Offset
+        adc _voiceOffset,Y
         tax
 
         lda _rhythm, X
@@ -267,16 +278,19 @@
             sta SID_V2_CONTROL
             lda  #%00100001
             sta SID_V2_CONTROL      
-            Set _voice2On:#1
+            lda #1
+            sta _voiceOn, Y
         !:
 
-        Set _voice3On:#0
-        lda _voice3NumberOfBeats
+        iny
+        lda #0
+        sta _voiceOn,Y
+        lda _voiceNumberOfBeats, Y
         // *16 so shift 4 times
         asl;asl;asl;asl
         clc 
         adc _stepIndex
-        adc _voice3Offset
+        adc _voiceOffset, Y
         tax
 
         lda _rhythm, X
@@ -287,8 +301,11 @@
             sta SID_V3_CONTROL
             lda  #%00100001
             sta SID_V3_CONTROL            
-            Set _voice3On:#1
+            lda #1
+            sta _voiceOn, Y
         !:
+
+        jsr Render
 
         inc _stepIndex
         lda _stepIndex
@@ -304,7 +321,6 @@
             Set _readInputInterval:#8
         !:
 
-        jsr Render
         // end irq
         pla;tay;pla;tax;pla
         rti          
@@ -316,18 +332,13 @@
     _stepIndex: .byte 0
     _selectedVoice: .byte 0
     _steps: .byte 8
-    // between 0-8 (_steps=8)
-    _voice1NumberOfBeats: .byte 1
-    _voice2NumberOfBeats: .byte 0
-    _voice3NumberOfBeats: .byte 0
-    // offset 0-8
-    _voice1Offset: .byte 1
-    _voice2Offset: .byte 0
-    _voice3Offset: .byte 0
 
-    _voice1On: .byte 0
-    _voice2On: .byte 0
-    _voice3On: .byte 0
+    // between 0-8 (_steps=8)
+    _voiceNumberOfBeats: .byte 1,0,0
+    // offset 0-8
+    _voiceOffset: .byte 0,0,0
+    // flags
+    _voiceOn: .byte 0,0,0
 
     // double up the seqeunce so we can offset into it
     _rhythm: 
@@ -340,4 +351,12 @@
         .byte 1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1
         .byte 1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0
         .byte 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+
+    // play the "registers" for a rythmn
+    // 
+    // pattern 
+    // Voice, NumberOfbeats, Offset, Length (1..8), V1 etc or $FF terminator (#ACTION_HANDLED)?
+    // and maybe tempo, instrument
+
+    // and a function to drive them, another L.U.T. like sine
 }
