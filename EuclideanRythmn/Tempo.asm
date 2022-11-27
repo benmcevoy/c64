@@ -195,25 +195,25 @@
         Set SID_MIX_FILTER_CONTROL:#%11110111
         Set SID_MIX_VOLUME:#%00011111
 
-        Set SID_V1_FREQ_LO:#$b4 
-        Set SID_V1_FREQ_HI:#$08
-        Set SID_V1_PW_LO:#$00
+        Set SID_V1_FREQ_LO:#$ba 
+        Set SID_V1_FREQ_HI:#$02
+        Set SID_V1_PW_LO:#$F0
         Set SID_V1_PW_HI:#$00
-        Set SID_V1_ATTACK_DECAY:#$08
+        Set SID_V1_ATTACK_DECAY:#$0A
         Set SID_V1_SUSTAIN_RELEASE:#$0
 
-        Set SID_V2_FREQ_LO:#$f7 
-        Set SID_V2_FREQ_HI:#$0a
+        Set SID_V2_FREQ_LO:#$16
+        Set SID_V2_FREQ_HI:#$04
         Set SID_V2_PW_LO:#$00
         Set SID_V2_PW_HI:#$00
-        Set SID_V2_ATTACK_DECAY:#$08
+        Set SID_V2_ATTACK_DECAY:#$0A
         Set SID_V2_SUSTAIN_RELEASE:#$00
 
-        Set SID_V3_FREQ_LO:#$0a 
-        Set SID_V3_FREQ_HI:#$0d
+        Set SID_V3_FREQ_LO:#$e8 
+        Set SID_V3_FREQ_HI:#$0a
         Set SID_V3_PW_LO:#$00
         Set SID_V3_PW_HI:#$00
-        Set SID_V3_ATTACK_DECAY:#$08
+        Set SID_V3_ATTACK_DECAY:#$0A
         Set SID_V3_SUSTAIN_RELEASE:#$00
 
         rts
@@ -305,6 +305,11 @@
             sta _voiceOn, Y
         !:
 
+        ldx _filterIndex
+        lda _filter, X
+        sta SID_MIX_FILTER_CUT_OFF_HI
+        inc _filterIndex
+
         jsr Render
 
         inc _stepIndex
@@ -340,7 +345,7 @@
     // flags
     _voiceOn: .byte 0,0,0
 
-    // double up the seqeunce so we can offset into it
+    // double up the sequence so we can offset into it
     _rhythm: 
         .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         .byte 1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
@@ -357,6 +362,31 @@
     // pattern 
     // Voice, NumberOfbeats, Offset, Length (1..8), V1 etc or $FF terminator (#ACTION_HANDLED)?
     // and maybe tempo, instrument
-
     // and a function to drive them, another L.U.T. like sine
+
+    _filterIndex: .byte 0
+    _filter: 
+        // round(resolution + dcOffset + resolution * sin(toradians(i * 360 * f / resolution )))
+        // e.g. fill sine wave offset 16 with 4 bit resolution
+        .var speed = 1; .var low = 1; .var high = 8
+
+        .fill 16,round(high+low+high*sin(toRadians(i*360*(speed+0)/high)))
+        .fill 16,round(high+low+high*sin(toRadians(i*360*(speed+0)/high)))
+
+        .eval high = 12
+        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
+        
+        .eval high = 8
+        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
+        
+        .eval high = 12
+        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+8)/high)))
+
+        .eval high = 8
+        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+4)/high)))
+        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+8)/high)))
+        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
+        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
+        .byte $ff
+
 }
