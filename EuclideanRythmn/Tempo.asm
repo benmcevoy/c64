@@ -1,9 +1,7 @@
 #importonce
 #import "_prelude.lib"
 #import "_charscreen.lib"
-
 #import "Sid.asm"
-
 
 .namespace Tempo {
 
@@ -195,26 +193,11 @@
         Set SID_MIX_FILTER_CONTROL:#%11110111
         Set SID_MIX_VOLUME:#%00011111
 
-        Set SID_V1_FREQ_LO:#$ba 
-        Set SID_V1_FREQ_HI:#$02
-        Set SID_V1_PW_LO:#$F0
-        Set SID_V1_PW_HI:#$00
-        Set SID_V1_ATTACK_DECAY:#$0A
-        Set SID_V1_SUSTAIN_RELEASE:#$0
+        SetChord(CMaj)
 
-        Set SID_V2_FREQ_LO:#$16
-        Set SID_V2_FREQ_HI:#$04
-        Set SID_V2_PW_LO:#$00
-        Set SID_V2_PW_HI:#$00
         Set SID_V2_ATTACK_DECAY:#$0A
-        Set SID_V2_SUSTAIN_RELEASE:#$00
-
-        Set SID_V3_FREQ_LO:#$e8 
-        Set SID_V3_FREQ_HI:#$0a
-        Set SID_V3_PW_LO:#$00
-        Set SID_V3_PW_HI:#$00
+        Set SID_V1_ATTACK_DECAY:#$0A
         Set SID_V3_ATTACK_DECAY:#$0A
-        Set SID_V3_SUSTAIN_RELEASE:#$00
 
         rts
     }
@@ -249,7 +232,7 @@
         // if 0 then REST
         beq !+
             // trigger on
-            lda  #%00100000
+            lda  #0
             sta SID_V1_CONTROL
             lda  #%00100001
             sta SID_V1_CONTROL
@@ -274,7 +257,7 @@
         // if 0 then REST
         beq !+
             // trigger on
-            lda  #%00100000
+            lda  #0
             sta SID_V2_CONTROL
             lda  #%00100001
             sta SID_V2_CONTROL      
@@ -297,7 +280,7 @@
         // if 0 then REST
         beq !+
             // trigger on
-            lda  #%00100000
+            lda  #0
             sta SID_V3_CONTROL
             lda  #%00100001
             sta SID_V3_CONTROL            
@@ -389,4 +372,5 @@
         .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
         .byte $ff
 
+    
 }

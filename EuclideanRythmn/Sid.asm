@@ -65,3 +65,41 @@ freq_lsb:
 .byte $67,$70,$89,$b2,$ed,$3b,$9c,$13,$a0,$45,$02,$da,$ce,$e0,$11,$64
 .byte $da,$76,$39,$26,$40,$89,$04,$b4,$9c,$c0,$23,$c8,$b4,$eb,$72,$4c
 .byte $80,$12,$08,$68,$39,$80,$45,$90,$68,$d6,$e3,$99,$00,$24,$10
+
+
+
+.struct Chord{ V0, V1, V2 }
+
+.var CMaj = Chord(C2, E2, G2)
+.var CMin = Chord(C2, Eb2, G2)
+.var C7th = Chord(C2, G2, Bb3)
+.var CMn7 = Chord(C2, Eb2, Bb3)
+
+
+.macro SetTone(voiceNumber, tone) {
+    ldx #tone
+    lda     freq_msb,x
+    sta     SID_V1_FREQ_HI+voiceNumber*7
+    lda     freq_lsb,x
+    sta     SID_V1_FREQ_LO+voiceNumber*7 
+}
+
+.macro SetChord(chord) {
+    ldx     #chord.V0
+    lda     freq_msb,x
+    sta     SID_V1_FREQ_HI
+    lda     freq_lsb,x
+    sta     SID_V1_FREQ_LO
+
+    ldx     #chord.V1
+    lda     freq_msb,x
+    sta     SID_V2_FREQ_HI
+    lda     freq_lsb,x
+    sta     SID_V2_FREQ_LO
+
+    ldx     #chord.V2
+    lda     freq_msb,x
+    sta     SID_V3_FREQ_HI
+    lda     freq_lsb,x
+    sta     SID_V3_FREQ_LO
+}

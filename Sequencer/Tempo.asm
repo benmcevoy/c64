@@ -132,9 +132,9 @@
         sta     SID_V1_FREQ_LO, Y
 
         // trigger on
-        lda  #%00100000
+        lda  #%00010000
         sta SID_V1_CONTROL, Y
-        lda  #%00100001
+        lda  #%00010001
         sta SID_V1_CONTROL, Y
         
         lda _voiceIndex
