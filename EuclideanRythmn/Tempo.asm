@@ -193,7 +193,7 @@
         Set SID_MIX_FILTER_CONTROL:#%11110111
         Set SID_MIX_VOLUME:#%00011111
 
-        SetChord(CMaj)
+        SetChord(C7th, 4)
 
         Set SID_V2_ATTACK_DECAY:#$0A
         Set SID_V1_ATTACK_DECAY:#$0A

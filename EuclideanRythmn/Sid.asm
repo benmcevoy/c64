@@ -70,11 +70,11 @@ freq_lsb:
 
 .struct Chord{ V0, V1, V2 }
 
-.var CMaj = Chord(C2, E2, G2)
-.var CMin = Chord(C2, Eb2, G2)
-.var C7th = Chord(C2, G2, Bb3)
-.var CMn7 = Chord(C2, Eb2, Bb3)
-
+    .var CMaj = Chord(C2, E2, G2)
+    .var CMin = Chord(C2, Eb2, G2)
+    .var C7th = Chord(C2, G2, Bb3)
+    .var CMn7 = Chord(C2, Eb2, Bb3)
+    .var CMj7 = Chord(C2, G2, B3)
 
 .macro SetTone(voiceNumber, tone) {
     ldx #tone
@@ -84,20 +84,23 @@ freq_lsb:
     sta     SID_V1_FREQ_LO+voiceNumber*7 
 }
 
-.macro SetChord(chord) {
-    ldx     #chord.V0
+.macro SetChord(chord, transpose) {
+    lda     #chord.V0
+    clc; adc #transpose; tax
     lda     freq_msb,x
     sta     SID_V1_FREQ_HI
     lda     freq_lsb,x
     sta     SID_V1_FREQ_LO
 
-    ldx     #chord.V1
+    lda    #chord.V1
+    clc; adc #transpose; tax
     lda     freq_msb,x
     sta     SID_V2_FREQ_HI
     lda     freq_lsb,x
     sta     SID_V2_FREQ_LO
 
-    ldx     #chord.V2
+    lda     #chord.V2
+    clc; adc #transpose; tax
     lda     freq_msb,x
     sta     SID_V3_FREQ_HI
     lda     freq_lsb,x
