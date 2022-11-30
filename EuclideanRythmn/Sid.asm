@@ -70,11 +70,11 @@ freq_lsb:
 
 .struct Chord{ V0, V1, V2 }
 
-    .var CMaj = Chord(C2, E2, G2)
-    .var CMin = Chord(C2, Eb2, G2)
-    .var C7th = Chord(C2, G2, Bb3)
-    .var CMn7 = Chord(C2, Eb2, Bb3)
-    .var CMj7 = Chord(C2, G2, B3)
+    .var Maj = Chord(C2, E2, G2)
+    .var Min = Chord(C2, Eb2, G2)
+    .var M_7 = Chord(C2, G2, Bb3)
+    .var Mn7 = Chord(C2, Eb2, Bb3)
+    .var Mj7 = Chord(C2, G2, B3)
 
 .macro SetTone(voiceNumber, tone) {
     ldx #tone

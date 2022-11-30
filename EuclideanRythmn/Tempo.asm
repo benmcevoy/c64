@@ -183,21 +183,21 @@
     }
 
     Init: {
-        // set raster irq line number
+        // set next raster irq line number
         lda    #0
         sta    $d012
 
         // init SID
         Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111  
         Set SID_MIX_FILTER_CUT_OFF_HI:#10
-        Set SID_MIX_FILTER_CONTROL:#%11110111
-        Set SID_MIX_VOLUME:#%00011111
+        Set SID_MIX_FILTER_CONTROL:#%01110101
+        Set SID_MIX_VOLUME:#%00101111
 
-        SetChord(C7th, 4)
-
-        Set SID_V2_ATTACK_DECAY:#$0A
+        SetChord(Mn7, 0)
+        
         Set SID_V1_ATTACK_DECAY:#$0A
-        Set SID_V3_ATTACK_DECAY:#$0A
+        Set SID_V2_ATTACK_DECAY:#$0A
+        Set SID_V3_ATTACK_DECAY:#$0B
 
         rts
     }
@@ -215,6 +215,7 @@
     stepStart:
         MCopy _frameInterval:_frameCounter
         
+        .const vControl = %00010001
         // hmm... this is now an unrolled loop
 
         ldy #0
@@ -234,7 +235,7 @@
             // trigger on
             lda  #0
             sta SID_V1_CONTROL
-            lda  #%00100001
+            lda  #vControl
             sta SID_V1_CONTROL
             
             //inc _voiceOn,Y only works on X index
@@ -259,7 +260,7 @@
             // trigger on
             lda  #0
             sta SID_V2_CONTROL
-            lda  #%00100001
+            lda  #vControl
             sta SID_V2_CONTROL      
             lda #1
             sta _voiceOn, Y
@@ -282,7 +283,7 @@
             // trigger on
             lda  #0
             sta SID_V3_CONTROL
-            lda  #%00100001
+            lda  #vControl
             sta SID_V3_CONTROL            
             lda #1
             sta _voiceOn, Y
@@ -315,7 +316,7 @@
     }
 
     _frameCounter: .byte 1
-    _frameInterval: .byte 12
+    _frameInterval: .byte 32
     _readInputInterval: .byte 8
     _stepIndex: .byte 0
     _selectedVoice: .byte 0
