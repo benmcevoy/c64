@@ -19,7 +19,7 @@
         .const DOWN_AND_FIRE    = %00010010
 
         // hold down fire to change overall tempo
-        lda #LEFT_AND_FIRE
+        lda #RIGHT_AND_FIRE
         bit PORT2
         bne !++
             lda _frameInterval
@@ -30,7 +30,7 @@
             jmp exit
         !:
 
-        lda #RIGHT_AND_FIRE
+        lda #LEFT_AND_FIRE
         bit PORT2
         bne !++
             lda _frameInterval
@@ -41,30 +41,53 @@
             jmp exit
         !:
 
-        lda #UP_AND_FIRE
+        lda #DOWN_AND_FIRE
         bit PORT2
         bne !++
-            lda _selectedVoice
-            tax
-            lda _voiceOffset, X
+            lda _transpose
             beq !+
-                dec _voiceOffset, X
+                dec _transpose
             !:
             jmp exit
         !:
 
-        lda #DOWN_AND_FIRE
+        // transpose
+        lda #UP_AND_FIRE
         bit PORT2
         bne !++
-            lda _selectedVoice
-            tax
-            lda _voiceOffset, X
-            cmp _steps
+            lda _transpose
+            cmp #scale_length
             beq !+
-                inc _voiceOffset, X
+                inc _transpose
             !:
             jmp exit
         !:
+
+        // offset or rotation
+        // lda #DOWN_AND_FIRE
+        // bit PORT2
+        // bne !++
+        //     lda _selectedVoice
+        //     tax
+        //     lda _voiceOffset, X
+        //     beq !+
+        //         dec _voiceOffset, X
+        //     !:
+        //     jmp exit
+        // !:
+
+        // lda #UP_AND_FIRE
+        // bit PORT2
+        // bne !++
+        //     lda _selectedVoice
+        //     tax
+        //     lda _voiceOffset, X
+        //     cmp _steps
+        //     beq !+
+        //         inc _voiceOffset, X
+        //     !:
+        //     jmp exit
+        // !:
 
         lda #UP
         bit PORT2
@@ -193,8 +216,6 @@
         Set SID_MIX_FILTER_CONTROL:#%01110101
         Set SID_MIX_VOLUME:#%00101111
 
-        SetChord(Mn7, 0)
-        
         Set SID_V1_ATTACK_DECAY:#$0A
         Set SID_V2_ATTACK_DECAY:#$0A
         Set SID_V3_ATTACK_DECAY:#$0B
@@ -215,6 +236,8 @@
     stepStart:
         MCopy _frameInterval:_frameCounter
         
+        SetChord(Maj, _transpose)
+
         .const vControl = %00010001
         // hmm... this is now an unrolled loop
 
@@ -228,6 +251,7 @@
         adc _stepIndex
         adc _voiceOffset, Y
         tax
+
 
         lda _rhythm, X
         // if 0 then REST
@@ -321,6 +345,7 @@
     _stepIndex: .byte 0
     _selectedVoice: .byte 0
     _steps: .byte 8
+    _transpose: .byte 4
 
     // between 0-8 (_steps=8)
     _voiceNumberOfBeats: .byte 1,0,0

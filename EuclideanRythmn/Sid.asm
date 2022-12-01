@@ -70,11 +70,26 @@ freq_lsb:
 
 .struct Chord{ V0, V1, V2 }
 
-    .var Maj = Chord(C2, E2, G2)
-    .var Min = Chord(C2, Eb2, G2)
-    .var M_7 = Chord(C2, G2, Bb3)
-    .var Mn7 = Chord(C2, Eb2, Bb3)
-    .var Mj7 = Chord(C2, G2, B3)
+.var Maj = Chord(C2, E2, G2)
+.var Min = Chord(C2, Eb2, G2)
+.var M_7 = Chord(C2, G2, Bb3)
+.var Mn7 = Chord(C2, Eb2, Bb3)
+.var Mj7 = Chord(C2, G2, B3)
+
+
+// https://en.wikipedia.org/wiki/List_of_musical_scales_and_modes
+// W-W-W-H-W-H-W 	
+.const scale_length = 7
+scale_acoustic: .byte 0,2,4,6,7,9,10,12
+scale_aeolian: .byte  0,2,3,5,7,8,10,12
+scale_superlocrian: .byte 0,1,3,4,6,8,10,12
+scale_enigmatic: .byte 0,1,4,6,8,10,11,12
+scale_doubleharmonic: .byte 0,1,4,5,7,8,11,12
+scale_flamenco: .byte 0,1,4,5,7,8,11,12
+scale_gypsy: .byte 0,2,3,6,7,8,10,12
+scale_halfdiminshed: .byte 0,2,3,5,6,8,10,12
+scale_harmonicmajor: .byte 0,2,4,5,7,8,11,12
+scale_harmonicminor: .byte 0,2,3,5,7,8,11,12
 
 .macro SetTone(voiceNumber, tone) {
     ldx #tone
@@ -84,23 +99,28 @@ freq_lsb:
     sta     SID_V1_FREQ_LO+voiceNumber*7 
 }
 
+.macro scale(){
+    clc; adc scale_gypsy,Y; tax
+}
+
 .macro SetChord(chord, transpose) {
+    ldy transpose
     lda     #chord.V0
-    clc; adc #transpose; tax
+    scale()
     lda     freq_msb,x
     sta     SID_V1_FREQ_HI
     lda     freq_lsb,x
     sta     SID_V1_FREQ_LO
 
     lda    #chord.V1
-    clc; adc #transpose; tax
+    scale()
     lda     freq_msb,x
     sta     SID_V2_FREQ_HI
     lda     freq_lsb,x
     sta     SID_V2_FREQ_LO
 
     lda     #chord.V2
-    clc; adc #transpose; tax
+    scale()
     lda     freq_msb,x
     sta     SID_V3_FREQ_HI
     lda     freq_lsb,x
