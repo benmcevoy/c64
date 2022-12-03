@@ -1,4 +1,5 @@
 #importonce 
+#import "Config.asm"
 
 .const SID_BASE = $D400
 
@@ -91,16 +92,36 @@ scale_halfdiminshed: .byte 0,2,3,5,6,8,10,12
 scale_harmonicmajor: .byte 0,2,4,5,7,8,11,12
 scale_harmonicminor: .byte 0,2,3,5,7,8,11,12
 
+.const Noise = %10000001
+.const Square = %01000001
+.const Saw = %00100001
+.const Triangle = %00010001
+.const Silence = 0
+
 .macro SetTone(voiceNumber, tone) {
-    ldx #tone
+    ldx     #tone
     lda     freq_msb,x
     sta     SID_V1_FREQ_HI+voiceNumber*7
     lda     freq_lsb,x
     sta     SID_V1_FREQ_LO+voiceNumber*7 
 }
 
+.macro SetPulseWidth(voiceNumber, lo, hi)
+{
+    lda     lo
+    sta     SID_V1_PW_LO+voiceNumber*7
+    lda     hi
+    sta     SID_V1_PW_HI+voiceNumber*7 
+}
+
+.macro SetWaveForm(voiceNumber, waveform)
+{
+    lda #waveform
+    sta SID_V1_CONTROL+voiceNumber*7
+}
+
 .macro scale(){
-    clc; adc scale_gypsy,Y; tax
+    clc; adc scale_harmonicminor,Y; tax
 }
 
 .macro SetChord(chord, transpose) {

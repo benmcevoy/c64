@@ -91,25 +91,29 @@
         //     jmp exit
         // !:
 
-        lda #UP
+        lda #DOWN
         bit PORT2
         bne !++
             lda _selectedVoice
             cmp #0
             beq !+
                 dec _selectedVoice
+                jmp exit
             !:
+            Set _selectedVoice:#2
             jmp exit
         !:
 
-        lda #DOWN
+        lda #UP
         bit PORT2
         bne !++
             lda _selectedVoice
             cmp #2
             beq !+
                 inc _selectedVoice
+                jmp exit
             !:
+            Set _selectedVoice:#0
             jmp exit
         !:
 
@@ -153,9 +157,13 @@
         Set SID_MIX_FILTER_CONTROL:#%01110111
         Set SID_MIX_VOLUME:#%00101111
 
-        Set SID_V1_ATTACK_DECAY:#$0C
-        Set SID_V2_ATTACK_DECAY:#$0A
-        Set SID_V3_ATTACK_DECAY:#$0B
+        Set SID_V1_ATTACK_DECAY:#$08
+        Set SID_V2_ATTACK_DECAY:#$08
+        Set SID_V3_ATTACK_DECAY:#$08
+
+        SetPulseWidth(0, $08, $00)
+        SetPulseWidth(1, $08, $00)
+        SetPulseWidth(2, $08, $00)
 
         rts
     }
@@ -190,10 +198,8 @@
         // if 0 then REST
         beq !+
             // trigger on
-            lda  #0
-            sta SID_V1_CONTROL
-            lda  #vControl
-            sta SID_V1_CONTROL
+            SetWaveForm(0, Silence)
+            SetWaveForm(0, Square)
             
             //inc _voiceOn,Y only works on X index
             lda #1
@@ -215,10 +221,8 @@
         // if 0 then REST
         beq !+
             // trigger on
-            lda  #0
-            sta SID_V2_CONTROL
-            lda  #vControl
-            sta SID_V2_CONTROL      
+            SetWaveForm(1, Silence)
+            SetWaveForm(1, Square)    
             lda #1
             sta _voiceOn, Y
         !:
@@ -238,10 +242,8 @@
         // if 0 then REST
         beq !+
             // trigger on
-            lda  #0
-            sta SID_V3_CONTROL
-            lda  #vControl
-            sta SID_V3_CONTROL            
+            SetWaveForm(2, Silence)
+            SetWaveForm(2, Square)           
             lda #1
             sta _voiceOn, Y
         !:
@@ -275,18 +277,6 @@
     _frameCounter: .byte 1
     _frameInterval: .byte 32
     _readInputInterval: .byte 4
-
-    // double up the sequence so we can offset into it
-    _rhythm: 
-        .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-        .byte 1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
-        .byte 1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0
-        .byte 1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0
-        .byte 1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0
-        .byte 1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,0
-        .byte 1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1
-        .byte 1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0
-        .byte 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 
     _filterIndex: .byte 0
     _filter: 
