@@ -43,53 +43,59 @@
             jmp exit
         !:
 
-        lda #DOWN_AND_FIRE
-        bit PORT2
-        bne !++
-            lda _transpose
-            beq !+
-                dec _transpose
-            !:
-            jmp exit
-        !:
-
-        // transpose
-        lda #UP_AND_FIRE
-        bit PORT2
-        bne !++
-            lda _transpose
-            cmp #scale_length
-            beq !+
-                inc _transpose
-            !:
-            jmp exit
-        !:
-
-        // offset or rotation
         // lda #DOWN_AND_FIRE
         // bit PORT2
         // bne !++
-        //     lda _selectedVoice
-        //     tax
-        //     lda _voiceOffset, X
+        //     lda _transpose
         //     beq !+
-        //         dec _voiceOffset, X
+        //         dec _transpose
         //     !:
         //     jmp exit
         // !:
 
+        // // transpose
         // lda #UP_AND_FIRE
         // bit PORT2
         // bne !++
-        //     lda _selectedVoice
-        //     tax
-        //     lda _voiceOffset, X
-        //     cmp _steps
+        //     lda _transpose
+        //     cmp #scale_length
         //     beq !+
-        //         inc _voiceOffset, X
+        //         inc _transpose
         //     !:
         //     jmp exit
         // !:
+
+        //offset or rotation
+        lda #UP_AND_FIRE
+        bit PORT2
+        bne !++
+            lda _selectedVoice
+            tax
+            lda _voiceOffset, X
+            beq !+
+                dec _voiceOffset, X
+                jmp exit
+            !:
+            lda #7
+            sta _voiceOffset, X
+            jmp exit
+        !:
+
+        lda #DOWN_AND_FIRE
+        bit PORT2
+        bne !++
+            lda _selectedVoice
+            tax
+            lda _voiceOffset, X
+            cmp _steps
+            beq !+
+                inc _voiceOffset, X
+                jmp exit
+            !:
+            lda #0
+            sta _voiceOffset, X
+            jmp exit
+        !:
 
         lda #DOWN
         bit PORT2
@@ -155,15 +161,15 @@
         Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111  
         Set SID_MIX_FILTER_CUT_OFF_HI:#10
         Set SID_MIX_FILTER_CONTROL:#%01110111
-        Set SID_MIX_VOLUME:#%00101111
+        Set SID_MIX_VOLUME:#%00011111
 
-        Set SID_V1_ATTACK_DECAY:#$08
-        Set SID_V2_ATTACK_DECAY:#$08
-        Set SID_V3_ATTACK_DECAY:#$08
+        Set SID_V1_ATTACK_DECAY:#$09
+        Set SID_V2_ATTACK_DECAY:#$09
+        Set SID_V3_ATTACK_DECAY:#$09
 
         SetPulseWidth(0, $08, $00)
-        SetPulseWidth(1, $08, $00)
-        SetPulseWidth(2, $08, $00)
+        SetPulseWidth(1, $06, $00)
+        SetPulseWidth(2, $0A, $00)
 
         rts
     }
@@ -199,7 +205,7 @@
         beq !+
             // trigger on
             SetWaveForm(0, Silence)
-            SetWaveForm(0, Square)
+            SetWaveForm(0, Triangle)
             
             //inc _voiceOn,Y only works on X index
             lda #1

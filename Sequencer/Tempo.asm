@@ -71,11 +71,11 @@
         Set SID_MIX_VOLUME:#%00011111
 
         Set SID_V1_FREQ_LO:#$E8 
-        Set SID_V1_FREQ_HI:#$0
+        Set SID_V1_FREQ_HI:#$06
         Set SID_V1_PW_LO:#$00
         Set SID_V1_PW_HI:#$00
         Set SID_V1_ATTACK_DECAY:#$0A
-        Set SID_V1_SUSTAIN_RELEASE:#$0
+        Set SID_V1_SUSTAIN_RELEASE:#$00
 
         Set SID_V2_FREQ_LO:#$E8 
         Set SID_V2_FREQ_HI:#$06
