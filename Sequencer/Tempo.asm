@@ -165,7 +165,7 @@
 
     _frameCounter: .byte 1
     _frameInterval: .byte 10
-    _readInputInterval: .byte 12
+    _readInputInterval: .byte 4
 
     _voiceIndex: .byte 0
     _steps: .byte 8
