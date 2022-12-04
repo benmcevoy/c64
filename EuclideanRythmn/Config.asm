@@ -2,6 +2,10 @@
 
 // _voiceControl: .byte %010100001, %010100001, %010100001
 
+.const scale_length = 7
+
+ _frameInterval: .byte 32
+
 _stepIndex: .byte 0
 _selectedVoice: .byte 0
 _steps: .byte 8

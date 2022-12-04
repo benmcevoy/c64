@@ -7,17 +7,20 @@ voiceCounter: .byte 0
 stepCounter: .byte 0
 
 .const SPACE = 32
-.const FULL_STOP = 46
+.const REST_TOP_LEFT = 6
+.const REST_TOP_RIGHT = 7
+.const REST_BOTTOM_LEFT = 22
+.const REST_BOTTOM_RIGHT = 23
 
-.const TOP_LEFT = 207
-.const TOP_RIGHT = 208
-.const BOTTOM_LEFT = 204
-.const BOTTOM_RIGHT = 250
+.const TOP_LEFT = 2
+.const TOP_RIGHT = 3
+.const BOTTOM_LEFT = 18
+.const BOTTOM_RIGHT = 19
 
-.const ALT_TOP_LEFT = 108
-.const ALT_TOP_RIGHT = 123
-.const ALT_BOTTOM_LEFT = 124
-.const ALT_BOTTOM_RIGHT = 126
+.const ALT_TOP_LEFT = 0
+.const ALT_TOP_RIGHT = 1
+.const ALT_BOTTOM_LEFT = 16
+.const ALT_BOTTOM_RIGHT = 17
 
 .const VOICE0_COLOR = RED
 .const VOICE0_ALT_COLOR = LIGHT_RED
@@ -39,7 +42,6 @@ Render: {
         // voice0
         {
             Set CharScreen.PenColor:#DARK_GREY
-            Set CharScreen.Character:#FULL_STOP
 
             lda _selectedVoice
             cmp #0
@@ -83,13 +85,17 @@ Render: {
             jmp voice0_next_step
 
         voice0_beat_off:
+            Set CharScreen.Character:#REST_TOP_LEFT
             Call CharScreen.Plot:x:y
             inc y
+            Set CharScreen.Character:#REST_BOTTOM_LEFT
             Call CharScreen.Plot:x:y
             dec y
             inc x
+            Set CharScreen.Character:#REST_TOP_RIGHT
             Call CharScreen.Plot:x:y
             inc y
+            Set CharScreen.Character:#REST_BOTTOM_RIGHT
             Call CharScreen.Plot:x:y
 
         voice0_next_step:
@@ -109,7 +115,6 @@ Render: {
         // voice1
         {
             Set CharScreen.PenColor:#DARK_GREY
-            Set CharScreen.Character:#FULL_STOP
 
             lda _selectedVoice
             cmp #1
@@ -153,13 +158,17 @@ Render: {
             jmp voice1_next_step
 
         voice1_beat_off:
+            Set CharScreen.Character:#REST_TOP_LEFT
             Call CharScreen.Plot:x:y
             inc y
+            Set CharScreen.Character:#REST_BOTTOM_LEFT
             Call CharScreen.Plot:x:y
             dec y
             inc x
+            Set CharScreen.Character:#REST_TOP_RIGHT
             Call CharScreen.Plot:x:y
             inc y
+            Set CharScreen.Character:#REST_BOTTOM_RIGHT
             Call CharScreen.Plot:x:y
 
         voice1_next_step:
@@ -179,7 +188,6 @@ Render: {
         // voice0
         {
             Set CharScreen.PenColor:#DARK_GREY
-            Set CharScreen.Character:#FULL_STOP
 
             lda _selectedVoice
             cmp #2
@@ -223,13 +231,17 @@ Render: {
             jmp voice2_next_step
 
         voice2_beat_off:
+            Set CharScreen.Character:#REST_TOP_LEFT
             Call CharScreen.Plot:x:y
             inc y
+            Set CharScreen.Character:#REST_BOTTOM_LEFT
             Call CharScreen.Plot:x:y
             dec y
             inc x
+            Set CharScreen.Character:#REST_TOP_RIGHT
             Call CharScreen.Plot:x:y
             inc y
+            Set CharScreen.Character:#REST_BOTTOM_RIGHT
             Call CharScreen.Plot:x:y
 
         voice2_next_step:
@@ -259,24 +271,27 @@ Render: {
             lda voice0_y,X
             sta y
 
-            Set CharScreen.Character:#FULL_STOP
             Set CharScreen.PenColor:#VOICE0_COLOR
 
             lda _selectedVoice
             cmp #0
             beq !+
-                Set CharScreen.PenColor:#GRAY
+                Set CharScreen.PenColor:#LIGHT_GRAY
             !:
 
             // render fullstops, wasteful
             // render color
+            Set CharScreen.Character:#REST_TOP_LEFT
             Call CharScreen.Plot:x:y
             inc y
+            Set CharScreen.Character:#REST_BOTTOM_LEFT
             Call CharScreen.Plot:x:y
             dec y
             inc x
+            Set CharScreen.Character:#REST_TOP_RIGHT
             Call CharScreen.Plot:x:y
             inc y
+            Set CharScreen.Character:#REST_BOTTOM_RIGHT
             Call CharScreen.Plot:x:y
             dec y
             dec x
@@ -314,24 +329,27 @@ Render: {
             lda voice1_y,X
             sta y
 
-            Set CharScreen.Character:#FULL_STOP
             Set CharScreen.PenColor:#VOICE1_COLOR
 
             lda _selectedVoice
             cmp #1
             beq !+
-                Set CharScreen.PenColor:#GRAY
+                Set CharScreen.PenColor:#LIGHT_GRAY
             !:
 
             // render fullstops, wasteful
             // render color
+            Set CharScreen.Character:#REST_TOP_LEFT
             Call CharScreen.Plot:x:y
             inc y
+            Set CharScreen.Character:#REST_BOTTOM_LEFT
             Call CharScreen.Plot:x:y
             dec y
             inc x
+            Set CharScreen.Character:#REST_TOP_RIGHT
             Call CharScreen.Plot:x:y
             inc y
+            Set CharScreen.Character:#REST_BOTTOM_RIGHT
             Call CharScreen.Plot:x:y
             dec y
             dec x
@@ -369,24 +387,27 @@ Render: {
             lda voice2_y,X
             sta y
 
-            Set CharScreen.Character:#FULL_STOP
             Set CharScreen.PenColor:#VOICE2_COLOR
 
             lda _selectedVoice
             cmp #2
             beq !+
-                Set CharScreen.PenColor:#GRAY
+                Set CharScreen.PenColor:#LIGHT_GRAY
             !:
 
             // render fullstops, wasteful
             // render color
+            Set CharScreen.Character:#REST_TOP_LEFT
             Call CharScreen.Plot:x:y
             inc y
+            Set CharScreen.Character:#REST_BOTTOM_LEFT
             Call CharScreen.Plot:x:y
             dec y
             inc x
+            Set CharScreen.Character:#REST_TOP_RIGHT
             Call CharScreen.Plot:x:y
             inc y
+            Set CharScreen.Character:#REST_BOTTOM_RIGHT
             Call CharScreen.Plot:x:y
             dec y
             dec x

@@ -80,7 +80,6 @@ freq_lsb:
 
 // https://en.wikipedia.org/wiki/List_of_musical_scales_and_modes
 // W-W-W-H-W-H-W 	
-.const scale_length = 7
 scale_acoustic: .byte 0,2,4,6,7,9,10,12
 scale_aeolian: .byte  0,2,3,5,7,8,10,12
 scale_superlocrian: .byte 0,1,3,4,6,8,10,12

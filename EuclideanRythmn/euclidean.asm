@@ -1,12 +1,20 @@
 BasicUpstart2(Start)
 
 #import "_prelude.lib"
+#import "char/data.asm"
+
 #import "Tempo.asm"
 
 Start: {
     // initialise
     Set $d020:#BLACK
     Set $d021:#BLACK
+    // set to 25 line text mode and turn on the screen
+	Set $d011:#$1B
+	// disable SHIFT-Commodore
+	Set $0291:#$80
+   	// set screen memory ($0400) and charset bitmap offset ($2000)
+    Set $d018:#$18
 
     // clear screen
     jsr $E544
