@@ -16,26 +16,26 @@
 .const DOWN_AND_FIRE    = %00010010
 
  ReadInput: {
-        // most specifc inputs first, eg.g LEFT_AND_FIRE before just LEFT
+        // more specifc inputs first, eg.g LEFT_AND_FIRE before just LEFT
         /*all-voices*/
-        //Constrain(_tempo, 1, $ff, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+        Constrain(_tempo, 1, $ff, LEFT_AND_FIRE, RIGHT_AND_FIRE)
         
         /*all-voices*/
-        Cycle(_chord, 0, chord_length, LEFT_AND_FIRE, RIGHT_AND_FIRE)    
+        //Cycle(_chord, 0, chord_length, LEFT_AND_FIRE, RIGHT_AND_FIRE)    
         // fiter could be part of a chord, e.g. cMaj with a band-pass filter to emphasise a note
         // Filter(/*filter*/)
         
         /*all-voices*//*scale*/
-        Cycle(_transpose, 0, scale_length, UP_AND_FIRE, DOWN_AND_FIRE)
+        //Cycle(_transpose, 0, scale_length, UP_AND_FIRE, DOWN_AND_FIRE)
 
         /*voice*//*phase*/  
-        //CycleForVoice(_selectedVoice, _voiceOffset, 0, steps, UP_AND_FIRE, DOWN_AND_FIRE)
+        CycleForVoice(_selectedVoice, _voiceOffset, 0, steps, UP_AND_FIRE, DOWN_AND_FIRE)
         
         /*voice*//*number of beats*/
         ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT, LEFT)
         
         /*all-voices*/
-        Cycle(_selectedVoice, 0, 2, UP, DOWN)
+        Cycle(_selectedVoice, 0, 3, UP, DOWN)
     }
 exit:rts
 

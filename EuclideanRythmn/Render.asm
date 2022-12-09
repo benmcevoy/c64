@@ -5,22 +5,13 @@
 
 voiceCounter: .byte 0
 stepCounter: .byte 0
+x: .byte 0
+y: .byte 0
 
 .const SPACE = 32
-.const REST_TOP_LEFT = 6
-.const REST_TOP_RIGHT = 7
-.const REST_BOTTOM_LEFT = 22
-.const REST_BOTTOM_RIGHT = 23
-
-.const TOP_LEFT = 2
-.const TOP_RIGHT = 3
-.const BOTTOM_LEFT = 18
-.const BOTTOM_RIGHT = 19
-
-.const ALT_TOP_LEFT = 0
-.const ALT_TOP_RIGHT = 1
-.const ALT_BOTTOM_LEFT = 16
-.const ALT_BOTTOM_RIGHT = 17
+.const BLANK = 35
+.const PATTERN = 33
+.const BEAT = 34
 
 .const VOICE0_COLOR = RED
 .const VOICE0_ALT_COLOR = LIGHT_RED
@@ -28,425 +19,126 @@ stepCounter: .byte 0
 .const VOICE1_ALT_COLOR = LIGHT_GREEN
 .const VOICE2_COLOR = BLUE
 .const VOICE2_ALT_COLOR = CYAN
+.const VOICE3_COLOR = YELLOW
+.const VOICE3_ALT_COLOR = LIGHT_GREY
 
 Render: {
-        // render the pattern in faded color, dark gray
-        // render the selected voice in alt color
-        // starting at the voice offset index
-        // loop 8 (steps) times
-        
-        ldx #0
-        Set stepCounter:#0
-    renderPattern0:
-        
-        // voice0
-        {
-            Set CharScreen.PenColor:#DARK_GREY
+    // render the pattern in faded color, dark gray
+    // render the selected voice in alt color
+    // starting at the voice offset index
+    // loop 8 (steps) times
+    RenderPattern(0, VOICE0_ALT_COLOR, voice0_x, voice0_y)
+    RenderPattern(1, VOICE1_ALT_COLOR, voice1_x, voice1_y)
+    RenderPattern(2, VOICE2_ALT_COLOR, voice2_x, voice2_y)
+    RenderPattern(3, VOICE3_ALT_COLOR, voice3_x, voice3_y)
 
-            lda _selectedVoice
-            cmp #0
-            bne !+
-                Set CharScreen.PenColor:#VOICE0_ALT_COLOR
-            !:
+    // render the sweep and the beat
+    // for the given stepIndex use a brighter color
+    // if this is a beat use brightest and the beat character
+    RenderBeat(0, VOICE0_COLOR, VOICE0_ALT_COLOR, voice0_x, voice0_y)
+    RenderBeat(1, VOICE1_COLOR, VOICE1_ALT_COLOR, voice1_x, voice1_y)
+    RenderBeat(2, VOICE2_COLOR, VOICE2_ALT_COLOR, voice2_x, voice2_y)
+    RenderBeat(3, VOICE3_COLOR, VOICE3_ALT_COLOR, voice3_x, voice3_y)
 
-            // is this step a beat?
-            ldy #0
-            lda _voiceNumberOfBeats, Y
-            // *16 so shift 4 times, each rhytmn pattern is sixteeen long 
-            asl;asl;asl;asl
-            clc 
-            adc stepCounter
-            adc _voiceOffset, Y
-            tay
+    rts
+}
 
-            lda voice0_x,X
-            sta x
-            lda voice0_y,X
-            sta y
+.macro RenderPattern(voiceNumber, altColor, voice_x, voice_y){
+    ldx #0
+    Set stepCounter:#0
 
-            lda _rhythm, Y
-            bne !+
-                jmp voice0_beat_off
-            !:
-                
-        voice0_beat_on:
-            Set CharScreen.Character:#ALT_TOP_LEFT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#ALT_BOTTOM_LEFT
-            Call CharScreen.Plot:x:y
-            dec y
-            inc x
-            Set CharScreen.Character:#ALT_TOP_RIGHT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#ALT_BOTTOM_RIGHT
-            Call CharScreen.Plot:x:y
-            jmp voice0_next_step
+    render_pattern:
+        Set CharScreen.PenColor:#DARK_GREY
 
-        voice0_beat_off:
-            Set CharScreen.Character:#REST_TOP_LEFT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#REST_BOTTOM_LEFT
-            Call CharScreen.Plot:x:y
-            dec y
-            inc x
-            Set CharScreen.Character:#REST_TOP_RIGHT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#REST_BOTTOM_RIGHT
-            Call CharScreen.Plot:x:y
+        lda _selectedVoice
+        cmp #voiceNumber
+        bne !+
+            Set CharScreen.PenColor:#altColor
+        !:
 
-        voice0_next_step:
-            inx
-            inc stepCounter
-            lda stepCounter
-            cmp #steps
-            beq !+
-                jmp renderPattern0
-            !:
-        }
+        // is this step a beat?
+        ldy #voiceNumber
+        lda _voiceNumberOfBeats, Y
+        // *16 so shift 4 times, each rhytmn pattern is sixteeen long 
+        asl;asl;asl;asl
+        clc 
+        adc stepCounter
+        adc _voiceOffset, Y
+        tay
 
-        ldx #0
-        Set stepCounter:#0
-    renderPattern1:
-        
-        // voice1
-        {
-            Set CharScreen.PenColor:#DARK_GREY
+        lda voice_x,X
+        sta x
+        lda voice_y,X
+        sta y
 
-            lda _selectedVoice
-            cmp #1
-            bne !+
-                Set CharScreen.PenColor:#VOICE1_ALT_COLOR
-            !:
+        lda _rhythm, Y
+        bne !+
+            jmp beat_off
+        !:
 
-            // is this step a beat?
-            ldy #1
-            lda _voiceNumberOfBeats, Y
-            // *16 so shift 4 times, each rhytmn pattern is sixteeen long 
-            asl;asl;asl;asl
-            clc 
-            adc stepCounter
-            adc _voiceOffset, Y
-            tay
+    beat_on:
+        Set CharScreen.Character:#BEAT
+        Call CharScreen.Plot:x:y
+        jmp next_step
 
-            lda voice1_x,X
-            sta x
-            lda voice1_y,X
-            sta y
+    beat_off:
+        Set CharScreen.Character:#BLANK
+        Call CharScreen.Plot:x:y
 
-            lda _rhythm, Y
-            bne !+
-                jmp voice1_beat_off
-            !:
-                
-        voice1_beat_on:
-            Set CharScreen.Character:#ALT_TOP_LEFT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#ALT_BOTTOM_LEFT
-            Call CharScreen.Plot:x:y
-            dec y
-            inc x
-            Set CharScreen.Character:#ALT_TOP_RIGHT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#ALT_BOTTOM_RIGHT
-            Call CharScreen.Plot:x:y
-            jmp voice1_next_step
+    next_step:
+        inx
+        inc stepCounter
+        lda stepCounter
+        cmp #steps
+        beq !+
+            jmp render_pattern
+        !:
+}
 
-        voice1_beat_off:
-            Set CharScreen.Character:#REST_TOP_LEFT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#REST_BOTTOM_LEFT
-            Call CharScreen.Plot:x:y
-            dec y
-            inc x
-            Set CharScreen.Character:#REST_TOP_RIGHT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#REST_BOTTOM_RIGHT
-            Call CharScreen.Plot:x:y
+.macro RenderBeat(voiceNumber, voiceColor, voiceAltColor, voice_x, voice_y){
+    ldy #voiceNumber
+    ldx _stepIndex
 
-        voice1_next_step:
-            inx
-            inc stepCounter
-            lda stepCounter
-            cmp #steps
-            beq !+
-                jmp renderPattern1
-            !:
-        }
+    // get plot position
+    lda voice_x,X
+    sta x
+    lda voice_y,X
+    sta y
 
-        ldx #0
-        Set stepCounter:#0
-    renderPattern2:
-        
-        // voice0
-        {
-            Set CharScreen.PenColor:#DARK_GREY
+    Set CharScreen.PenColor:#voiceColor
 
-            lda _selectedVoice
-            cmp #2
-            bne !+
-                Set CharScreen.PenColor:#VOICE2_ALT_COLOR
-            !:
+    lda _selectedVoice
+    cmp #voiceNumber
+    beq !+
+        Set CharScreen.PenColor:#LIGHT_GRAY
+    !:
 
-            // is this step a beat?
-            ldy #2
-            lda _voiceNumberOfBeats, Y
-            // *16 so shift 4 times
-            asl;asl;asl;asl
-            clc 
-            adc stepCounter
-            adc _voiceOffset, Y
-            tay
+    // render fullstops, wasteful
+    // render color
+    Set CharScreen.Character:#BLANK
+    Call CharScreen.Plot:x:y
+    
+    lda _voiceOn, Y
+    bne !+
+        jmp !++
+    !:
 
-            lda voice2_x,X
-            sta x
-            lda voice2_y,X
-            sta y
+    Set CharScreen.PenColor:#voiceAltColor
 
-            lda _rhythm, Y
-            bne !+
-                jmp voice2_beat_off
-            !:
-                
-        voice1_beat_on:
-            Set CharScreen.Character:#ALT_TOP_LEFT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#ALT_BOTTOM_LEFT
-            Call CharScreen.Plot:x:y
-            dec y
-            inc x
-            Set CharScreen.Character:#ALT_TOP_RIGHT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#ALT_BOTTOM_RIGHT
-            Call CharScreen.Plot:x:y
-            jmp voice2_next_step
+    Set CharScreen.Character:#PATTERN
+    Call CharScreen.Plot:x:y
 
-        voice2_beat_off:
-            Set CharScreen.Character:#REST_TOP_LEFT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#REST_BOTTOM_LEFT
-            Call CharScreen.Plot:x:y
-            dec y
-            inc x
-            Set CharScreen.Character:#REST_TOP_RIGHT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#REST_BOTTOM_RIGHT
-            Call CharScreen.Plot:x:y
-
-        voice2_next_step:
-            inx
-            inc stepCounter
-            lda stepCounter
-            cmp #steps
-            beq !+
-                jmp renderPattern2
-            !:
-        }
-
-        // render the sweep and the beat
-        // for the given stepIndex use a brighter color
-        // if this is a beat use brightest and the beat character
-
-        
-        ldy #0
-        ldx _stepIndex
-        
-        // voice0
-        renderBeat0:
-        {
-            // get plot position
-            lda voice0_x,X
-            sta x
-            lda voice0_y,X
-            sta y
-
-            Set CharScreen.PenColor:#VOICE0_COLOR
-
-            lda _selectedVoice
-            cmp #0
-            beq !+
-                Set CharScreen.PenColor:#LIGHT_GRAY
-            !:
-
-            // render fullstops, wasteful
-            // render color
-            Set CharScreen.Character:#REST_TOP_LEFT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#REST_BOTTOM_LEFT
-            Call CharScreen.Plot:x:y
-            dec y
-            inc x
-            Set CharScreen.Character:#REST_TOP_RIGHT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#REST_BOTTOM_RIGHT
-            Call CharScreen.Plot:x:y
-            dec y
-            dec x
-            
-            lda _voiceOn, Y
-            bne !+
-                jmp !++
-            !:
-            Set CharScreen.PenColor:#VOICE0_ALT_COLOR
-
-            Set CharScreen.Character:#TOP_LEFT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#BOTTOM_LEFT
-            Call CharScreen.Plot:x:y
-            dec y
-            inc x
-            Set CharScreen.Character:#TOP_RIGHT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#BOTTOM_RIGHT
-            Call CharScreen.Plot:x:y
-            !:
-        }
-
-        ldy #1
-        ldx _stepIndex
-        
-        // voice1
-        renderBeat1:
-        {
-            // get plot position
-            lda voice1_x,X
-            sta x
-            lda voice1_y,X
-            sta y
-
-            Set CharScreen.PenColor:#VOICE1_COLOR
-
-            lda _selectedVoice
-            cmp #1
-            beq !+
-                Set CharScreen.PenColor:#LIGHT_GRAY
-            !:
-
-            // render fullstops, wasteful
-            // render color
-            Set CharScreen.Character:#REST_TOP_LEFT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#REST_BOTTOM_LEFT
-            Call CharScreen.Plot:x:y
-            dec y
-            inc x
-            Set CharScreen.Character:#REST_TOP_RIGHT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#REST_BOTTOM_RIGHT
-            Call CharScreen.Plot:x:y
-            dec y
-            dec x
-            
-            lda _voiceOn, Y
-            bne !+
-                jmp !++
-            !:
-            Set CharScreen.PenColor:#VOICE1_ALT_COLOR
-
-            Set CharScreen.Character:#TOP_LEFT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#BOTTOM_LEFT
-            Call CharScreen.Plot:x:y
-            dec y
-            inc x
-            Set CharScreen.Character:#TOP_RIGHT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#BOTTOM_RIGHT
-            Call CharScreen.Plot:x:y
-            !:
-        }
-
-        ldy #2
-        ldx _stepIndex
-        
-        // voice1
-        renderBeat2:
-        {
-            // get plot position
-            lda voice2_x,X
-            sta x
-            lda voice2_y,X
-            sta y
-
-            Set CharScreen.PenColor:#VOICE2_COLOR
-
-            lda _selectedVoice
-            cmp #2
-            beq !+
-                Set CharScreen.PenColor:#LIGHT_GRAY
-            !:
-
-            // render fullstops, wasteful
-            // render color
-            Set CharScreen.Character:#REST_TOP_LEFT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#REST_BOTTOM_LEFT
-            Call CharScreen.Plot:x:y
-            dec y
-            inc x
-            Set CharScreen.Character:#REST_TOP_RIGHT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#REST_BOTTOM_RIGHT
-            Call CharScreen.Plot:x:y
-            dec y
-            dec x
-            
-            lda _voiceOn, Y
-            bne !+
-                jmp !++
-            !:
-            Set CharScreen.PenColor:#VOICE2_ALT_COLOR
-
-            Set CharScreen.Character:#TOP_LEFT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#BOTTOM_LEFT
-            Call CharScreen.Plot:x:y
-            dec y
-            inc x
-            Set CharScreen.Character:#TOP_RIGHT
-            Call CharScreen.Plot:x:y
-            inc y
-            Set CharScreen.Character:#BOTTOM_RIGHT
-            Call CharScreen.Plot:x:y
-            !:
-        }
-      
-
-        rts
-        x: .byte 0
-        y: .byte 0
-    }
+    !:
+}
 
 voice0_x: .byte 18,20,21,20,18,16,15,16,18,20,21,20,18,16,15,16
 voice0_y: .byte 09,10,12,14,15,14,12,10,09,10,12,14,15,14,12,10
 
-voice1_x: .byte 18,22,24,22,18,14,12,14,18,22,24,22,18,14,12,14
-voice1_y: .byte 06,08,12,16,18,16,12,08,06,08,12,16,18,16,12,08
+voice1_x: .byte 18,22,23,22,18,14,13,14,18,22,23,22,18,14,13,14
+voice1_y: .byte 07,08,12,16,17,16,12,08,07,08,12,16,17,16,12,08
 
-voice2_x: .byte 18,24,27,24,18,12,09,12,18,24,27,24,18,12,09,12
-voice2_y: .byte 03,06,12,18,21,18,12,06,03,06,12,18,21,18,12,06
+voice2_x: .byte 18,24,25,24,18,12,11,12,18,24,25,24,18,12,11,12
+voice2_y: .byte 05,06,12,18,19,18,12,06,05,06,12,18,19,18,12,06
 
-voice3_x: .byte 18,26,30,26,18,10,06,10,18,26,30,26,18,10,06,10
-voice3_y: .byte 00,04,12,20,24,20,12,04,00,04,12,20,24,20,12,04
+voice3_x: .byte 18,26,27,26,18,10,09,10,18,26,27,26,18,10,09,10
+voice3_y: .byte 03,04,12,20,21,20,12,04,03,04,12,20,21,20,12,04

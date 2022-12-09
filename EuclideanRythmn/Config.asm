@@ -15,11 +15,11 @@ _transpose: .byte 4
 _chord: .byte 0
 
 // between 0-8 (_steps=8)
-_voiceNumberOfBeats: .byte 1,0,0
+_voiceNumberOfBeats: .byte 1,0,0,0
 // offset 0-8
-_voiceOffset: .byte 3,4,5
+_voiceOffset: .byte 3,4,5,0
 // flags
-_voiceOn: .byte 0,0,0
+_voiceOn: .byte 0,0,0,0
 
 // double up the sequence so we can offset into it
 .align $100
