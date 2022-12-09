@@ -3,18 +3,21 @@
 // _voiceControl: .byte %010100001, %010100001, %010100001
 
 .const scale_length = 7
+.const chord_length = 4
 
- _frameInterval: .byte 32
+// tempo in units of "frame count"
+ _tempo: .byte 16
 
 _stepIndex: .byte 0
 _selectedVoice: .byte 0
-_steps: .byte 8
+.const steps = 8
 _transpose: .byte 4
+_chord: .byte 0
 
 // between 0-8 (_steps=8)
 _voiceNumberOfBeats: .byte 1,0,0
 // offset 0-8
-_voiceOffset: .byte 4,4,4
+_voiceOffset: .byte 3,4,5
 // flags
 _voiceOn: .byte 0,0,0
 

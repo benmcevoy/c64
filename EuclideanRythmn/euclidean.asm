@@ -7,7 +7,7 @@ BasicUpstart2(Start)
 
 Start: {
     // initialise
-    Set $d020:#BLACK
+    Set $d020:#RED
     Set $d021:#BLACK
     // set to 25 line text mode and turn on the screen
 	Set $d011:#$1B

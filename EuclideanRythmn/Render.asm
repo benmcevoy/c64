@@ -102,7 +102,7 @@ Render: {
             inx
             inc stepCounter
             lda stepCounter
-            cmp _steps
+            cmp #steps
             beq !+
                 jmp renderPattern0
             !:
@@ -175,7 +175,7 @@ Render: {
             inx
             inc stepCounter
             lda stepCounter
-            cmp _steps
+            cmp #steps
             beq !+
                 jmp renderPattern1
             !:
@@ -248,7 +248,7 @@ Render: {
             inx
             inc stepCounter
             lda stepCounter
-            cmp _steps
+            cmp #steps
             beq !+
                 jmp renderPattern2
             !:
@@ -439,12 +439,14 @@ Render: {
         y: .byte 0
     }
 
-voice0_x: .byte 18,24,27,24,18,12,9,12,18,24,27,24,18,12,9,12
-voice0_y: .byte 2,5,11,17,20,17,11,5,2,5,11,17,20,17,11,5
+voice0_x: .byte 18,20,21,20,18,16,15,16,18,20,21,20,18,16,15,16
+voice0_y: .byte 09,10,12,14,15,14,12,10,09,10,12,14,15,14,12,10
 
 voice1_x: .byte 18,22,24,22,18,14,12,14,18,22,24,22,18,14,12,14
-voice1_y: .byte 5,7,11,15,17,15,11,7,5,7,11,15,17,15,11,7
+voice1_y: .byte 06,08,12,16,18,16,12,08,06,08,12,16,18,16,12,08
 
-voice2_x: .byte 18,20,21,20,18,16,15,16,18,20,21,20,18,16,15,16
-voice2_y: .byte 8,9,11,13,14,13,11,9,8,9,11,13,14,13,11,9
+voice2_x: .byte 18,24,27,24,18,12,09,12,18,24,27,24,18,12,09,12
+voice2_y: .byte 03,06,12,18,21,18,12,06,03,06,12,18,21,18,12,06
 
+voice3_x: .byte 18,26,30,26,18,10,06,10,18,26,30,26,18,10,06,10
+voice3_y: .byte 00,04,12,20,24,20,12,04,00,04,12,20,24,20,12,04

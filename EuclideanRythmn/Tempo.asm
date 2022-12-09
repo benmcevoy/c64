@@ -41,9 +41,9 @@
         !: 
 
     stepStart:
-        MCopy _frameInterval:_frameCounter
+        MCopy _tempo:_frameCounter
         
-        SetChord(Min, _transpose)
+        SetChord(chord_Maj, _chord, _transpose, scale_harmonic_major)
 
         ldy #0
         lda #0
@@ -119,7 +119,7 @@
 
         inc _stepIndex
         lda _stepIndex
-        cmp _steps
+        cmp #steps
         bne !+
             Set _stepIndex:#0
         !:
