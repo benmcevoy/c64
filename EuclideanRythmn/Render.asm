@@ -3,15 +3,12 @@
 #import "_charscreen.lib"
 #import "Config.asm"
 
-voiceCounter: .byte 0
 stepCounter: .byte 0
-x: .byte 0
-y: .byte 0
 
 .const SPACE = 32
 .const BLANK = 35
-.const PATTERN = 33
-.const BEAT = 34
+.const PATTERN = 34
+.const BEAT = 33
 
 .const VOICE0_COLOR = RED
 .const VOICE0_ALT_COLOR = LIGHT_RED
@@ -20,18 +17,18 @@ y: .byte 0
 .const VOICE2_COLOR = BLUE
 .const VOICE2_ALT_COLOR = CYAN
 .const VOICE3_COLOR = YELLOW
-.const VOICE3_ALT_COLOR = LIGHT_GREY
+.const VOICE3_ALT_COLOR = YELLOW
 
 Render: {
     // render the pattern in faded color, dark gray
     // render the selected voice in alt color
     // starting at the voice offset index
     // loop 8 (steps) times
-    RenderPattern(0, VOICE0_ALT_COLOR, voice0_x, voice0_y)
-    RenderPattern(1, VOICE1_ALT_COLOR, voice1_x, voice1_y)
-    RenderPattern(2, VOICE2_ALT_COLOR, voice2_x, voice2_y)
-    RenderPattern(3, VOICE3_ALT_COLOR, voice3_x, voice3_y)
-
+    RenderPattern(0, VOICE0_COLOR, voice0_x, voice0_y)
+    RenderPattern(1, VOICE1_COLOR, voice1_x, voice1_y)
+    RenderPattern(2, VOICE2_COLOR, voice2_x, voice2_y)
+    RenderPattern(3, VOICE3_COLOR, voice3_x, voice3_y)
+    
     // render the sweep and the beat
     // for the given stepIndex use a brighter color
     // if this is a beat use brightest and the beat character
@@ -43,21 +40,21 @@ Render: {
     rts
 }
 
-.macro RenderPattern(voiceNumber, altColor, voice_x, voice_y){
+.macro RenderPattern(voiceNumber, voiceColor, voice_x, voice_y) {
     ldx #0
     Set stepCounter:#0
 
+    Set CharScreen.PenColor:#DARK_GREY
+
+    lda _selectedVoice
+    cmp #voiceNumber
+    bne !+
+        Set CharScreen.PenColor:#voiceColor
+    !:
+
     render_pattern:
-        Set CharScreen.PenColor:#DARK_GREY
-
-        lda _selectedVoice
-        cmp #voiceNumber
-        bne !+
-            Set CharScreen.PenColor:#altColor
-        !:
-
-        // is this step a beat?
         ldy #voiceNumber
+        // is this step a beat?
         lda _voiceNumberOfBeats, Y
         // *16 so shift 4 times, each rhytmn pattern is sixteeen long 
         asl;asl;asl;asl
@@ -66,26 +63,20 @@ Render: {
         adc _voiceOffset, Y
         tay
 
-        lda voice_x,X
-        sta x
-        lda voice_y,X
-        sta y
-
         lda _rhythm, Y
         bne !+
             jmp beat_off
         !:
 
     beat_on:
-        Set CharScreen.Character:#BEAT
-        Call CharScreen.Plot:x:y
+        Set CharScreen.Character:#PATTERN
         jmp next_step
 
     beat_off:
         Set CharScreen.Character:#BLANK
-        Call CharScreen.Plot:x:y
 
     next_step:
+        Call CharScreen.Plot:voice_x,X:voice_y,X
         inx
         inc stepCounter
         lda stepCounter
@@ -95,39 +86,14 @@ Render: {
         !:
 }
 
-.macro RenderBeat(voiceNumber, voiceColor, voiceAltColor, voice_x, voice_y){
+.macro RenderBeat(voiceNumber, voiceColor, voiceAltColor, voice_x, voice_y) {
     ldy #voiceNumber
-    ldx _stepIndex
-
-    // get plot position
-    lda voice_x,X
-    sta x
-    lda voice_y,X
-    sta y
-
-    Set CharScreen.PenColor:#voiceColor
-
-    lda _selectedVoice
-    cmp #voiceNumber
-    beq !+
-        Set CharScreen.PenColor:#LIGHT_GRAY
-    !:
-
-    // render fullstops, wasteful
-    // render color
-    Set CharScreen.Character:#BLANK
-    Call CharScreen.Plot:x:y
-    
     lda _voiceOn, Y
-    bne !+
-        jmp !++
-    !:
-
-    Set CharScreen.PenColor:#voiceAltColor
-
-    Set CharScreen.Character:#PATTERN
-    Call CharScreen.Plot:x:y
-
+    beq !+
+        ldx _stepIndex
+        Set CharScreen.PenColor:#voiceAltColor
+        Set CharScreen.Character:#BEAT
+        Call CharScreen.Plot:voice_x,X:voice_y,X
     !:
 }
 

@@ -8,6 +8,10 @@
 
 .namespace Tempo {
 
+    .const readInputDelay = 4
+    _frameCounter: .byte 1
+    _readInputInterval: .byte readInputDelay
+
     Init: {
         // set next raster irq line number
         lda    #0
@@ -35,6 +39,14 @@
         lda    #$01
         sta    $d019
 
+        dec _readInputInterval
+        bne !+
+            jsr ReadInput
+            Set _readInputInterval:#readInputDelay
+        !:
+
+        jsr Render
+
         dec _frameCounter
         beq !+
             jmp nextFrame
@@ -42,80 +54,6 @@
 
     stepStart:
         MCopy _tempo:_frameCounter
-        
-        SetChord(chord_Maj, _chord, _transpose, scale_harmonic_major)
-
-        ldy #0
-        lda #0
-        sta _voiceOn,Y
-        lda _voiceNumberOfBeats, Y
-        // *16 so shift 4 times
-        asl;asl;asl;asl
-        clc 
-        adc _stepIndex
-        adc _voiceOffset, Y
-        tax
-
-        lda _rhythm, X
-        // if 0 then REST
-        beq !+
-            // trigger on
-            SetWaveForm(0, Silence)
-            SetWaveForm(0, Triangle)
-            
-            //inc _voiceOn,Y only works on X index
-            lda #1
-            sta _voiceOn, Y
-        !:
-        
-        iny
-        lda #0
-        sta _voiceOn,Y
-        lda _voiceNumberOfBeats, Y
-        // *16 so shift 4 times
-        asl;asl;asl;asl
-        clc 
-        adc _stepIndex
-        adc _voiceOffset,Y
-        tax
-
-        lda _rhythm, X
-        // if 0 then REST
-        beq !+
-            // trigger on
-            SetWaveForm(1, Silence)
-            SetWaveForm(1, Square)    
-            lda #1
-            sta _voiceOn, Y
-        !:
-
-        iny
-        lda #0
-        sta _voiceOn,Y
-        lda _voiceNumberOfBeats, Y
-        // *16 so shift 4 times
-        asl;asl;asl;asl
-        clc 
-        adc _stepIndex
-        adc _voiceOffset, Y
-        tax
-
-        lda _rhythm, X
-        // if 0 then REST
-        beq !+
-            // trigger on
-            SetWaveForm(2, Silence)
-            SetWaveForm(2, Square)           
-            lda #1
-            sta _voiceOn, Y
-        !:
-
-        ldx _filterIndex
-        lda _filter, X
-        sta SID_MIX_FILTER_CUT_OFF_HI
-        inc _filterIndex
-
-        jsr Render
 
         inc _stepIndex
         lda _stepIndex
@@ -124,20 +62,53 @@
             Set _stepIndex:#0
         !:
 
-    nextFrame:
-        dec _readInputInterval
-        bne !+
-            jsr ReadInput
-            Set _readInputInterval:#4
-        !:
+        SetChord(chord_Maj, _chord, _transpose, scale_harmonic_major)
 
+        TriggerBeat(0, Triangle)
+        TriggerBeat(1, Square)
+        TriggerBeat(2, Square)
+
+        // chord
+        ldy #3
+        lda _chord
+        sta _voiceOffset, Y
+
+        // filter
+        ldx _filterIndex
+        lda _filter, X
+        sta SID_MIX_FILTER_CUT_OFF_HI
+        inc _filterIndex
+
+    nextFrame:
         // end irq
         pla;tay;pla;tax;pla
         rti          
     }
 
-    _frameCounter: .byte 1
-    _readInputInterval: .byte 4
+    .macro TriggerBeat(voiceNumber, waveform) {
+        ldy #voiceNumber
+        lda #0
+        sta _voiceOn,Y
+        lda _voiceNumberOfBeats, Y
+        // *16 so shift 4 times
+        asl;asl;asl;asl
+        clc 
+        adc _stepIndex
+        adc _voiceOffset, Y
+        tax
+
+        lda _rhythm, X
+        // if 0 then REST
+        beq !+
+            // trigger on
+            SetWaveForm(voiceNumber, Silence)
+            SetWaveForm(voiceNumber, waveform)
+            
+            //inc _voiceOn,Y only works on X index
+            lda #1
+            sta _voiceOn, Y
+        !:
+    }
 
     _filterIndex: .byte 0
     _filter: 

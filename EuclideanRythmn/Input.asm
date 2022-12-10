@@ -16,26 +16,33 @@
 .const DOWN_AND_FIRE    = %00010010
 
  ReadInput: {
-        // more specifc inputs first, eg.g LEFT_AND_FIRE before just LEFT
-        /*all-voices*/
-        Constrain(_tempo, 1, $ff, LEFT_AND_FIRE, RIGHT_AND_FIRE)
-        
-        /*all-voices*/
-        //Cycle(_chord, 0, chord_length, LEFT_AND_FIRE, RIGHT_AND_FIRE)    
-        // fiter could be part of a chord, e.g. cMaj with a band-pass filter to emphasise a note
-        // Filter(/*filter*/)
-        
-        /*all-voices*//*scale*/
-        //Cycle(_transpose, 0, scale_length, UP_AND_FIRE, DOWN_AND_FIRE)
+    // more specifc inputs first, eg.g LEFT_AND_FIRE before just LEFT
+    /*all-voices*/
+    lda _selectedVoice
+    cmp #3
+    bne !+
+        jmp skip1
+    !:
 
-        /*voice*//*phase*/  
-        CycleForVoice(_selectedVoice, _voiceOffset, 0, steps, UP_AND_FIRE, DOWN_AND_FIRE)
-        
-        /*voice*//*number of beats*/
-        ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT, LEFT)
-        
-        /*all-voices*/
-        Cycle(_selectedVoice, 0, 3, UP, DOWN)
+    Constrain(_tempo, 1, $ff, UP_AND_FIRE, DOWN_AND_FIRE)
+    CycleForVoice(_selectedVoice, _voiceOffset, 0, steps, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+    ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT, LEFT)
+    
+    skip1:
+
+    /*all-voices*/
+    lda _selectedVoice
+    cmp #3
+    bne skip2
+    // fiter could be part of a chord, e.g. cMaj with a band-pass filter to emphasise a note
+    // Filter(/*filter*/)
+    Cycle(_transpose, 0, scale_length, RIGHT_AND_FIRE, LEFT_AND_FIRE)
+    Cycle(_chord, 0, chord_length, LEFT, RIGHT)    
+
+    skip2:
+
+    /*all-voices*/
+    Cycle(_selectedVoice, 0, 3, UP, DOWN)
     }
 exit:rts
 

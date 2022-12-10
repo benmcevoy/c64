@@ -69,6 +69,9 @@ chord_Min: .byte C2, Eb2, G2
 chord_M_7: .byte C2, G2, Bb3
 chord_Mn7: .byte C2, Eb2, Bb3
 chord_Mj7: .byte C2, G2, B3
+chord_Su4: .byte C2, F2, G2
+chord_Su2: .byte C2, D2, G2
+chord_Dim: .byte C2, Eb2, Gb2
 
 // galatic core
 // C, Am, F, Dm, G, Em, Bdim, C
@@ -101,27 +104,24 @@ scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
     sta     SID_V1_FREQ_LO+voiceNumber*7 
 }
 
-.macro SetPulseWidth(voiceNumber, lo, hi)
-{
+.macro SetPulseWidth(voiceNumber, lo, hi) {
     lda     lo
     sta     SID_V1_PW_LO+voiceNumber*7
     lda     hi
     sta     SID_V1_PW_HI+voiceNumber*7 
 }
 
-.macro SetWaveForm(voiceNumber, waveform)
-{
+.macro SetWaveForm(voiceNumber, waveform) {
     lda #waveform
     sta SID_V1_CONTROL+voiceNumber*7
 }
 
-.macro Scale(transpose, scale){
+.macro Scale(transpose, scale) {
     ldx transpose
     clc; adc scale,X; tax
 }
 
 .macro SetChord(chord, chordIndex, transpose, scale) {
-    
     // multiply by 3
     lda chordIndex
     asl
@@ -131,7 +131,6 @@ scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
 
     lda chord, Y
     Scale(transpose, scale)
-
     lda freq_msb, X
     sta SID_V1_FREQ_HI
     lda freq_lsb, X
@@ -153,31 +152,3 @@ scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
     lda freq_lsb, X
     sta SID_V3_FREQ_LO
 }
-
-
-// .macro Transpose(chord, transpose) {
-//     ldy     transpose
-//     ldx     #0
-//     lda     chord, X
-//     scale()
-//     lda     freq_msb,x
-//     sta     SID_V1_FREQ_HI
-//     lda     freq_lsb,x
-//     sta     SID_V1_FREQ_LO
-
-//     ldx     #1
-//     lda     chord, X
-//     scale()
-//     lda     freq_msb,x
-//     sta     SID_V2_FREQ_HI
-//     lda     freq_lsb,x
-//     sta     SID_V2_FREQ_LO
-
-//     ldx     #2
-//     lda     chord, X
-//     scale()
-//     lda     freq_msb,x
-//     sta     SID_V3_FREQ_HI
-//     lda     freq_lsb,x
-//     sta     SID_V3_FREQ_LO
-// }
