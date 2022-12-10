@@ -1,3 +1,6 @@
+#importonce 
+#import "_prelude.lib"
+
 // SEQUENTIAL CIRCUITS INC.
 // Mode 	1 MHZ IRQ 	
 // Control Register 	$DE00 	Write only
@@ -9,3 +12,43 @@
 // Midi IRQ Enable 	$95 	IRQ ON, Word Select & Counter Divide 
 
 // https://www.codebase64.org/doku.php?id=base:c64_midi_interfaces
+
+.label MidiControl = $DE00
+.label MidiStatus = $DE02
+.label MidiTransmit = $DE01
+.const Velocity = 100
+
+channel: .byte 0
+
+.macro TriggerMidi(voiceNumber) {
+    // $9n is note on, channel n
+    lda #$90
+    ora #voiceNumber
+    tax
+
+    jsr TransmitMidi 
+    ldx #60 // key
+    jsr TransmitMidi
+    ldx #Velocity
+    jsr TransmitMidi
+}
+
+TransmitMidi: {
+    lda MidiStatus
+    lsr
+    lsr
+    // testing for the Tx to be high
+    bcc TransmitMidi
+    stx MidiTransmit 
+    rts
+}
+
+InitMidi: {
+    // reset
+    Set MidiControl:#$03
+    // not too sure but it makes noise :)
+    // bit 7 - Rx disable, bit 6,5 tx enable?, bit 4,3,2 - 8 bit no parity, bit 1,0 counter divide by 1
+    Set MidiControl:#%00110000
+    
+    rts
+}

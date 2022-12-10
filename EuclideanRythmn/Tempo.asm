@@ -5,6 +5,7 @@
 #import "Render.asm"
 #import "Input.asm"
 #import "Config.asm"
+#import "Midi.asm"
 
 .namespace Tempo {
 
@@ -30,6 +31,8 @@
         SetPulseWidth(0, $08, $04)
         SetPulseWidth(1, $06, $06)
         SetPulseWidth(2, $8A, $06)
+
+        jsr InitMidi
 
         rts
     }
@@ -76,6 +79,7 @@
         sta _voiceOn,Y
 
         lda _stepIndex
+        cmp _chord
         bne !+
             lda #1
             sta _voiceOn,Y
@@ -112,6 +116,8 @@
             SetWaveForm(voiceNumber, Silence)
             SetWaveForm(voiceNumber, waveform)
             
+            TriggerMidi(voiceNumber)
+
             //inc _voiceOn,Y only works on X index
             lda #1
             sta _voiceOn, Y
@@ -143,3 +149,4 @@
         .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
         .byte $ff
 }
+
