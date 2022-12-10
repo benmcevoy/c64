@@ -64,14 +64,24 @@ freq_lsb:
 .byte $da,$76,$39,$26,$40,$89,$04,$b4,$9c,$c0,$23,$c8,$b4,$eb,$72,$4c
 .byte $80,$12,$08,$68,$39,$80,$45,$90,$68,$d6,$e3,$99,$00,$24,$10
 
-chord_Maj: .byte C2, E2, G2
-chord_Min: .byte C2, Eb2, G2
-chord_M_7: .byte C2, G2, Bb3
-chord_Mn7: .byte C2, Eb2, Bb3
-chord_Mj7: .byte C2, G2, B3
-chord_Su4: .byte C2, F2, G2
-chord_Su2: .byte C2, D2, G2
-chord_Dim: .byte C2, Eb2, Gb2
+chords:
+chord0: .byte C2, E2, G2
+chord1: .byte A2, C3, E3
+chord2: .byte F2, A2, C3
+chord3: .byte D2, F2, A3
+chord4: .byte G2, B3, D2
+chord5: .byte E2, G2, B3
+chord6: .byte B3, D2, F2
+chord7: .byte C3, E2, G2
+
+// chord_Maj: .byte C2, E2, G2
+// chord_Min: .byte C2, Eb2, G2
+// chord_M_7: .byte C2, G2, Bb3
+// chord_Mn7: .byte C2, Eb2, Bb3
+// chord_Mj7: .byte C2, G2, B3
+// chord_Su4: .byte C2, F2, G2
+// chord_Su2: .byte C2, D2, G2
+// chord_Dim: .byte C2, Eb2, Gb2
 
 // galatic core
 // C, Am, F, Dm, G, Em, Bdim, C

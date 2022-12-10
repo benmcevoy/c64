@@ -24,7 +24,7 @@
         jmp skip1
     !:
 
-    Constrain(_tempo, 1, $ff, UP_AND_FIRE, DOWN_AND_FIRE)
+    Constrain(_tempo, 1, $ff, DOWN_AND_FIRE, UP_AND_FIRE)
     CycleForVoice(_selectedVoice, _voiceOffset, 0, steps, LEFT_AND_FIRE, RIGHT_AND_FIRE)
     ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT, LEFT)
     
@@ -36,7 +36,7 @@
     bne skip2
     // fiter could be part of a chord, e.g. cMaj with a band-pass filter to emphasise a note
     // Filter(/*filter*/)
-    Cycle(_transpose, 0, scale_length, RIGHT_AND_FIRE, LEFT_AND_FIRE)
+    Constrain(_transpose, 0, scale_length, RIGHT_AND_FIRE, LEFT_AND_FIRE)
     Cycle(_chord, 0, chord_length, LEFT, RIGHT)    
 
     skip2:

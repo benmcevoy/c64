@@ -20,16 +20,16 @@
         // init SID
         Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111  
         Set SID_MIX_FILTER_CUT_OFF_HI:#10
-        Set SID_MIX_FILTER_CONTROL:#%01110111
+        Set SID_MIX_FILTER_CONTROL:#%11110111
         Set SID_MIX_VOLUME:#%00011111
 
         Set SID_V1_ATTACK_DECAY:#$09
         Set SID_V2_ATTACK_DECAY:#$09
         Set SID_V3_ATTACK_DECAY:#$09
 
-        SetPulseWidth(0, $08, $00)
-        SetPulseWidth(1, $06, $00)
-        SetPulseWidth(2, $0A, $00)
+        SetPulseWidth(0, $08, $04)
+        SetPulseWidth(1, $06, $06)
+        SetPulseWidth(2, $8A, $06)
 
         rts
     }
@@ -62,9 +62,9 @@
             Set _stepIndex:#0
         !:
 
-        SetChord(chord_Maj, _chord, _transpose, scale_harmonic_major)
+        SetChord(chords, _chord, _transpose, scale_harmonic_minor)
 
-        TriggerBeat(0, Triangle)
+        TriggerBeat(0, Square)
         TriggerBeat(1, Square)
         TriggerBeat(2, Square)
 
@@ -72,6 +72,14 @@
         ldy #3
         lda _chord
         sta _voiceOffset, Y
+        lda #0
+        sta _voiceOn,Y
+
+        lda _stepIndex
+        bne !+
+            lda #1
+            sta _voiceOn,Y
+        !:
 
         // filter
         ldx _filterIndex
