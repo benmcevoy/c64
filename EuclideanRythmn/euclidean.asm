@@ -2,7 +2,6 @@ BasicUpstart2(Start)
 
 #import "_prelude.lib"
 #import "char/data.asm"
-
 #import "Tempo.asm"
 
 Start: {

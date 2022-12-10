@@ -17,7 +17,7 @@ _chord: .byte 0
 // between 0-8 (_steps=8)
 _voiceNumberOfBeats: .byte 1,0,0,1
 // offset 0-8
-_voiceOffset: .byte 3,4,5,0
+_voiceOffset: .byte 0,0,0,0
 // flags
 _voiceOn: .byte 0,0,0,0
 
