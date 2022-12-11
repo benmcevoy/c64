@@ -67,6 +67,10 @@
             Set _stepIndex:#0
         !:
 
+        TriggerMidiOff(0)
+        TriggerMidiOff(1)
+        TriggerMidiOff(2)
+        
         TriggerChord()
 
         TriggerBeat(0, Square)
@@ -93,9 +97,8 @@
         lda _stepIndex
         // set chord at the start of the sequence
         bne !+
-            
             // trigger on
-            SetChord(chords, _chord, _transpose, scale_harmonic_major)
+            SetChord(chords, _chord, _transpose, scale_phrygian_dominant)
         !:
     }
 

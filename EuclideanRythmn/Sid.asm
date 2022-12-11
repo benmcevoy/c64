@@ -39,10 +39,10 @@
 .const SID_MIX_VOLUME = SID_BASE + 21 + 3
 
 .const REST = 0;
-.const E0 = $14;    .const F0 = $15;    .const Gb0 = $16;    .const G0 = $17;    .const A1 = $18;     .const Ab1 = $19;     .const Bb1 = $1a;   .const B1 = $1b;     .const C1 = $1c;    .const Db1 = $1d;   .const D1 = $1e;     .const Eb1 = $1f
+.const E0 = $14;    .const F0 = $15;    .const Gb0 = $16;    .const G0 = $17;    .const A1 = $18;     .const Ab1 = $19;   .const Bb1 = $1a;    .const B1 = $1b;    .const C1 = $1c;    .const Db1 = $1d;    .const D1 = $1e;    .const Eb1 = $1f
 .const E1 = $20;    .const F1 = $21;    .const Gb1 = $22;    .const G1 = $23;    .const Ab2 = $24;    .const A2 = $25;    .const Bb2 = $26;    .const B2 = $27;    .const C2 = $28;    .const Db2 = $29;    .const D2 = $2a;    .const Eb2 = $2b;
 .const E2 = $2c;    .const F2 = $2d;    .const Gb2 = $2e;    .const G2 = $2f;    .const Ab3 = $30;    .const A3 = $31;    .const Bb3 = $32;    .const B3 = $33;    .const C3 = $34;    .const Db3 = $35;    .const D3 = $36;    .const Eb3 = $37
-.const E3 = $38;    .const F3 = $39;    .const Gb3 = $3a;    .const G3 = $3b;    .const Ab4 = $3c;    .const A4 = $3d;    .const Bb4 = $3e;    .const B4 = $3f;    .const C4 = $40;    .const Db4 = $41;    .const D4 = $42;;    .const Eb4 = $43
+.const E3 = $38;    .const F3 = $39;    .const Gb3 = $3a;    .const G3 = $3b;    .const Ab4 = $3c;    .const A4 = $3d;    .const Bb4 = $3e;    .const B4 = $3f;    .const C4 = $40;    .const Db4 = $41;    .const D4 = $42;;   .const Eb4 = $43
 .const E4 = $44;    .const F4 = $45;    .const Gb4 = $46;    .const G4 = $47;    .const Ab5 = $48;    .const A5 = $49;    .const Bb5 = $4a;    .const B5 = $4b;    .const C5 = $4c;    .const Db5 = $4d;    .const D5 = $4e;    .const Eb5 = $4f
 .const E5 = $50;    .const F5 = $51;    .const Gb5 = $52;    .const G5 = $53;    .const Ab6 = $54;    .const A6 = $55;    .const Bb6 = $56;    .const B6 = $57;    .const C6 = $58;    .const Db6 = $59;    .const D6 = $5a;    .const Eb6 = $5b
 .const E6 = $5c;
@@ -64,15 +64,57 @@ freq_lsb:
 .byte $da,$76,$39,$26,$40,$89,$04,$b4,$9c,$c0,$23,$c8,$b4,$eb,$72,$4c
 .byte $80,$12,$08,$68,$39,$80,$45,$90,$68,$d6,$e3,$99,$00,$24,$10
 
-chords:
-chord0: .byte C2, E2, G2
-chord1: .byte A2, C3, E3
-chord2: .byte F2, A2, C3
-chord3: .byte D2, F2, A3
-chord4: .byte G2, B3, D2
-chord5: .byte E2, G2, B3
-chord6: .byte B3, D2, F2
-chord7: .byte C3, E2, G2
+chords: MinorChords()
+
+.macro HouseProgression() { 
+    // house progression
+    chord_Dbm: .byte Db2, E2, Ab3
+    chord_A: .byte A2, Db2, E2
+    chord_E: .byte E2, Ab3, B3
+    chord_B: .byte B2, Eb2, Gb2
+    chord_Dbm1: .byte Db2, E2, Ab3
+    chord_A1: .byte A2, Db2, E2
+    chord_E1: .byte E2, Ab3, B3
+    chord_B1: .byte B2, Eb2, Gb2
+}
+
+.macro CircleOfFifthsChords() {
+    // circle of fifths
+    // C F B0 Em Am Dm G C
+    chord_C: .byte C2, E2, G2
+    chord_F: .byte F2, A2, C3
+    chord_B0: .byte B3, D2, F2
+    chord_Em: .byte E2, G2, B3
+    chord_Am: .byte A2, C3, E3
+    chord_Dm: .byte D2, F2, A3
+    chord_G: .byte G2, B3, D2
+    chord_C2: .byte C3, E2, G2
+}
+
+.macro GalaticCoreChords() {
+    // "galatic core"
+    // C, Am, F, Dm, G, Em, Bdim, C
+    // Bdim is B D F#
+    chord_C2: .byte C2, E2, G2
+    chord_Am: .byte A2, C3, E3
+    chord_F: .byte F2, A2, C3
+    chord_Dm: .byte D2, F2, A3
+    chord_G: .byte G2, B3, D2
+    chord_Em: .byte E2, G2, B3
+    chord_B0: .byte B3, D2, F2
+    chord_C3: .byte C3, E2, G2
+}
+
+.macro MinorChords() {
+   chord_Cm: .byte C2, Eb2, G2 
+   chord_Gm: .byte G2, Bb2, D2 
+   chord_Fm: .byte F2, Ab2, C2 
+   chord_Gm1: .byte G2, Bb2, D2 
+   chord_Cm1: .byte C2, Eb2, G2 
+   chord_Gm2: .byte G2, Bb2, D2 
+   chord_Fm2: .byte F2, Ab2, C2 
+   chord_Gm3: .byte G2, Bb2, D2 
+}
 
 // chord_Maj: .byte C2, E2, G2
 // chord_Min: .byte C2, Eb2, G2
@@ -82,10 +124,6 @@ chord7: .byte C3, E2, G2
 // chord_Su4: .byte C2, F2, G2
 // chord_Su2: .byte C2, D2, G2
 // chord_Dim: .byte C2, Eb2, Gb2
-
-// galatic core
-// C, Am, F, Dm, G, Em, Bdim, C
-// Bdim is B D F#
 
 // https://en.wikipedia.org/wiki/List_of_musical_scales_and_modes
 // W-W-W-H-W-H-W 	
@@ -99,6 +137,8 @@ scale_gypsy: .byte 0,2,3,6,7,8,10,12
 scale_half_diminshed: .byte 0,2,3,5,6,8,10,12
 scale_harmonic_major: .byte 0,2,4,5,7,8,11,12
 scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
+scale_phrygian: .byte 0,1,3,5,7,8,10,12
+scale_phrygian_dominant: .byte 0,1,4,5,7,8,10,12
 
 .const Noise = %10000001
 .const Square = %01000001
@@ -141,6 +181,7 @@ scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
 
     lda chord, Y
     Scale(transpose, scale)
+    ldy #0
     sta _voiceNoteNumber, Y
     lda freq_msb, X
     sta SID_V1_FREQ_HI
@@ -150,6 +191,7 @@ scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
     iny
     lda chord, Y
     Scale(transpose, scale)
+    ldy #1
     sta _voiceNoteNumber, Y
     lda freq_msb, X
     sta SID_V2_FREQ_HI
@@ -159,6 +201,7 @@ scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
     iny
     lda chord, Y
     Scale(transpose, scale)
+    ldy #2
     sta _voiceNoteNumber, Y
     lda freq_msb, X
     sta SID_V3_FREQ_HI

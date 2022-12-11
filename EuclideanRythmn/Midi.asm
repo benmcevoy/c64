@@ -19,20 +19,38 @@
 .label MidiTransmit = $DE01
 .const Velocity = 100
 
-.macro TriggerMidiOn(voiceNumber) {
-    // $9n is note on, channel n
-    lda #$90
+.macro TriggerMidiOff(voiceNumber) {
+    // $8n is note off, channel n
+    lda #$80
     ora #voiceNumber
     tax
-
-    ldy #voiceNumber
-    
     jsr TransmitMidi 
+    
+    ldy #voiceNumber
     lda _voiceNoteNumber, Y
     // my note numbers are not midi note number, add 8 to line them up
     clc; adc #8
     tax
     jsr TransmitMidi
+    
+    ldx #Velocity
+    jsr TransmitMidi
+}
+
+.macro TriggerMidiOn(voiceNumber) {
+    // $9n is note on, channel n
+    lda #$90
+    ora #voiceNumber
+    tax
+    jsr TransmitMidi 
+    
+    ldy #voiceNumber
+    lda _voiceNoteNumber, Y
+    // my note numbers are not midi note number, add 8 to line them up
+    clc; adc #8
+    tax
+    jsr TransmitMidi
+
     ldx #Velocity
     jsr TransmitMidi
 }
