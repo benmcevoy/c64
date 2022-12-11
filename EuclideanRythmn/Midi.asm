@@ -1,5 +1,6 @@
 #importonce 
 #import "_prelude.lib"
+#import "Config.asm"
 
 // SEQUENTIAL CIRCUITS INC.
 // Mode 	1 MHZ IRQ 	
@@ -18,16 +19,19 @@
 .label MidiTransmit = $DE01
 .const Velocity = 100
 
-channel: .byte 0
-
-.macro TriggerMidi(voiceNumber) {
+.macro TriggerMidiOn(voiceNumber) {
     // $9n is note on, channel n
     lda #$90
     ora #voiceNumber
     tax
 
+    ldy #voiceNumber
+    
     jsr TransmitMidi 
-    ldx #60 // key
+    lda _voiceNoteNumber, Y
+    // my note numbers are not midi note number, add 8 to line them up
+    clc; adc #8
+    tax
     jsr TransmitMidi
     ldx #Velocity
     jsr TransmitMidi

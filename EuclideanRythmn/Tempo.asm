@@ -32,6 +32,8 @@
         SetPulseWidth(1, $06, $06)
         SetPulseWidth(2, $8A, $06)
 
+        SetChord(chords, _stepIndex, _transpose, scale_harmonic_minor)
+
         jsr InitMidi
 
         rts
@@ -65,25 +67,11 @@
             Set _stepIndex:#0
         !:
 
-        SetChord(chords, _chord, _transpose, scale_harmonic_minor)
+        TriggerChord()
 
         TriggerBeat(0, Square)
         TriggerBeat(1, Square)
         TriggerBeat(2, Square)
-
-        // chord
-        ldy #3
-        lda _chord
-        sta _voiceOffset, Y
-        lda #0
-        sta _voiceOn,Y
-
-        lda _stepIndex
-        cmp _chord
-        bne !+
-            lda #1
-            sta _voiceOn,Y
-        !:
 
         // filter
         ldx _filterIndex
@@ -95,6 +83,20 @@
         // end irq
         pla;tay;pla;tax;pla
         rti          
+    }
+    
+    .macro TriggerChord() {
+        ldy #3
+        lda _chord
+        sta _voiceOffset, Y
+
+        lda _stepIndex
+        // set chord at the start of the sequence
+        bne !+
+            
+            // trigger on
+            SetChord(chords, _chord, _transpose, scale_harmonic_major)
+        !:
     }
 
     .macro TriggerBeat(voiceNumber, waveform) {
@@ -116,7 +118,7 @@
             SetWaveForm(voiceNumber, Silence)
             SetWaveForm(voiceNumber, waveform)
             
-            TriggerMidi(voiceNumber)
+            TriggerMidiOn(voiceNumber)
 
             //inc _voiceOn,Y only works on X index
             lda #1

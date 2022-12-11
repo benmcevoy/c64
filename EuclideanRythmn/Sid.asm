@@ -141,6 +141,7 @@ scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
 
     lda chord, Y
     Scale(transpose, scale)
+    sta _voiceNoteNumber, Y
     lda freq_msb, X
     sta SID_V1_FREQ_HI
     lda freq_lsb, X
@@ -149,6 +150,7 @@ scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
     iny
     lda chord, Y
     Scale(transpose, scale)
+    sta _voiceNoteNumber, Y
     lda freq_msb, X
     sta SID_V2_FREQ_HI
     lda freq_lsb, X
@@ -157,6 +159,7 @@ scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
     iny
     lda chord, Y
     Scale(transpose, scale)
+    sta _voiceNoteNumber, Y
     lda freq_msb, X
     sta SID_V3_FREQ_HI
     lda freq_lsb, X

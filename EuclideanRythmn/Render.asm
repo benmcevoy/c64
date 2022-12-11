@@ -23,7 +23,6 @@ Render: {
 .macro RenderPattern(voiceNumber, voice_x, voice_y) {
     ldx #0
     Set _stepCounter:#0
-
     Set CharScreen.PenColor:#DARK_GRAY
 
     lda _selectedVoice
@@ -46,14 +45,14 @@ Render: {
 
         lda _rhythm, Y
         bne !+
-            jmp beat_off
+            jmp rest
         !:
 
-    beat_on:
+    pattern:
         Set CharScreen.Character:#PATTERN
         jmp next_step
 
-    beat_off:
+    rest:
         Set CharScreen.Character:#BLANK
 
     next_step:
@@ -66,25 +65,15 @@ Render: {
             jmp render_pattern
         !:
 
-    Set CharScreen.PenColor:#LIGHT_GRAY
-    Set CharScreen.Character:#BLANK
-    
-    ldx _stepIndex
-    ldy #voiceNumber
-
-    lda _selectedVoice
-    cmp #voiceNumber
-    bne !+
-        Set CharScreen.PenColor:_voiceAltColor, Y
-    !:
-
-    lda _voiceOn, Y
-    beq !+
-        Set CharScreen.PenColor:_voiceAltColor, Y
-        Set CharScreen.Character:#BEAT
-    !:
-
-    Call CharScreen.Plot:voice_x,X:voice_y,X        
+    beat:
+        ldx _stepIndex
+        ldy #voiceNumber
+        lda _voiceOn, Y
+        beq !+
+            Set CharScreen.PenColor:_voiceAltColor, Y
+            Set CharScreen.Character:#BEAT
+            Call CharScreen.Plot:voice_x,X:voice_y,X
+        !:
 }
 
 voice0_x: .byte 18,20,21,20,18,16,15,16,18,20,21,20,18,16,15,16

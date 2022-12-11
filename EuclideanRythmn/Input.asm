@@ -16,7 +16,7 @@
 .const DOWN_AND_FIRE    = %00010010
 
  ReadInput: {
-    // more specifc inputs first, eg.g LEFT_AND_FIRE before just LEFT
+// more specifc inputs first, eg.g LEFT_AND_FIRE before just LEFT
     /*all-voices*/
     lda _selectedVoice
     cmp #3
@@ -27,8 +27,9 @@
     Constrain(_tempo, 1, $ff, DOWN_AND_FIRE, UP_AND_FIRE)
     CycleForVoice(_selectedVoice, _voiceOffset, 0, steps, LEFT_AND_FIRE, RIGHT_AND_FIRE)
     ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT, LEFT)
+    jmp skip2
     
-    skip1:
+skip1:
 
     /*all-voices*/
     lda _selectedVoice
@@ -39,11 +40,11 @@
     Constrain(_transpose, 0, scale_length, RIGHT_AND_FIRE, LEFT_AND_FIRE)
     Cycle(_chord, 0, chord_length, LEFT, RIGHT)    
 
-    skip2:
+skip2:
 
     /*all-voices*/
     Cycle(_selectedVoice, 0, 3, UP, DOWN)
-    }
+}
 exit:rts
 
     .macro Constrain(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
