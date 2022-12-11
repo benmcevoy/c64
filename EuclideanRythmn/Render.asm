@@ -4,18 +4,18 @@
 #import "Config.asm"
 
 .const BLANK = 35
-.const PATTERN = 34
-.const BEAT = 33
+.const PATTERN = 33
+.const BEAT = 34
 
 _voiceColor: .byte RED, GREEN, BLUE, YELLOW
 _voiceAltColor: .byte LIGHT_RED, LIGHT_GREEN, CYAN, YELLOW
 _stepCounter: .byte 0
 
 Render: {
-    RenderPattern(0, voice0_x, voice0_y)
-    RenderPattern(1, voice1_x, voice1_y)
-    RenderPattern(2, voice2_x, voice2_y)
-    RenderPattern(3, voice3_x, voice3_y)
+    RenderPattern(0, v0_16_x, v0_16_y)
+    RenderPattern(1, v1_16_x, v1_16_y)
+    // RenderPattern(2, voice2_x, voice2_y)
+    // RenderPattern(3, voice3_x, voice3_y)
 
     rts
 }
@@ -75,6 +75,13 @@ Render: {
             Call CharScreen.Plot:voice_x,X:voice_y,X
         !:
 }
+
+v0_16_x: .byte 08,09,10,11,11,11,10,09,08,07,06,05,05,05,06,07
+v0_16_y: .byte 02,02,03,04,05,06,07,08,08,08,07,06,05,04,03,02
+
+v1_16_x: .byte 17,18,19,20,20,20,19,18,17,16,15,14,14,14,15,16
+v1_16_y: .byte 06,06,07,08,09,10,11,12,12,12,11,10,09,08,07,06
+
 
 voice0_x: .byte 18,20,21,20,18,16,15,16,18,20,21,20,18,16,15,16
 voice0_y: .byte 09,10,12,14,15,14,12,10,09,10,12,14,15,14,12,10

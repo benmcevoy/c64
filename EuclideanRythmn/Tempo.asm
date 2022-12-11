@@ -111,7 +111,7 @@
         asl;asl;asl;asl
         clc 
         adc _stepIndex
-        adc _voiceOffset, Y
+        //adc _voiceOffset, Y
         tax
 
         lda _rhythm, X
