@@ -14,10 +14,6 @@
     _readInputInterval: .byte readInputDelay
 
     Init: {
-        // set next raster irq line number
-        lda    #0
-        sta    $d012
-
         // init SID
         Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111  
         Set SID_MIX_FILTER_CUT_OFF_HI:#10
@@ -32,33 +28,34 @@
         SetPulseWidth(1, $06, $06)
         SetPulseWidth(2, $8A, $06)
 
-        SetChord(chords, _stepIndex, _transpose, scale_harmonic_minor)
-
-        jsr InitMidi
-
         rts
     }
 
     OnRasterInterrupt: {
         // ack irq
-        lda    #$01
-        sta    $d019
+        lda $d019
+        sta $d019
+        // set next irq line number
+        lda    #1
+        sta    $d012
 
         dec _readInputInterval
         bne !+
             jsr ReadInput
             Set _readInputInterval:#readInputDelay
         !:
-
+        
+        //inc $d020
         jsr Render
-
+        //dec $d020
+        
         dec _frameCounter
         beq !+
             jmp nextFrame
         !: 
 
     stepStart:
-        MCopy _tempo:_frameCounter
+        Set _frameCounter:_tempo
 
         inc _stepIndex
         lda _stepIndex
@@ -73,6 +70,10 @@
         
         TriggerChord()
 
+        TriggerOctave(3)
+        TriggerOctave(4)
+        TriggerOctave(5)
+
         TriggerBeat(0, Square)
         TriggerBeat(1, Square)
         TriggerBeat(2, Square)
@@ -82,7 +83,6 @@
         lda _filter, X
         sta SID_MIX_FILTER_CUT_OFF_HI
         inc _filterIndex
-
     nextFrame:
         // end irq
         pla;tay;pla;tax;pla
@@ -90,16 +90,11 @@
     }
     
     .macro TriggerChord() {
-        ldy #3
+        ldy #6
         lda _chord
-        sta _voiceOffset, Y
+        sta _voiceRotation, Y
 
-        lda _stepIndex
-        // set chord at the start of the sequence
-        bne !+
-            // trigger on
-            SetChord(chords, _chord, _transpose, scale_phrygian_dominant)
-        !:
+        SetChord(chords, _chord, _transpose, scale_phrygian_dominant)
     }
 
     .macro TriggerBeat(voiceNumber, waveform) {
@@ -111,7 +106,7 @@
         asl;asl;asl;asl
         clc 
         adc _stepIndex
-        adc _voiceOffset, Y
+        adc _voiceRotation, Y
         tax
 
         lda _rhythm, X
@@ -119,13 +114,48 @@
         beq !+
             // trigger on
             SetWaveForm(voiceNumber, Silence)
-            SetWaveForm(voiceNumber, waveform)
-            
-            TriggerMidiOn(voiceNumber)
 
-            //inc _voiceOn,Y only works on X index
+            ldx _voiceNoteNumber,Y
+            lda freq_msb, X
+            sta SID_V1_FREQ_HI+voiceNumber*7
+            lda freq_lsb, X
+            sta SID_V1_FREQ_LO+voiceNumber*7
+
+            SetWaveForm(voiceNumber, waveform)
+            TriggerMidiOn(voiceNumber)
+            
+            lda #1
+            ldy #voiceNumber
+            sta _voiceOn, Y
+        !:
+    }
+
+    .macro TriggerOctave(voiceNumber) {
+        ldy #voiceNumber
+        lda #0
+        sta _voiceOn,Y
+        lda _voiceNumberOfBeats, Y
+        // *16 so shift 4 times
+        asl;asl;asl;asl
+        clc 
+        adc _stepIndex
+        adc _voiceRotation, Y
+        tax
+
+        lda _rhythm, X
+        // if 0 then REST
+        beq !+
+            // trigger on
             lda #1
             sta _voiceOn, Y
+
+            lda #voiceNumber
+            sec; sbc #3
+            tay
+            
+            lda _voiceNoteNumber, Y
+            clc; adc #12
+            sta _voiceNoteNumber, Y
         !:
     }
 

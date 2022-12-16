@@ -2,42 +2,47 @@ BasicUpstart2(Start)
 
 #import "_prelude.lib"
 #import "char/data.asm"
+#import "char/screen.asm"
 #import "Tempo.asm"
 
 Start: {
     // initialise
     Set $d020:#BLACK
     Set $d021:#BLACK
-    // set to 25 line text mode and turn on the screen
-	Set $d011:#$1B
-	// disable SHIFT-Commodore
-	Set $0291:#$80
-   	// set screen memory ($0400) and charset bitmap offset ($2000)
-    Set $d018:#$18
 
     // clear screen
     jsr $E544
+
+    jsr Screen.Draw
+
     jsr Tempo.Init
+
+    // turning on midi seems to screw up IRQ
+    // TODO: read the documentation :)
+    // jsr InitMidi
 
     // Raster IRQ
     sei
+        // disable cia timers
+        lda    #$7f
+        sta    $dc0d
+        
+        // enable raster irq
+        lda $d01a                     
+        ora #$01
+        sta $d01a
+        lda $d011                    
+        and #$7f
+        sta $d011
+
+        // set next irq line number
+        lda    #1
+        sta    $d012
+        
         lda #<Tempo.OnRasterInterrupt            
         sta $0314
         lda #>Tempo.OnRasterInterrupt
         sta $0315
-
-        // clear high bit of raster flag
-        lda    #$1b
-        sta    $d011
-        // enable raster irq
-        lda    #$01
-        sta    $d01a
-        // disable cia timers
-        lda    #$7f
-        sta    $dc0d
-        sta    $dc0c
-        lda    $dc0d
-        lda    $dc0c
     cli
 
     jmp *

@@ -7,20 +7,19 @@
 .const steps = 8
 
 // tempo in units of "frame count"
-_tempo: .byte 16
+_tempo: .byte 20
 _stepIndex: .byte 0
 _selectedVoice: .byte 0
 _transpose: .byte 4
 _chord: .byte 0
 
-// between 0-8 (_steps=8)
-// v3 must be 1
-_voiceNumberOfBeats: .byte 1,0,0,1
+// v6 (chord) must be 1.  voices are a bad name :) v0, v1, v2,  octave0, octave1, octave2, chord, tempo, filter
+_voiceNumberOfBeats: .byte 1,0,0,0,0,0,1,0,0
 // offset 0-8
-_voiceOffset: .byte 3,4,5,0
+_voiceRotation: .byte 3,4,5,0,0,0,0,0,0
 // flags
-_voiceOn: .byte 0,0,0,0
-_voiceNoteNumber: .byte 0,0,0,0
+_voiceOn: .byte 0,0,0,0,0,0,0,0,0
+_voiceNoteNumber: .byte 0,0,0,0,0,0,0,0,0
 
 // double up the sequence so we can offset into it
 .align $100

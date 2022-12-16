@@ -146,14 +146,6 @@ scale_phrygian_dominant: .byte 0,1,4,5,7,8,10,12
 .const Triangle = %00010001
 .const Silence = 0
 
-.macro SetTone(voiceNumber, tone) {
-    ldx     #tone
-    lda     freq_msb,x
-    sta     SID_V1_FREQ_HI+voiceNumber*7
-    lda     freq_lsb,x
-    sta     SID_V1_FREQ_LO+voiceNumber*7 
-}
-
 .macro SetPulseWidth(voiceNumber, lo, hi) {
     lda     lo
     sta     SID_V1_PW_LO+voiceNumber*7
@@ -183,28 +175,17 @@ scale_phrygian_dominant: .byte 0,1,4,5,7,8,10,12
     Scale(transpose, scale)
     ldy #0
     sta _voiceNoteNumber, Y
-    lda freq_msb, X
-    sta SID_V1_FREQ_HI
-    lda freq_lsb, X
-    sta SID_V1_FREQ_LO
+    
 
     iny
     lda chord, Y
     Scale(transpose, scale)
     ldy #1
     sta _voiceNoteNumber, Y
-    lda freq_msb, X
-    sta SID_V2_FREQ_HI
-    lda freq_lsb, X
-    sta SID_V2_FREQ_LO
 
     iny
     lda chord, Y
     Scale(transpose, scale)
     ldy #2
     sta _voiceNoteNumber, Y
-    lda freq_msb, X
-    sta SID_V3_FREQ_HI
-    lda freq_lsb, X
-    sta SID_V3_FREQ_LO
 }

@@ -1,6 +1,5 @@
 #importonce
 #import "_prelude.lib"
-#import "_charscreen.lib"
 #import "Config.asm"
 
 .const PORT2   = $dc00
@@ -16,34 +15,41 @@
 .const DOWN_AND_FIRE    = %00010010
 
  ReadInput: {
-// more specifc inputs first, eg.g LEFT_AND_FIRE before just LEFT
-    /*all-voices*/
+    // more specifc inputs first, eg.g LEFT_AND_FIRE before just LEFT
+check_voice:
     lda _selectedVoice
-    cmp #3
-    bne !+
-        jmp skip1
+    cmp #5
+    beq !+
+        bcs check_chord
     !:
-
-    Constrain(_tempo, 1, $ff, DOWN_AND_FIRE, UP_AND_FIRE)
-    CycleForVoice(_selectedVoice, _voiceOffset, 0, steps, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+    CycleForVoice(_selectedVoice, _voiceRotation, 0, steps, LEFT_AND_FIRE, RIGHT_AND_FIRE)
     ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT, LEFT)
-    jmp skip2
+    jmp end
     
-skip1:
-
-    /*all-voices*/
+check_chord:
     lda _selectedVoice
-    cmp #3
-    bne skip2
+    cmp #6
+    bne check_tempo
     // fiter could be part of a chord, e.g. cMaj with a band-pass filter to emphasise a note
     // Filter(/*filter*/)
     Constrain(_transpose, 0, scale_length, RIGHT_AND_FIRE, LEFT_AND_FIRE)
     Cycle(_chord, 0, chord_length, LEFT, RIGHT)    
+    jmp end
 
-skip2:
+check_tempo:
+    lda _selectedVoice
+    cmp #7
+    bne check_filter
+    Constrain(_tempo, 1, $ff, LEFT_AND_FIRE, RIGHT_AND_FIRE)
 
+check_filter:
+    //jmp end
+
+    
+
+end:
     /*all-voices*/
-    Cycle(_selectedVoice, 0, 3, UP, DOWN)
+    Cycle(_selectedVoice, 0, 8, UP, DOWN)
 }
 exit:rts
 

@@ -1,21 +1,30 @@
 #importonce
 #import "_prelude.lib"
-#import "_charscreen.lib"
 #import "Config.asm"
 
-.const BLANK = 35
-.const PATTERN = 34
-.const BEAT = 33
+.const BLANK = 2
+.const PATTERN = 3
+.const BEAT = 4
 
-_voiceColor: .byte RED, GREEN, BLUE, YELLOW
-_voiceAltColor: .byte LIGHT_RED, LIGHT_GREEN, CYAN, YELLOW
+Character: .byte 204
+PenColor: .byte GREEN
+
+_voiceColor: .byte RED, GREEN, BLUE, RED, GREEN, BLUE, YELLOW
+_voiceAltColor: .byte LIGHT_RED, LIGHT_GREEN, CYAN, LIGHT_RED, LIGHT_GREEN, CYAN, YELLOW
 _stepCounter: .byte 0
 
 Render: {
     RenderPattern(0, voice0_x, voice0_y)
     RenderPattern(1, voice1_x, voice1_y)
     RenderPattern(2, voice2_x, voice2_y)
-    RenderPattern(3, voice3_x, voice3_y)
+    
+    RenderPatternSmall(3, octave0_x, octave0_y)
+    RenderPatternSmall(4, octave1_x, octave1_y)
+    RenderPatternSmall(5, octave2_x, octave2_y)
+    
+    RenderPattern(6, chord_x, chord_y)
+    RenderPattern(7, tempo_x, tempo_y)
+    RenderPattern(8, filter_x, filter_y)
 
     rts
 }
@@ -23,13 +32,13 @@ Render: {
 .macro RenderPattern(voiceNumber, voice_x, voice_y) {
     ldx #0
     Set _stepCounter:#0
-    Set CharScreen.PenColor:#DARK_GRAY
+    Set PenColor:#DARK_GRAY
 
     lda _selectedVoice
     cmp #voiceNumber
     bne !+
         ldy #voiceNumber
-        Set CharScreen.PenColor:_voiceColor, Y
+        Set PenColor:_voiceColor, Y
     !:
 
     render_pattern:
@@ -40,7 +49,7 @@ Render: {
         asl;asl;asl;asl
         clc 
         adc _stepCounter
-        adc _voiceOffset, Y
+        adc _voiceRotation, Y
         tay
 
         lda _rhythm, Y
@@ -49,14 +58,14 @@ Render: {
         !:
 
     pattern:
-        Set CharScreen.Character:#PATTERN
+        Set Character:#PATTERN
         jmp next_step
 
     rest:
-        Set CharScreen.Character:#BLANK
+        Set Character:#BLANK
 
     next_step:
-        Call CharScreen.Plot:voice_x,X:voice_y,X
+        Plot voice_x,X:voice_y,X
         inx
         inc _stepCounter
         lda _stepCounter
@@ -70,20 +79,136 @@ Render: {
         ldy #voiceNumber
         lda _voiceOn, Y
         beq !+
-            Set CharScreen.PenColor:_voiceAltColor, Y
-            Set CharScreen.Character:#BEAT
-            Call CharScreen.Plot:voice_x,X:voice_y,X
+            Set PenColor:_voiceAltColor, Y
+            Set Character:#BEAT
+            Plot voice_x,X:voice_y,X
         !:
 }
 
-voice0_x: .byte 18,20,21,20,18,16,15,16,18,20,21,20,18,16,15,16
-voice0_y: .byte 09,10,12,14,15,14,12,10,09,10,12,14,15,14,12,10
+.macro RenderPatternSmall(voiceNumber, voice_x, voice_y) {
+    ldx #0
+    Set _stepCounter:#0
+    Set PenColor:#DARK_GRAY
 
-voice1_x: .byte 18,22,23,22,18,14,13,14,18,22,23,22,18,14,13,14
-voice1_y: .byte 07,08,12,16,17,16,12,08,07,08,12,16,17,16,12,08
+    lda _selectedVoice
+    cmp #voiceNumber
+    bne !+
+        ldy #voiceNumber
+        Set PenColor:_voiceColor, Y
+    !:
 
-voice2_x: .byte 18,24,25,24,18,12,11,12,18,24,25,24,18,12,11,12
-voice2_y: .byte 05,06,12,18,19,18,12,06,05,06,12,18,19,18,12,06
+    render_pattern:
+        ldy #voiceNumber
+        // is this step a beat?
+        lda _voiceNumberOfBeats, Y
+        // *16 so shift 4 times, each rhytmn pattern is sixteeen long 
+        asl;asl;asl;asl
+        clc 
+        adc _stepCounter
+        adc _voiceRotation, Y
+        tay
 
-voice3_x: .byte 18,26,27,26,18,10,09,10,18,26,27,26,18,10,09,10
-voice3_y: .byte 03,04,12,20,21,20,12,04,03,04,12,20,21,20,12,04
+        lda _rhythm, Y
+        bne !+
+            jmp rest
+        !:
+
+    pattern:
+        ldy _stepCounter
+        Set Character:pattern_small_char,Y
+        jmp next_step
+
+    rest:
+        ldy _stepCounter
+        Set Character:blank_small_char,Y
+
+    next_step:
+        Plot voice_x,X:voice_y,X
+        inx
+        inc _stepCounter
+        lda _stepCounter
+        cmp #steps
+        beq !+
+            jmp render_pattern
+        !:
+
+    beat:
+        ldx _stepIndex
+        ldy #voiceNumber
+        lda _voiceOn, Y
+        beq !+
+            Set PenColor:_voiceAltColor, Y
+            ldy _stepCounter
+            Set Character:beat_small_char,X
+            Plot voice_x,X:voice_y,X
+        !:
+}
+
+.pseudocommand Plot x:y {
+    .var screenLO = __tmp0 
+    .var screenHI = __tmp1
+
+    txa;pha;tya;pha
+
+    Set __tmp2:x
+    Set __tmp3:y
+    // annoyingly backwards "x is Y" due to indirect indexing below
+    ldy __tmp2
+    ldx __tmp3
+
+    clc
+    lda screenRow.lo,X  
+    sta screenLO
+
+    lda screenRow.hi,X
+    ora #$04 
+    sta screenHI
+
+    lda Character
+    sta (screenLO),Y  
+
+    // set color ram
+    lda screenRow.hi,X
+    // ora is nice then to set the memory page
+    ora #$D8 
+    sta screenHI
+
+    lda PenColor
+    sta (screenLO),Y  
+
+    pla;tay;pla;tax
+}
+
+screenRow: .lohifill 25, 40*i
+
+blank_small_char:   .byte 142,143,159,175,174,173,157,141
+pattern_small_char: .byte 190,191,207,223,222,221,205,189
+beat_small_char:    .byte 187,188,204,220,219,218,202,186
+
+voice0_x:   .byte 09,11,12,11,09,07,06,07,09,11,12,11,09,07,06,07
+voice0_y:   .byte 12,13,15,17,18,17,15,13,12,13,15,17,18,17,15,13
+
+voice1_x:   .byte 09,13,14,13,09,05,04,05,09,13,14,13,09,05,04,05
+voice1_y:   .byte 10,11,15,19,20,19,15,11,10,11,15,19,20,19,15,11
+
+voice2_x:   .byte 09,15,16,15,09,03,02,03,09,15,16,15,09,03,02,03
+voice2_y:   .byte 08,09,15,21,22,21,15,09,08,09,15,21,22,21,15,09
+
+chord_x:    .byte 33,35,36,35,33,31,30,31,33,35,36,35,33,31,30,31
+chord_y:    .byte 16,17,19,21,22,21,19,17,16,17,19,21,22,21,19,17
+
+tempo_x:    .byte 25,27,28,27,25,23,22,23,25,27,28,27,25,23,22,23
+tempo_y:    .byte 16,17,19,21,22,21,19,17,16,17,19,21,22,21,19,17
+
+filter_x:   .byte 25,27,28,27,25,23,22,23,25,27,28,27,25,23,22,23
+filter_y:   .byte 06,07,09,11,12,11,09,07,06,07,09,11,12,11,09,07
+
+octave0_x:  .byte 31,32,32,32,31,30,30,30,31,32,32,32,31,30,30,30
+octave0_y:  .byte 07,07,08,09,09,09,08,07,07,07,08,09,09,09,08,07
+
+octave1_x:  .byte 35,36,36,36,35,34,34,34,35,36,36,36,35,34,34,34
+octave1_y:  .byte 07,07,08,09,09,09,08,07,07,07,08,09,09,09,08,07
+
+octave2_x:  .byte 33,34,34,34,33,32,32,32,33,34,34,34,33,32,32,32
+octave2_y:  .byte 10,10,11,12,12,12,11,10,10,10,11,12,12,12,11,10
+
