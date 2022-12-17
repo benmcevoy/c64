@@ -7,7 +7,8 @@
 .const steps = 8
 
 // tempo in units of "frame count"
-_tempo: .byte 20
+_tempo: .byte $10
+_tempoIndicator: .byte 3
 _stepIndex: .byte 0
 _selectedVoice: .byte 0
 _transpose: .byte 4
@@ -35,12 +36,4 @@ _rhythm:
     .byte 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 
 _tempo_fill:
-    .byte 0,0,0,0,0,0,0,0
-    .byte 1,0,0,0,0,0,0,0
-    .byte 1,1,0,0,0,0,0,0
-    .byte 1,1,1,0,0,0,0,0
-    .byte 1,1,1,1,0,0,0,0
-    .byte 1,1,1,1,1,0,0,0
-    .byte 1,1,1,1,1,1,0,0
-    .byte 1,1,1,1,1,1,1,0
-    .byte 1,1,1,1,1,1,1,1
+    .byte $40,$30,$20,$18,$10,$0C,$08,$01

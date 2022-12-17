@@ -55,7 +55,8 @@
         !: 
 
     stepStart:
-        Set _frameCounter:_tempo
+        ldy _tempoIndicator
+        Set _frameCounter:_tempo_fill,Y
 
         inc _stepIndex
         lda _stepIndex

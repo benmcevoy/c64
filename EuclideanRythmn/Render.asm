@@ -2,7 +2,7 @@
 #import "_prelude.lib"
 #import "Config.asm"
 
-.const BLANK = 2
+.const BLANK = 144
 .const PATTERN = 3
 .const BEAT = 4
 
@@ -23,7 +23,7 @@ Render: {
     RenderPatternSmall(5, octave2_x, octave2_y)
     
     RenderPattern(6, chord_x, chord_y)
-    RenderTempoFill(tempo_x, tempo_y)
+    RenderTempo(tempo_x, tempo_y)
     RenderPattern(8, filter_x, filter_y)
 
     rts
@@ -85,40 +85,37 @@ Render: {
         !:
 }
 
-.macro RenderTempoFill(voice_x, voice_y) {
-    ldx #0
-    Set _stepCounter:#0
+.macro RenderTempo(voice_x, voice_y) {
+    // set pen color to unselected 
     Set PenColor:#DARK_GRAY
 
     lda _selectedVoice
     cmp #7
     bne !+
         ldy #7
+        // or selected
         Set PenColor:_voiceColor, Y
     !:
 
-    render_pattern:
-        ldy #7
-        // is this step a beat?
-        lda _voiceNumberOfBeats, Y
-        // *8 
-        asl;asl;asl
-        clc 
-        adc _stepCounter
+    ldx #0
+    Set _stepCounter:#0
+    Set Character:#145
 
-        lda _tempo_fill, Y
-        bne !+
-            jmp rest
-        !:
+    render_pattern:
+      
+       // _tempo is 0 to $ff, where 0 is FULL ON and $ff is FULL OFF
+      lda _tempoIndicator
+      cmp _stepCounter
+      bcs next_step
+
 
     pattern:
-        Set Character:#PATTERN
-        jmp next_step
-
-    rest:
         Set Character:#BLANK
+        jmp next_step
+        
 
     next_step:
+        ldy _stepCounter
         Plot voice_x,X:voice_y,X
         inx
         inc _stepCounter
@@ -241,8 +238,8 @@ voice2_y:   .byte 08,09,15,21,22,21,15,09,08,09,15,21,22,21,15,09
 chord_x:    .byte 33,35,36,35,33,31,30,31,33,35,36,35,33,31,30,31
 chord_y:    .byte 16,17,19,21,22,21,19,17,16,17,19,21,22,21,19,17
 
-tempo_x:    .byte 25,27,28,27,25,23,22,23,25,27,28,27,25,23,22,23
-tempo_y:    .byte 16,17,19,21,22,21,19,17,16,17,19,21,22,21,19,17
+tempo_x:    .byte 25,23,22,23,25,27,28,27
+tempo_y:    .byte 22,21,19,17,16,17,19,21
 
 filter_x:   .byte 25,27,28,27,25,23,22,23,25,27,28,27,25,23,22,23
 filter_y:   .byte 06,07,09,11,12,11,09,07,06,07,09,11,12,11,09,07
