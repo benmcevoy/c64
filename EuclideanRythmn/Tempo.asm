@@ -9,7 +9,7 @@
 
 .namespace Tempo {
 
-    .const readInputDelay = 4
+    .const readInputDelay = 8
     _frameCounter: .byte 1
     _readInputInterval: .byte readInputDelay
 

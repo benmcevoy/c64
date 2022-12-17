@@ -14,157 +14,385 @@
 .const UP_AND_FIRE    = %00010001
 .const DOWN_AND_FIRE    = %00010010
 
- ReadInput: {
-    // more specifc inputs first, eg.g LEFT_AND_FIRE before just LEFT
-check_voice:
-    lda _selectedVoice
-    cmp #5
+ReadInput: {
+    // hold down fire for actions
+    lda #FIRE
+    bit PORT2
     beq !+
-        bcs check_chord
+        jmp select_voice
     !:
-    CycleForVoice(_selectedVoice, _voiceRotation, 0, steps, LEFT_AND_FIRE, RIGHT_AND_FIRE)
-    ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT, LEFT)
-    jmp end
-    
-check_chord:
-    lda _selectedVoice
-    cmp #6
-    bne check_tempo
-    // fiter could be part of a chord, e.g. cMaj with a band-pass filter to emphasise a note
-    // Filter(/*filter*/)
-    Constrain(_transpose, 0, scale_length, RIGHT_AND_FIRE, LEFT_AND_FIRE)
-    Cycle(_chord, 0, chord_length, LEFT, RIGHT)    
-    jmp end
 
-check_tempo:
-    lda _selectedVoice
-    cmp #7
-    bne check_filter
-    Constrain(_tempo, 1, $ff, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+    // actions
+    check_voice:
+        lda _selectedVoice
+        cmp #5
+        beq !+
+            bcs check_chord
+        !:
+        ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT_AND_FIRE, LEFT_AND_FIRE)
+        CycleForVoice(_selectedVoice, _voiceRotation, 0, steps, UP_AND_FIRE, DOWN_AND_FIRE)
+        jmp end
+        
+    check_chord:
+        lda _selectedVoice
+        cmp #6
+        bne check_tempo
+        Cycle(_chord, 0, chord_length, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+        Constrain(_transpose, 0, scale_length, UP_AND_FIRE, DOWN_AND_FIRE)    
+        jmp end
 
-check_filter:
-    //jmp end
+    check_tempo:
+        lda _selectedVoice
+        cmp #7
+        bne check_filter
+        Constrain(_tempo, 1, $ff, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+        jmp end
 
-    
+    check_filter:
+        //jmp end
 
-end:
-    /*all-voices*/
-    Cycle(_selectedVoice, 0, 8, UP, DOWN)
+    // selection
+    select_voice:
+        /*all-voices*/
+        SelectVoiceUpDown()
+    end:
 }
-exit:rts
+_exit:rts
 
-    .macro Constrain(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
-        lda #decreaseAction
+.macro SelectVoiceUpDown() {
+    check_down:
+        lda #DOWN
         bit PORT2
-        bne !++
-            lda operand
-            cmp #lowerlimit
-            beq !+
-                dec operand
-            !:
-            jmp exit
+        beq !+
+            jmp check_up
         !:
 
-        lda #increaseAction
-        bit PORT2
-        bne !++
-            lda operand
-            cmp #upperlimit
-            beq !+
-                inc operand
-            !:
-            jmp exit
-        !:
-    }
-
-    .macro Cycle(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
-        // change chord shape
-        lda #decreaseAction
-        bit PORT2
-        bne !++
-            lda operand
-            cmp #lowerlimit
-            beq !+
-                dec operand
-                jmp exit
-            !:
-            Set operand:#upperlimit
-            jmp exit
+        lda _selectedVoice
+        cmp #0
+        bne !+
+            jmp _exit
         !:
 
-        lda #increaseAction
-        bit PORT2
-        bne !++
-            lda operand
-            cmp #upperlimit
-            beq !+
-                inc operand
-                jmp exit
-            !:
-            Set operand:#lowerlimit
-            jmp exit
-        !:
-    }
-
-    .macro CycleForVoice(voice, operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
-        //offset or rotation
-        lda #decreaseAction
-        bit PORT2
-        bne !++
-            lda voice
-            tax
-            lda operand, X
-            cmp #lowerlimit
-            beq !+
-                dec operand, X
-                jmp exit
-            !:
-            lda #upperlimit
-            sta operand, X
-            jmp exit
+        lda _selectedVoice
+        cmp #1
+        bne !+
+            Set _selectedVoice:#0
+            jmp _exit
         !:
 
-        lda #increaseAction
-        bit PORT2
-        bne !++
-            lda voice
-            tax
-            lda operand, X
-            cmp #upperlimit
-            beq !+
-                inc operand, X
-                jmp exit
-            !:
-            lda #lowerlimit
-            sta operand, X
-            jmp exit
-        !:
-     }
-
-    .macro ConstrainForVoice(voice, operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
-        lda #decreaseAction
-        bit PORT2
-        bne !++
-            lda voice
-            tax
-            lda operand, X
-            cmp #lowerlimit
-            beq !+
-                dec operand, X
-            !:
-            jmp exit
+        lda _selectedVoice
+        cmp #2
+        bne !+
+            Set _selectedVoice:#1
+            jmp _exit
         !:
 
-        lda #increaseAction
+        lda _selectedVoice
+        cmp #3
+        bne !+
+            Set _selectedVoice:#5
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #4
+        bne !+
+            Set _selectedVoice:#5
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #5
+        bne !+
+            Set _selectedVoice:#6
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #8
+        bne !+
+            Set _selectedVoice:#7
+            jmp _exit
+        !:
+
+    check_up:
+        lda #UP
         bit PORT2
-        bne !++
-            lda voice
-            tax
-            lda operand, X
-            cmp #upperlimit
-            beq !+
-                inc operand, X
-            !:
-            jmp exit
+        beq !+
+            jmp check_left
+        !:
+
+        lda _selectedVoice
+        cmp #0
+        bne !+
+            Set _selectedVoice:#1
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #1
+        bne !+
+            Set _selectedVoice:#2
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #2
+        bne !+
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #5
+        bne !+
+            Set _selectedVoice:#4
+            jmp _exit
+        !:  
+
+        lda _selectedVoice
+        cmp #6
+        bne !+
+            Set _selectedVoice:#5
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #7
+        bne !+
+            Set _selectedVoice:#8
+            jmp _exit
+        !:
+
+    check_left:
+        lda #LEFT
+        bit PORT2
+        beq !+
+            jmp check_right
+        !:
+
+        lda _selectedVoice
+        cmp #0
+        bne !+
+            Set _selectedVoice:#1
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #1
+        bne !+
+            Set _selectedVoice:#2
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #2
+        bne !+
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #3
+        bne !+
+            Set _selectedVoice:#8
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #4
+        bne !+
+            Set _selectedVoice:#3
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #5
+        bne !+
+            Set _selectedVoice:#3
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #8
+        bne !+
+            Set _selectedVoice:#2
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #6
+        bne !+
+            Set _selectedVoice:#7
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #7
+        bne !+
+            Set _selectedVoice:#2
+            jmp _exit
+        !:
+
+    check_right:
+        lda #RIGHT
+        bit PORT2
+        beq !+
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #0
+        bne !+
+            Set _selectedVoice:#1
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #1
+        bne !+
+            Set _selectedVoice:#2
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #2
+        bne !+
+            Set _selectedVoice:#8
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #8
+        bne !+
+            Set _selectedVoice:#3
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #3
+        bne !+
+            Set _selectedVoice:#4
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #7
+        bne !+
+            Set _selectedVoice:#6
+            jmp _exit
         !:        
-    }
+
+}
+
+.macro Constrain(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
+    lda #decreaseAction
+    bit PORT2
+    bne !++
+        lda operand
+        cmp #lowerlimit
+        beq !+
+            dec operand
+        !:
+        jmp _exit
+    !:
+
+    lda #increaseAction
+    bit PORT2
+    bne !++
+        lda operand
+        cmp #upperlimit
+        beq !+
+            inc operand
+        !:
+        jmp _exit
+    !:
+}
+
+.macro Cycle(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
+    lda #decreaseAction
+    bit PORT2
+    bne !++
+        lda operand
+        cmp #lowerlimit
+        beq !+
+            dec operand
+            jmp _exit
+        !:
+        Set operand:#upperlimit
+        jmp _exit
+    !:
+
+    lda #increaseAction
+    bit PORT2
+    bne !++
+        lda operand
+        cmp #upperlimit
+        beq !+
+            inc operand
+            jmp _exit
+        !:
+        Set operand:#lowerlimit
+        jmp _exit
+    !:
+}
+
+.macro CycleForVoice(voice, operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
+    lda #decreaseAction
+    bit PORT2
+    bne !++
+        lda voice
+        tax
+        lda operand, X
+        cmp #lowerlimit
+        beq !+
+            dec operand, X
+            jmp _exit
+        !:
+        lda #upperlimit
+        sta operand, X
+        jmp _exit
+    !:
+
+    lda #increaseAction
+    bit PORT2
+    bne !++
+        lda voice
+        tax
+        lda operand, X
+        cmp #upperlimit
+        beq !+
+            inc operand, X
+            jmp _exit
+        !:
+        lda #lowerlimit
+        sta operand, X
+        jmp _exit
+    !:
+}
+
+.macro ConstrainForVoice(voice, operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
+    lda #decreaseAction
+    bit PORT2
+    bne !++
+        lda voice
+        tax
+        lda operand, X
+        cmp #lowerlimit
+        beq !+
+            dec operand, X
+        !:
+        jmp _exit
+    !:
+
+    lda #increaseAction
+    bit PORT2
+    bne !++
+        lda voice
+        tax
+        lda operand, X
+        cmp #upperlimit
+        beq !+
+            inc operand, X
+        !:
+        jmp _exit
+    !:        
+}

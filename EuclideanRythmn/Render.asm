@@ -23,7 +23,7 @@ Render: {
     RenderPatternSmall(5, octave2_x, octave2_y)
     
     RenderPattern(6, chord_x, chord_y)
-    RenderPattern(7, tempo_x, tempo_y)
+    RenderTempoFill(tempo_x, tempo_y)
     RenderPattern(8, filter_x, filter_y)
 
     rts
@@ -82,6 +82,50 @@ Render: {
             Set PenColor:_voiceAltColor, Y
             Set Character:#BEAT
             Plot voice_x,X:voice_y,X
+        !:
+}
+
+.macro RenderTempoFill(voice_x, voice_y) {
+    ldx #0
+    Set _stepCounter:#0
+    Set PenColor:#DARK_GRAY
+
+    lda _selectedVoice
+    cmp #7
+    bne !+
+        ldy #7
+        Set PenColor:_voiceColor, Y
+    !:
+
+    render_pattern:
+        ldy #7
+        // is this step a beat?
+        lda _voiceNumberOfBeats, Y
+        // *8 
+        asl;asl;asl
+        clc 
+        adc _stepCounter
+
+        lda _tempo_fill, Y
+        bne !+
+            jmp rest
+        !:
+
+    pattern:
+        Set Character:#PATTERN
+        jmp next_step
+
+    rest:
+        Set Character:#BLANK
+
+    next_step:
+        Plot voice_x,X:voice_y,X
+        inx
+        inc _stepCounter
+        lda _stepCounter
+        cmp #steps
+        beq !+
+            jmp render_pattern
         !:
 }
 
@@ -182,8 +226,8 @@ Render: {
 screenRow: .lohifill 25, 40*i
 
 blank_small_char:   .byte 142,143,159,175,174,173,157,141
-pattern_small_char: .byte 190,191,207,223,222,221,205,189
-beat_small_char:    .byte 187,188,204,220,219,218,202,186
+pattern_small_char: .byte 187,188,204,220,219,218,202,186
+beat_small_char:    .byte 190,191,207,223,222,221,205,189
 
 voice0_x:   .byte 09,11,12,11,09,07,06,07,09,11,12,11,09,07,06,07
 voice0_y:   .byte 12,13,15,17,18,17,15,13,12,13,15,17,18,17,15,13
