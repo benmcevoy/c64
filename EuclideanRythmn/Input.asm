@@ -49,7 +49,12 @@ ReadInput: {
         jmp end
 
     check_filter:
-        //jmp end
+        lda _selectedVoice
+        cmp #8
+        bne select_voice
+        ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT_AND_FIRE, LEFT_AND_FIRE)
+        CycleForVoice(_selectedVoice, _voiceRotation, 0, steps, UP_AND_FIRE, DOWN_AND_FIRE)
+        jmp end
 
     // selection
     select_voice:
