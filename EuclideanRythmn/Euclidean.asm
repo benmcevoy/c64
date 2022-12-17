@@ -1,7 +1,7 @@
 BasicUpstart2(Start)
 
 #import "_prelude.lib"
-#import "char/chars.asm"
+#import "char/charset.asm"
 #import "char/screen.asm"
 #import "Tempo.asm"
 

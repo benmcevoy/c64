@@ -95,7 +95,7 @@
         lda _chord
         sta _voiceRotation, Y
 
-        SetChord(chords, _chord, _transpose, scale_phrygian_dominant)
+        SetChord(chords, _chord, _transpose, scale_harmonic_major)
     }
 
     .macro TriggerBeat(voiceNumber, waveform) {

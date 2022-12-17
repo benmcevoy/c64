@@ -2,7 +2,8 @@
 #import "_prelude.lib"
 #import "Config.asm"
 
-.const BLANK = 144
+.const BLANK = 2
+.const BLANK_SMALL = 144
 .const PATTERN = 3
 .const BEAT = 4
 
@@ -14,22 +15,22 @@ _voiceAltColor: .byte LIGHT_RED, LIGHT_GREEN, CYAN, LIGHT_RED, LIGHT_GREEN, CYAN
 _stepCounter: .byte 0
 
 Render: {
-    RenderPattern(0, voice0_x, voice0_y)
-    RenderPattern(1, voice1_x, voice1_y)
-    RenderPattern(2, voice2_x, voice2_y)
+    RenderPattern(0, voice0_x, voice0_y, BLANK)
+    RenderPattern(1, voice1_x, voice1_y, BLANK)
+    RenderPattern(2, voice2_x, voice2_y, BLANK)
     
     RenderPatternSmall(3, octave0_x, octave0_y)
     RenderPatternSmall(4, octave1_x, octave1_y)
     RenderPatternSmall(5, octave2_x, octave2_y)
     
-    RenderPattern(6, chord_x, chord_y)
+    RenderPattern(6, chord_x, chord_y, BLANK_SMALL)
     RenderTempo(tempo_x, tempo_y)
-    RenderPattern(8, filter_x, filter_y)
+    RenderPattern(8, filter_x, filter_y, BLANK_SMALL)
 
     rts
 }
 
-.macro RenderPattern(voiceNumber, voice_x, voice_y) {
+.macro RenderPattern(voiceNumber, voice_x, voice_y, blank) {
     ldx #0
     Set _stepCounter:#0
     Set PenColor:#DARK_GRAY
@@ -62,7 +63,7 @@ Render: {
         jmp next_step
 
     rest:
-        Set Character:#BLANK
+        Set Character:#blank
 
     next_step:
         Plot voice_x,X:voice_y,X
@@ -110,7 +111,7 @@ Render: {
 
 
     pattern:
-        Set Character:#BLANK
+        Set Character:#BLANK_SMALL
         jmp next_step
         
 
