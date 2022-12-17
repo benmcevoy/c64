@@ -79,15 +79,45 @@
         TriggerBeat(1, Square)
         TriggerBeat(2, Square)
 
-        // filter
-        ldx _filterIndex
-        lda _filter, X
-        sta SID_MIX_FILTER_CUT_OFF_HI
-        inc _filterIndex
+        TriggerFilter(8)
     nextFrame:
         // end irq
         pla;tay;pla;tax;pla
         rti          
+    }
+
+    .macro TriggerFilter(voiceNumber) {
+        ldy #voiceNumber
+        lda #0
+        sta _voiceOn,Y
+        
+        lda #4
+        sta SID_MIX_FILTER_CUT_OFF_HI
+
+        lda _voiceNumberOfBeats, Y
+        // *16 so shift 4 times
+        asl;asl;asl;asl
+        clc 
+        adc _stepIndex
+        adc _voiceRotation, Y
+        tax
+
+        lda _rhythm, X
+        // if 0 then REST
+        beq !+
+            // trigger on
+
+            // filter
+            lda #12
+            sta SID_MIX_FILTER_CUT_OFF_HI
+
+            
+            lda #1
+            ldy #voiceNumber
+            sta _voiceOn, Y
+        !:
+
+        
     }
     
     .macro TriggerChord() {
