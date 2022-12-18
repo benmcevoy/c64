@@ -2,6 +2,9 @@
 #import "_prelude.lib"
 #import "Config.asm"
 
+// turn on
+//#define MIDI
+
 // SEQUENTIAL CIRCUITS INC.
 // Mode 	1 MHZ IRQ 	
 // Control Register 	$DE00 	Write only
@@ -14,6 +17,7 @@
 
 // https://www.codebase64.org/doku.php?id=base:c64_midi_interfaces
 
+#if MIDI
 .label MidiControl = $DE00
 .label MidiStatus = $DE02
 .label MidiTransmit = $DE01
@@ -74,3 +78,4 @@ InitMidi: {
     
     rts
 }
+#endif

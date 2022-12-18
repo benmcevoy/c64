@@ -35,7 +35,6 @@
     bit __overflowSet
 }
 
-
 /* @Command Negate the operand two's complement value in place. op is updated with the negated value. */
 .pseudocommand Negate op {
     .errorif op.getType() == AT_IMMEDIATE, "op must not be IMMEDIATE."

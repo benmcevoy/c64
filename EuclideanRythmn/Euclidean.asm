@@ -4,6 +4,7 @@ BasicUpstart2(Start)
 #import "char/charset.asm"
 #import "char/screen.asm"
 #import "Tempo.asm"
+#import "Midi.asm"
 
 Start: {
     // initialise
@@ -19,7 +20,10 @@ Start: {
 
     // turning on midi seems to screw up IRQ
     // TODO: read the documentation :)
-    // jsr InitMidi
+#if MIDI    
+    jsr InitMidi
+#endif 
+
 
     // Raster IRQ
     sei

@@ -9,7 +9,7 @@
 
 .namespace Tempo {
 
-    .const readInputDelay = 8
+    .const readInputDelay = 6
     _frameCounter: .byte 1
     _readInputInterval: .byte readInputDelay
 
@@ -25,7 +25,7 @@
         Set SID_V3_ATTACK_DECAY:#$09
 
         SetPulseWidth(0, $08, $04)
-        SetPulseWidth(1, $06, $06)
+        SetPulseWidth(1, $09, $06)
         SetPulseWidth(2, $8A, $06)
 
         rts
@@ -64,20 +64,23 @@
         bne !+
             Set _stepIndex:#0
         !:
-
+    #if MIDI
         TriggerMidiOff(0)
         TriggerMidiOff(1)
         TriggerMidiOff(2)
-        
+        TriggerMidiOff(3)
+        TriggerMidiOff(4)
+        TriggerMidiOff(5)
+    #endif    
         TriggerChord()
 
         TriggerOctave(3)
         TriggerOctave(4)
         TriggerOctave(5)
 
-        TriggerBeat(0, Square)
-        TriggerBeat(1, Square)
-        TriggerBeat(2, Square)
+        TriggerBeat(0, Saw)
+        TriggerBeat(1, Saw)
+        TriggerBeat(2, Saw)
 
         TriggerFilter(8)
     nextFrame:
@@ -87,11 +90,14 @@
     }
 
     .macro TriggerFilter(voiceNumber) {
+        .const FILTER_LOW = 8
+        .const FILTER_HIGH = 16
+
         ldy #voiceNumber
         lda #0
         sta _voiceOn,Y
         
-        lda #4
+        lda #FILTER_LOW
         sta SID_MIX_FILTER_CUT_OFF_HI
 
         lda _voiceNumberOfBeats, Y
@@ -106,18 +112,14 @@
         // if 0 then REST
         beq !+
             // trigger on
-
             // filter
-            lda #12
+            lda #FILTER_HIGH
             sta SID_MIX_FILTER_CUT_OFF_HI
-
-            
+           
             lda #1
             ldy #voiceNumber
             sta _voiceOn, Y
         !:
-
-        
     }
     
     .macro TriggerChord() {
@@ -125,7 +127,7 @@
         lda _chord
         sta _voiceRotation, Y
 
-        SetChord(chords, _chord, _transpose, scale_harmonic_major)
+        SetChord(chords, _chord, _transpose, scale_aeolian)
     }
 
     .macro TriggerBeat(voiceNumber, waveform) {
@@ -153,7 +155,9 @@
             sta SID_V1_FREQ_LO+voiceNumber*7
 
             SetWaveForm(voiceNumber, waveform)
+        #if MIDI
             TriggerMidiOn(voiceNumber)
+        #endif
             
             lda #1
             ldy #voiceNumber
@@ -186,33 +190,16 @@
             
             lda _voiceNoteNumber, Y
             clc; adc #12
+   
+        #if MIDI
+            ldy #voiceNumber
             sta _voiceNoteNumber, Y
+            TriggerMidiOn(voiceNumber)
+        #else
+            sta _voiceNoteNumber, Y
+        #endif
+        
         !:
     }
-
-    _filterIndex: .byte 0
-    _filter: 
-        // round(resolution + dcOffset + resolution * sin(toradians(i * 360 * f / resolution )))
-        // e.g. fill sine wave offset 16 with 4 bit resolution
-        .var speed = 1; .var low = 1; .var high = 8
-
-        .fill 16,round(high+low+high*sin(toRadians(i*360*(speed+0)/high)))
-        .fill 16,round(high+low+high*sin(toRadians(i*360*(speed+0)/high)))
-
-        .eval high = 12
-        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
-        
-        .eval high = 8
-        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
-        
-        .eval high = 12
-        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+8)/high)))
-
-        .eval high = 8
-        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+4)/high)))
-        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+8)/high)))
-        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
-        .fill 32,round(high+low+high*sin(toRadians(i*360*(speed+2)/high)))
-        .byte $ff
 }
 

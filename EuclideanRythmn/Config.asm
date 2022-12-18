@@ -11,7 +11,7 @@ _tempo: .byte $10
 _tempoIndicator: .byte 3
 _stepIndex: .byte 0
 _selectedVoice: .byte 0
-_transpose: .byte 4
+_transpose: .byte 3
 _chord: .byte 0
 
 // v6 (chord) must be 1.  voices are a bad name :) v0, v1, v2,  octave0, octave1, octave2, chord, tempo, filter

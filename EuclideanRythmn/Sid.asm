@@ -64,7 +64,7 @@ freq_lsb:
 .byte $da,$76,$39,$26,$40,$89,$04,$b4,$9c,$c0,$23,$c8,$b4,$eb,$72,$4c
 .byte $80,$12,$08,$68,$39,$80,$45,$90,$68,$d6,$e3,$99,$00,$24,$10
 
-chords: GalaticCoreChords()
+chords: GalaticCore()
 
 .macro HouseProgression() { 
     // house progression
@@ -78,7 +78,7 @@ chords: GalaticCoreChords()
     chord_B1: .byte B2, Eb2, Gb2
 }
 
-.macro CircleOfFifthsChords() {
+.macro CircleOfFifths() {
     // circle of fifths
     // C F B0 Em Am Dm G C
     chord_C: .byte C2, E2, G2
@@ -91,18 +91,54 @@ chords: GalaticCoreChords()
     chord_C2: .byte C3, E2, G2
 }
 
-.macro GalaticCoreChords() {
+.macro GalaticCore() {
     // "galatic core"
     // C, Am, F, Dm, G, Em, Bdim, C
     // Bdim is B D F#
+    // https://www.youtube.com/watch?v=wtkYFQi8GpM 
+    chord_C2: .byte C2, E2, G2
+    chord_Am: .byte A2, C3, E3
+    chord_F: .byte F1, A3, C3
+    chord_Dm: .byte D2, F2, A3
+    chord_B0: .byte B2, D2, F2
+    chord_G: .byte G1, B2, D2
+    chord_Em: .byte E2, G2, B3
+    chord_B01: .byte B2, D2, F2
+    chord_F1: .byte F1, A3, C3
+}
+
+.macro DropDGuitar() {
+    .byte D3,Gb3,A4
+    .byte E3,G3,B3
+    .byte Gb3,A4,Db4
+    .byte D3,G3,A4
+    .byte D3,A4,A4
+    .byte D3,B4,A4
+    .byte D3,Gb3,B3
+    .byte D3,Gb3,B3    
+}
+
+.macro Hallelujah() {
     chord_C2: .byte C2, E2, G2
     chord_Am: .byte A2, C3, E3
     chord_F: .byte F2, A2, C3
-    chord_Dm: .byte D2, F2, A3
     chord_G: .byte G2, B3, D2
-    chord_Em: .byte E2, G2, B3
-    chord_B0: .byte B3, D2, F2
-    chord_C3: .byte C3, E2, G2
+    chord_C21: .byte C2, E2, G2
+    chord_F2: .byte F2, A2, C3
+    chord_E7: .byte B2, D3, Ab4
+    chord_Am2: .byte A2, C3, E3
+}
+
+.macro BornSlippy() {
+    chord_CG2: .byte E2, G2, C3
+    chord_EfSus4: .byte D2, A3, B3
+    chord_Em: .byte E2, B3, E3
+    chord_C2: .byte C2, E2, G2
+    // repeat
+    .byte E2, G2, C3
+    .byte D2, A3, B3
+    .byte E2, B3, E3
+    .byte C2, E2, G2
 }
 
 .macro MinorChords() {
@@ -173,19 +209,18 @@ scale_phrygian_dominant: .byte 0,1,4,5,7,8,10,12
 
     lda chord, Y
     Scale(transpose, scale)
-    ldy #0
-    sta _voiceNoteNumber, Y
+    ldx #0
+    sta _voiceNoteNumber, X
     
+    iny
+    lda chord, Y
+    Scale(transpose, scale)
+    ldx #1
+    sta _voiceNoteNumber, X
 
     iny
     lda chord, Y
     Scale(transpose, scale)
-    ldy #1
-    sta _voiceNoteNumber, Y
-
-    iny
-    lda chord, Y
-    Scale(transpose, scale)
-    ldy #2
-    sta _voiceNoteNumber, Y
+    ldx #2
+    sta _voiceNoteNumber, X
 }

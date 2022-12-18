@@ -46,6 +46,7 @@ ReadInput: {
         cmp #7
         bne check_filter
         Constrain(_tempoIndicator, 0, 7, RIGHT_AND_FIRE, LEFT_AND_FIRE)
+        Constrain(_tempoIndicator, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)
         jmp end
 
     check_filter:
