@@ -24,7 +24,6 @@ Start: {
     jsr InitMidi
 #endif 
 
-
     // Raster IRQ
     sei
         // disable cia timers
