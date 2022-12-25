@@ -176,6 +176,8 @@ scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
 scale_phrygian: .byte 0,1,3,5,7,8,10,12
 scale_phrygian_dominant: .byte 0,1,4,5,7,8,10,12
 
+scale_circle_harmonic_major: .byte 0,5,11,2,7,12,4,8
+
 .const Noise = %10000001
 .const Square = %01000001
 .const Saw = %00100001

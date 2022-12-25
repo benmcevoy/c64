@@ -12,6 +12,7 @@
     .const readInputDelay = 6
     _frameCounter: .byte 1
     _readInputInterval: .byte readInputDelay
+    _index: .byte 0
 
     Init: {
         // init SID
@@ -127,7 +128,17 @@
         lda _chord
         sta _voiceRotation, Y
 
-        SetChord(chords, _chord, _transpose, scale_aeolian)
+        // i was thinking about reading the chord then setting some v0-2 reference notes
+        // then calculating octave from the reference
+        // also - scale, use the step index to index into the scale and add that as the transpose
+        // so rather than transposing, that action cycles throgh scales?
+        // the chord sets the reference
+
+        // or use the scale to add variety to the octave, not an 12 step transpose but
+        // a scale transpose , e.g. the step with the beat provides the index into the scale.
+        // scale could be constrained to a triad or e.g. 0,7,12 
+        // more arp like
+        SetChord(chords, _chord, _transpose, scale_circle_harmonic_major)
     }
 
     .macro TriggerBeat(voiceNumber, waveform) {

@@ -23,6 +23,8 @@
 .label MidiTransmit = $DE01
 .const Velocity = 100
 
+_index: .byte 0
+
 .macro TriggerMidiOff(voiceNumber) {
     // $8n is note off, channel n
     lda #$80
@@ -37,7 +39,7 @@
     tax
     jsr TransmitMidi
     
-    ldx #Velocity
+    ldx #0
     jsr TransmitMidi
 }
 
@@ -55,7 +57,11 @@
     tax
     jsr TransmitMidi
 
-    ldx #Velocity
+    inc _index
+    ldx _index
+    lda _random20,X
+    clc; adc #Velocity
+    tax
     jsr TransmitMidi
 }
 
