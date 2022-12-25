@@ -46,12 +46,12 @@
         sta    $d019
 
         dec _frameCounter
-        bne nextFrame
+        beq !+
+            jmp nextFrame
+        !:
 
+    nextStep:
         MCopy _frameInterval:_frameCounter
-
-        lda _voiceIndex
-        tay
 
         ldx _stepIndex
         lda _sequence, X
@@ -62,25 +62,16 @@
         // set tone
         tax
         lda     freq_msb,x
-        sta     SID_V1_FREQ_HI, Y  
+        sta     SID_V1_FREQ_HI
         lda     freq_lsb,x
-        sta     SID_V1_FREQ_LO, Y
+        sta     SID_V1_FREQ_LO
 
         // trigger on
         lda  #%00010000
-        sta SID_V1_CONTROL, Y
+        sta SID_V1_CONTROL
         lda  #%00010001
-        sta SID_V1_CONTROL, Y
+        sta SID_V1_CONTROL
         
-        // round robin voice
-        lda _voiceIndex
-        clc; adc #7
-        sta _voiceIndex
-        cmp #21
-        bne !+
-            Set _voiceIndex:#0
-        !:
-
         inc _stepIndex
         lda _stepIndex
         cmp _steps
@@ -89,7 +80,6 @@
         !:
 
     nextFrame:
-        
         // end irq
         pla;tay;pla;tax;pla
         rti          
@@ -98,15 +88,9 @@
     _frameCounter: .byte 1
     _frameInterval: .byte 10
 
-    _voiceIndex: .byte 0
     _steps: .byte 8
     _stepIndex: .byte 0
     
-    _sequence: .byte C2, C3, Eb2, Eb3, F3, F2, G3, G2,     C2, C3, E2, E3, F3, F2, G3, G2
-    //_sequence: .byte E2, G2, A3, G2, D3, C3, D3, E3
-    //_sequence: .byte E2,E3,E2,REST,D3,E2,REST,G3
-    //_sequence: .byte C2,E2,G2,E2,F2,G2,E2,G2
-    //_sequence: .byte        B2,E2,G2,E2,F2,G2,E2,G2,A2,E2,G2,E2,F2,G2,E2,G2
+    _sequence: .byte C2, C3, Eb2, Eb3, F3, F2, G3, G2
 }
-
     
