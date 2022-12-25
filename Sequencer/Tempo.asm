@@ -5,60 +5,6 @@
 
 .namespace Tempo {
 
-    ReadInput: {
-        .const PORT2 = $dc00
-        .const UP      = %00000001
-        .const DOWN    = %00000010
-        .const LEFT    = %00000100
-        .const RIGHT   = %00001000
-        .const FIRE    = %00010000        
-
-        // left
-        lda #LEFT
-        bit PORT2
-        bne !++
-            lda _frameInterval
-            cmp #1
-            beq !+
-                dec _frameInterval
-            !:
-        !:
-
-        lda #RIGHT
-        bit PORT2
-        bne !++
-            lda _frameInterval
-            cmp #$ff
-            beq !+
-                inc _frameInterval
-            !:
-        !:
-
-        lda #UP
-        bit PORT2
-        bne !++
-            lda _scaleIndex
-            cmp #7
-            beq !+
-                inc _scaleIndex
-            !:
-        !:
-
-        lda #DOWN
-        bit PORT2
-        bne !++
-            lda _scaleIndex
-            cmp #0
-            beq !+
-                dec _scaleIndex
-            !:
-        !:
-
-       
-
-        rts
-    }
-
     Init: {
         // set raster irq line number
         lda    #0
@@ -104,9 +50,6 @@
 
         MCopy _frameInterval:_frameCounter
 
-        inc $d020
-        inc $d021
-
         lda _voiceIndex
         tay
 
@@ -115,14 +58,6 @@
 
         // skip REST
         beq !+
-
-        sta __tmp0
-
-        ldx _scaleIndex
-        lda _scale, X
-
-        clc
-        adc __tmp0
 
         // set tone
         tax
@@ -137,6 +72,7 @@
         lda  #%00010001
         sta SID_V1_CONTROL, Y
         
+        // round robin voice
         lda _voiceIndex
         clc; adc #7
         sta _voiceIndex
@@ -153,11 +89,7 @@
         !:
 
     nextFrame:
-        dec _readInputInterval
-        bne !+
-            jsr ReadInput
-            Set _readInputInterval:#15
-        !:
+        
         // end irq
         pla;tay;pla;tax;pla
         rti          
@@ -165,15 +97,11 @@
 
     _frameCounter: .byte 1
     _frameInterval: .byte 10
-    _readInputInterval: .byte 4
 
     _voiceIndex: .byte 0
     _steps: .byte 8
     _stepIndex: .byte 0
-    _scaleIndex: .byte 0
     
-    _scale: .byte 12,5,10,11,12,5,10,11
-
     _sequence: .byte C2, C3, Eb2, Eb3, F3, F2, G3, G2,     C2, C3, E2, E3, F3, F2, G3, G2
     //_sequence: .byte E2, G2, A3, G2, D3, C3, D3, E3
     //_sequence: .byte E2,E3,E2,REST,D3,E2,REST,G3
