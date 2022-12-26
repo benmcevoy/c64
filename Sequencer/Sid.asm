@@ -11,7 +11,6 @@
 /* MSB Noise, Square, Saw, Triangle, Disable/Reset, Ring, Sync, Trigger LSB  */
 .const SID_V1_CONTROL = SID_BASE + 4
 
-
 .const SID_V2_FREQ_LO = SID_BASE + 7 + 0
 .const SID_V2_FREQ_HI = SID_BASE + 7 + 1
 .const SID_V2_PW_LO = SID_BASE + 7 + 2
@@ -38,18 +37,18 @@
 /* MSB v3 disable, High pass filter, band pass filter, low pass filter, volume3, volume2, volume1, volume0 LSB */
 .const SID_MIX_VOLUME = SID_BASE + 21 + 3
 
-
 .const REST = 0;
-.const E0 = $14;    .const F0 = $15;    .const Gb0 = $16;    .const G0 = $17;    .const A1 = $18;     .const Ab1 = $19;     .const Bb1 = $1a;   .const B1 = $1b;     .const C1 = $1c;    .const Db1 = $1d;   .const D1 = $1e;     .const Eb1 = $1f
-.const E1 = $20;    .const F1 = $21;    .const Gb1 = $22;    .const G1 = $23;    .const Ab2 = $24;    .const A2 = $25;    .const Bb2 = $26;    .const B2 = $27;    .const C2 = $28;    .const Db2 = $29;    .const D2 = $2a;    .const Eb2 = $2b;
-.const E2 = $2c;    .const F2 = $2d;    .const Gb2 = $2e;    .const G2 = $2f;    .const Ab3 = $30;    .const A3 = $31;    .const Bb3 = $32;    .const B3 = $33;    .const C3 = $34;    .const Db3 = $35;    .const D3 = $36;    .const Eb3 = $37
-.const E3 = $38;    .const F3 = $39;    .const Gb3 = $3a;    .const G3 = $3b;    .const Ab4 = $3c;    .const A4 = $3d;    .const Bb4 = $3e;    .const B4 = $3f;    .const C4 = $40;    .const Db4 = $41;    .const D4 = $42;;    .const Eb4 = $43
-.const E4 = $44;    .const F4 = $45;    .const Gb4 = $46;    .const G4 = $47;    .const Ab5 = $48;    .const A5 = $49;    .const Bb5 = $4a;    .const B5 = $4b;    .const C5 = $4c;    .const Db5 = $4d;    .const D5 = $4e;    .const Eb5 = $4f
-.const E5 = $50;    .const F5 = $51;    .const Gb5 = $52;    .const G5 = $53;    .const Ab6 = $54;    .const A6 = $55;    .const Bb6 = $56;    .const B6 = $57;    .const C6 = $58;    .const Db6 = $59;    .const D6 = $5a;    .const Eb6 = $5b
-.const E6 = $5c;
-
+// note number match MIDI note numbers
+.const E0 = $1c;    .const F0 = $1d;    .const Gb0 = $1e;    .const G0 = $1f;    .const Ab1 = $20;    .const A1 = $21;    .const Bb1 = $22;    .const B1 = $23;    .const C1 = $24;    .const Db1 = $25;    .const D1 = $26;    .const Eb1 = $27
+.const E1 = $28;    .const F1 = $29;    .const Gb1 = $2a;    .const G1 = $2b;    .const Ab2 = $2c;    .const A2 = $2d;    .const Bb2 = $2e;    .const B2 = $2f;    .const C2 = $30;    .const Db2 = $31;    .const D2 = $32;    .const Eb2 = $33
+.const E2 = $34;    .const F2 = $35;    .const Gb2 = $36;    .const G2 = $37;    .const Ab3 = $38;    .const A3 = $39;    .const Bb3 = $3a;    .const B3 = $3b;    .const C3 = $3c;    .const Db3 = $3d;    .const D3 = $3e;    .const Eb3 = $3f
+.const E3 = $40;    .const F3 = $41;    .const Gb3 = $42;    .const G3 = $43;    .const Ab4 = $44;    .const A4 = $45;    .const Bb4 = $46;    .const B4 = $47;    .const C4 = $48;    .const Db4 = $49;    .const D4 = $4a;    .const Eb4 = $4b
+.const E4 = $4c;    .const F4 = $4d;    .const Gb4 = $4e;    .const G4 = $4f;    .const Ab5 = $50;    .const A5 = $51;    .const Bb5 = $52;    .const B5 = $53;    .const C5 = $54;    .const Db5 = $55;    .const D5 = $56;    .const Eb5 = $57
+.const E5 = $58;    .const F5 = $59;    .const Gb5 = $5a;    .const G5 = $5b;    .const Ab6 = $5c;    .const A6 = $5d;    .const Bb6 = $5e;    .const B6 = $5f;    .const C6 = $60;    .const Db6 = $61;    .const D6 = $62;    .const Eb6 = $63
+.const E6 = $64;
 
 freq_msb:
+.byte $00,$00,$00,$00,$00,$00,$00,$00
 .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$01
 .byte $01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$02,$02,$02,$02,$02
 .byte $02,$02,$03,$03,$03,$03,$03,$04,$04,$04,$04,$05,$05,$05,$06,$06
@@ -58,6 +57,7 @@ freq_msb:
 .byte $2b,$2e,$31,$34,$37,$3a,$3e,$41,$45,$49,$4e,$52,$57,$5c,$62,$68
 
 freq_lsb:
+.byte $00,$00,$00,$00,$00,$00,$00,$00
 .byte $6e,$75,$7c,$83,$8b,$93,$9c,$a5,$af,$b9,$c4,$d0,$dd,$ea,$f8,$07
 .byte $16,$27,$39,$4b,$5f,$74,$8a,$a1,$ba,$d4,$f0,$0e,$2d,$4e,$71,$96
 .byte $be,$e7,$14,$42,$74,$a9,$e0,$1b,$5a,$9c,$e2,$2d,$7b,$cf,$27,$85

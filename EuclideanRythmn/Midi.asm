@@ -34,8 +34,6 @@ _index: .byte 0
     
     ldy #voiceNumber
     lda _voiceNoteNumber, Y
-    // my note numbers are not midi note number, add 8 to line them up
-    clc; adc #8
     tax
     jsr TransmitMidi
     

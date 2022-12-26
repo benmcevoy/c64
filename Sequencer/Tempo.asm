@@ -1,7 +1,8 @@
 #importonce
 #import "_prelude.lib"
 #import "Sid.asm"
-#import "_debug.lib"
+#import "Instruments.asm"
+
 
 .namespace Tempo {
 
@@ -12,30 +13,15 @@
 
         // init SID
         Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111  
-        Set SID_MIX_FILTER_CUT_OFF_HI:#$FF
+        Set SID_MIX_FILTER_CUT_OFF_HI:#$80
         Set SID_MIX_FILTER_CONTROL:#%11110111
         Set SID_MIX_VOLUME:#%00011111
 
-        Set SID_V1_FREQ_LO:#$E8 
-        Set SID_V1_FREQ_HI:#$06
-        Set SID_V1_PW_LO:#$00
-        Set SID_V1_PW_HI:#$00
-        Set SID_V1_ATTACK_DECAY:#$0A
-        Set SID_V1_SUSTAIN_RELEASE:#$00
+        InitInstrument()
 
-        Set SID_V2_FREQ_LO:#$E8 
-        Set SID_V2_FREQ_HI:#$06
-        Set SID_V2_PW_LO:#$00
-        Set SID_V2_PW_HI:#$00
-        Set SID_V2_ATTACK_DECAY:#$0A
-        Set SID_V2_SUSTAIN_RELEASE:#$00
-
-        Set SID_V3_FREQ_LO:#$E8 
-        Set SID_V3_FREQ_HI:#$06
-        Set SID_V3_PW_LO:#$00
-        Set SID_V3_PW_HI:#$00
-        Set SID_V3_ATTACK_DECAY:#$0A
-        Set SID_V3_SUSTAIN_RELEASE:#$00
+        LoadInstrument(0, boring_square1)
+        LoadInstrument(1, boring_square2)
+        LoadInstrument(2, boring_square3)
 
         rts
     }
@@ -56,6 +42,10 @@
         ldx _stepIndex
         lda _sequence, X
 
+        sta voices_ReferenceNoteNumber
+        sta voices_ReferenceNoteNumber+1
+        sta voices_ReferenceNoteNumber+2
+
         // skip REST
         beq !+
 
@@ -65,12 +55,18 @@
         sta     SID_V1_FREQ_HI
         lda     freq_lsb,x
         sta     SID_V1_FREQ_LO
-
-        // trigger on
-        lda  #%00010000
-        sta SID_V1_CONTROL
-        lda  #%00010001
-        sta SID_V1_CONTROL
+        
+        
+        txa;sec;sbc #12;tax
+        lda     freq_msb,x
+        sta     SID_V2_FREQ_HI
+        sta     SID_V3_FREQ_HI
+        
+        lda     freq_lsb,x
+        sbc #2
+        sta     SID_V2_FREQ_LO
+        sbc #3
+        sta     SID_V3_FREQ_LO
         
         inc _stepIndex
         lda _stepIndex
@@ -80,6 +76,9 @@
         !:
 
     nextFrame:
+        UpdateInstrument(0, boring_square1)
+        UpdateInstrument(1, boring_square2)
+        UpdateInstrument(2, boring_square3)
         // end irq
         pla;tay;pla;tax;pla
         rti          
