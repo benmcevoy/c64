@@ -94,6 +94,13 @@
         .const FILTER_LOW = 8
         .const FILTER_HIGH = 16
 
+        // TODO: had an idea to let the beat 
+        // indicate an increase/+ve
+        // and a REST a decrease/-ve
+        // on + add some value up to MAX
+        // and - subtract down to MIN
+        // act a bit like an envelope
+
         ldy #voiceNumber
         lda #0
         sta _voiceOn,Y

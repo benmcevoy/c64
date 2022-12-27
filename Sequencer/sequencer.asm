@@ -31,7 +31,11 @@ Start: {
         sta    $dc0c
         lda    $dc0d
         lda    $dc0c
-    cli
 
-    jmp *
+                // set next irq line number
+        lda    #100
+        sta    $d012
+    cli
+rts
+    //jmp *
 }

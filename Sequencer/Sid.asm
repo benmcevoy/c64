@@ -37,6 +37,12 @@
 /* MSB v3 disable, High pass filter, band pass filter, low pass filter, volume3, volume2, volume1, volume0 LSB */
 .const SID_MIX_VOLUME = SID_BASE + 21 + 3
 
+/* Voice #3 waveform output */
+.const SID_LFO = SID_BASE + 21 + 6
+/* Voice #3 ADSR output */
+.const SID_ENV = SID_BASE + 21 + 7
+
+
 .const REST = 0;
 // note number match MIDI note numbers
 .const E0 = $1c;    .const F0 = $1d;    .const Gb0 = $1e;    .const G0 = $1f;    .const Ab1 = $20;    .const A1 = $21;    .const Bb1 = $22;    .const B1 = $23;    .const C1 = $24;    .const Db1 = $25;    .const D1 = $26;    .const Eb1 = $27

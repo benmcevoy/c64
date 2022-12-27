@@ -15,6 +15,9 @@
 .const DOWN_AND_FIRE    = %00010010
 
 ReadInput: {
+    // TODO: for even more parameters or modes
+    // just push fire to swap parameter sets for any selected "voice"
+
     // hold down fire for actions
     lda #FIRE
     bit PORT2
