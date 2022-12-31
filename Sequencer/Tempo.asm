@@ -3,8 +3,10 @@
 #import "Sid.asm"
 #import "Instruments.asm"
 
-
 .namespace Tempo {
+
+    .const stepDuration = 6
+    .const frameInterval = 9
 
     Init: {
         // set raster irq line number
@@ -17,12 +19,12 @@
         Set SID_MIX_FILTER_CONTROL:#%11110011
         Set SID_MIX_VOLUME:#%10011111
 
-        LoadPatch(0, boring_square)
+        LoadPatch(0, saw)
         LoadPatch(1, boring_square)
         LoadPatch(2, lfo)
 
         // lfo cycle
-        lda #0
+        lda #00
         sta SID_V3_FREQ_HI
         lda #$04
         sta SID_V3_FREQ_LO
@@ -34,16 +36,22 @@
         // ack irq
         lda    #$01
         sta    $d019
-
         
-inc $d020
+        lda _frameCounter
+        cmp #stepDuration
+        bne !+
+            // trigger off
+            Set SID_V1_CONTROL: #%00100000
+            Set SID_V2_CONTROL: #%00100000
+        !:
+
         dec _frameCounter
         beq !+
             jmp nextFrame
         !:
 
     nextStep:
-        MCopy _frameInterval:_frameCounter
+        Set _frameCounter:#frameInterval
 
         ldx _stepIndex
         lda _sequence, X
@@ -53,19 +61,11 @@ inc $d020
 
         // set tone
         tax
-        lda     freq_msb,x
-        sta     SID_V1_FREQ_HI
-        lda     freq_lsb,x
-        sta     SID_V1_FREQ_LO
-        
-        // octave lower
-        txa;sec;sbc #12;tax
-        lda     freq_msb,x
-        sta     SID_V2_FREQ_HI
-        lda     freq_lsb,x
-        clc;adc#3
-        sta     SID_V2_FREQ_LO
-        
+        SetNote()
+
+           Set SID_V1_CONTROL: #%00100001
+            Set SID_V2_CONTROL: #%00100001
+
         // retrigger oscillator 3
         lda #%00010000
         sta SID_V3_CONTROL
@@ -81,24 +81,24 @@ inc $d020
 
     nextFrame:
         UpdateModulation()
-        dec $d020
         // end irq
-        // pla;tay;pla;tax;pla
-        // rti          
-         jmp $EA31   
+        pla;tay;pla;tax;pla
+        rti          
+        //jmp $EA31   
     }
 
     _frameCounter: .byte 1
-    _frameInterval: .byte 6
-
-    _steps: .byte 8
+    _steps: .byte 16
     _stepIndex: .byte 0
     
     _sequence: 
     //.byte C2, C3, Eb2, Eb3, F3, F2, G3, G2
-    .byte E2, E3, E2, REST, D3, E2, REST, G3
-    .byte F2, F2, F2,F2,C2, REST,Eb2,REST
+    //.byte E2, E3, E2, REST, D3, E2, REST, G3
+    //.byte F2, F2, F2,F2,C2, REST,Eb2,REST
     //.byte A3,A4,C4,A3, A4,C4,A3,C4
     //.byte A3,A4,A3,A3, A5,A3,A5,A3
+
+    .byte F2, Ab6, F3, Eb3, Ab6, Eb3, F3, Ab6, Eb3, Ab6, F3, Ab6, Ab4, Ab6, F3, Ab6
+    
 }
     

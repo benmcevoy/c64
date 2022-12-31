@@ -70,7 +70,11 @@ triangle:       .byte $00, $00, $2A, $A2, %00010001
 saw:            .byte $00, $00, $00, $F9, %00100001        
 lfo:            .byte $00, $00, $14, $00, %00100001
 
+square1: .byte $08, $04, $09 , 0, %01000001
+square2: .byte $09, $06, $09 , 0, %01000001
+square3: .byte $8A, $06, $09 , 0, %01000001
+
 // coarse in semitones
-oscillator_tune_coarse: .byte 0,0,0
+oscillator_tune_coarse: .byte 0,0,-12
 // fine in cents or you know, some number.
 oscillator_tune_fine: .byte 0,6,0

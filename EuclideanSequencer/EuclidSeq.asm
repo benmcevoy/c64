@@ -14,23 +14,26 @@ Start: {
 
     // Raster IRQ
     sei
+        // disable cia timers
+        lda    #$7f
+        sta    $dc0d
+        
+        // enable raster irq
+        lda $d01a                     
+        ora #$01
+        sta $d01a
+        lda $d011                    
+        and #$7f
+        sta $d011
+
+        // set next irq line number
+        lda    #1
+        sta    $d012
+        
         lda #<Tempo.OnRasterInterrupt            
         sta $0314
         lda #>Tempo.OnRasterInterrupt
         sta $0315
-
-        // clear high bit of raster flag
-        lda    #$1b
-        sta    $d011
-        // enable raster irq
-        lda    #$01
-        sta    $d01a
-        // disable cia timers
-        lda    #$7f
-        sta    $dc0d
-        sta    $dc0c
-        lda    $dc0d
-        lda    $dc0c
     cli
 
     jmp *

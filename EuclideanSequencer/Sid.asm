@@ -210,28 +210,3 @@ scale_circle_harmonic_major: .byte 0,5,11,2,7,12,4,8
     clc; adc scale,X; tax
 }
 
-.macro SetChord(chord, chordIndex, transpose, scale) {
-    // multiply by 3
-    lda chordIndex
-    asl
-    clc
-    adc chordIndex
-    tay
-
-    lda chord, Y
-    Scale(transpose, scale)
-    ldx #0
-    sta _voiceNoteNumber, X
-    
-    iny
-    lda chord, Y
-    Scale(transpose, scale)
-    ldx #1
-    sta _voiceNoteNumber, X
-
-    iny
-    lda chord, Y
-    Scale(transpose, scale)
-    ldx #2
-    sta _voiceNoteNumber, X
-}

@@ -9,10 +9,13 @@
 
 .namespace Tempo {
 
+    .const FILTER_LOW = 6
+    .const FILTER_HIGH = 18
     .const readInputDelay = 6
     _frameCounter: .byte 1
     _readInputInterval: .byte readInputDelay
     _index: .byte 0
+    _filter: .byte 10
 
     Init: {
         // init SID
@@ -85,49 +88,52 @@
 
         TriggerFilter(8)
     nextFrame:
+        
         // end irq
         pla;tay;pla;tax;pla
         rti          
     }
 
     .macro TriggerFilter(voiceNumber) {
-        .const FILTER_LOW = 8
-        .const FILTER_HIGH = 16
-
-        // TODO: had an idea to let the beat 
-        // indicate an increase/+ve
-        // and a REST a decrease/-ve
-        // on + add some value up to MAX
-        // and - subtract down to MIN
-        // act a bit like an envelope
-
-        ldy #voiceNumber
-        lda #0
-        sta _voiceOn,Y
-        
-        lda #FILTER_LOW
-        sta SID_MIX_FILTER_CUT_OFF_HI
-
-        lda _voiceNumberOfBeats, Y
-        // *16 so shift 4 times
-        asl;asl;asl;asl
-        clc 
-        adc _stepIndex
-        adc _voiceRotation, Y
-        tax
-
-        lda _rhythm, X
-        // if 0 then REST
-        beq !+
-            // trigger on
-            // filter
-            lda #FILTER_HIGH
-            sta SID_MIX_FILTER_CUT_OFF_HI
-           
-            lda #1
             ldy #voiceNumber
-            sta _voiceOn, Y
-        !:
+            lda #0
+            sta _voiceOn,Y
+            
+            lda _voiceNumberOfBeats, Y
+            // *16 so shift 4 times
+            asl;asl;asl;asl
+            clc 
+            adc _stepIndex
+            adc _voiceRotation, Y
+            tax
+
+            lda _rhythm, X
+            // if 0 then REST
+            beq !++
+                // trigger on
+                // filter
+                lda _filter
+                clc; adc #2
+                cmp #FILTER_HIGH
+                sta SID_MIX_FILTER_CUT_OFF_HI
+                bcs !+
+                    sta _filter
+                !:
+            
+                lda #1
+                ldy #voiceNumber
+                sta _voiceOn, Y
+                jmp exit
+            !:
+
+            lda _filter
+            sec; sbc #4
+            sta SID_MIX_FILTER_CUT_OFF_HI
+            cmp #FILTER_LOW
+            bcc exit
+            sta _filter
+
+        exit:
     }
     
     .macro TriggerChord() {
@@ -218,6 +224,25 @@
         #endif
         
         !:
+    }
+
+    .macro UpdateModulation() { 
+        // filter cutoff
+        lda SID_ENV
+        // depth
+        lsr;lsr;lsr;lsr
+        clc;adc #2
+        sta SID_MIX_FILTER_CUT_OFF_HI
+
+        // resonance 
+        lda SID_ENV
+        and #%11110000
+        ora #%00000011
+        sta SID_MIX_FILTER_CONTROL
+
+        lda SID_LFO
+        lsr;lsr;
+        sta SID_V2_PW_LO
     }
 }
 
