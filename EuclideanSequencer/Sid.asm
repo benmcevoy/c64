@@ -184,29 +184,4 @@ scale_harmonic_major: .byte 0,2,4,5,7,8,11,12
 scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
 scale_phrygian: .byte 0,1,3,5,7,8,10,12
 scale_phrygian_dominant: .byte 0,1,4,5,7,8,10,12
-
 scale_circle_harmonic_major: .byte 0,5,11,2,7,12,4,8
-
-.const Noise = %10000001
-.const Square = %01000001
-.const Saw = %00100001
-.const Triangle = %00010001
-.const Silence = 0
-
-.macro SetPulseWidth(voiceNumber, lo, hi) {
-    lda     lo
-    sta     SID_V1_PW_LO+voiceNumber*7
-    lda     hi
-    sta     SID_V1_PW_HI+voiceNumber*7 
-}
-
-.macro SetWaveForm(voiceNumber, waveform) {
-    lda #waveform
-    sta SID_V1_CONTROL+voiceNumber*7
-}
-
-.macro Scale(transpose, scale) {
-    ldx transpose
-    clc; adc scale,X; tax
-}
-

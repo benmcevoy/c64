@@ -28,6 +28,10 @@
         Set SID_V2_ATTACK_DECAY:#$09
         Set SID_V3_ATTACK_DECAY:#$09
 
+        SetWaveForm(0, Saw)
+        SetWaveForm(1, Saw)
+        SetWaveForm(2, Saw)
+
         SetPulseWidth(0, $08, $04)
         SetPulseWidth(1, $09, $06)
         SetPulseWidth(2, $8A, $06)
@@ -82,9 +86,9 @@
         TriggerOctave(4)
         TriggerOctave(5)
 
-        TriggerBeat(0, Saw)
-        TriggerBeat(1, Saw)
-        TriggerBeat(2, Saw)
+        TriggerBeat(0)
+        TriggerBeat(1)
+        TriggerBeat(2)
 
         TriggerFilter(8)
     nextFrame:
@@ -154,7 +158,7 @@
         SetChord(chords, _chord, _transpose, scale_circle_harmonic_major)
     }
 
-    .macro TriggerBeat(voiceNumber, waveform) {
+    .macro TriggerBeat(voiceNumber) {
         ldy #voiceNumber
         lda #0
         sta _voiceOn,Y
@@ -170,7 +174,7 @@
         // if 0 then REST
         beq !+
             // trigger on
-            SetWaveForm(voiceNumber, Silence)
+            TriggerOff(voiceNumber)
 
             ldx _voiceNoteNumber,Y
             lda freq_msb, X
@@ -178,7 +182,7 @@
             lda freq_lsb, X
             sta SID_V1_FREQ_LO+voiceNumber*7
 
-            SetWaveForm(voiceNumber, waveform)
+            TriggerOn(voiceNumber)
         #if MIDI
             TriggerMidiOn(voiceNumber)
         #endif

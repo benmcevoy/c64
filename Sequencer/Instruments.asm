@@ -62,6 +62,10 @@
     and #%11110000
     ora #%00000011
     sta SID_MIX_FILTER_CONTROL
+
+    // lfo to PW2
+    lda SID_LFO
+    sta SID_V2_PW_HI
 }
 
 silence:        .byte $00, $00, $00, $00, %00000000
@@ -69,6 +73,7 @@ boring_square:  .byte $00, $04, $2A, $A2, %01000001
 triangle:       .byte $00, $00, $2A, $A2, %00010001    
 saw:            .byte $00, $00, $00, $F9, %00100001        
 lfo:            .byte $00, $00, $14, $00, %00100001
+noise:          .byte $00, $00, $00, $F0, %10000001
 
 // coarse in semitones
 oscillator_tune_coarse: .byte 0,0,0

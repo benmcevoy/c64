@@ -21,7 +21,7 @@
 
         LoadPatch(0, saw)
         LoadPatch(1, boring_square)
-        LoadPatch(2, lfo)
+        LoadPatch(2, noise)
 
         // lfo cycle
         lda #00

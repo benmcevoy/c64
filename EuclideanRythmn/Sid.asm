@@ -203,6 +203,8 @@ scale_circle_harmonic_major: .byte 0,5,11,2,7,12,4,8
 .macro SetWaveForm(voiceNumber, waveform) {
     lda #waveform
     sta SID_V1_CONTROL+voiceNumber*7
+    ldy #voiceNumber
+    sta _voiceControl, Y
 }
 
 .macro Scale(transpose, scale) {
@@ -234,4 +236,17 @@ scale_circle_harmonic_major: .byte 0,5,11,2,7,12,4,8
     Scale(transpose, scale)
     ldx #2
     sta _voiceNoteNumber, X
+}
+
+.macro TriggerOn(voiceNumber) {
+    ldy #voiceNumber
+    lda _voiceControl, Y
+    sta SID_V1_CONTROL + (voiceNumber * 7)
+}
+
+.macro TriggerOff(voiceNumber) {
+    ldy #voiceNumber
+    lda _voiceControl, Y
+    and #%11111110
+    sta SID_V1_CONTROL + (voiceNumber * 7)
 }

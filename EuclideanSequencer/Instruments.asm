@@ -2,6 +2,18 @@
 #import "_prelude.lib"
 #import "Sid.asm"
 
+.macro TriggerOn(oscillator) {
+    ldy #oscillator
+    lda oscillator_control, Y
+    sta SID_V1_CONTROL + (oscillator * 7)
+}
+
+.macro TriggerOff(oscillator) {
+    ldy #oscillator
+    lda oscillator_control, Y
+    and #%11111110
+    sta SID_V1_CONTROL + (oscillator * 7)
+}
 
 .macro LoadPatch(oscillator, patch) {
     lda patch
@@ -18,6 +30,8 @@
 
     lda patch+4
     sta SID_V1_CONTROL + (oscillator * 7)
+    ldy #oscillator
+    sta oscillator_control, Y
 }
 
 .macro SetNote() {
@@ -62,6 +76,8 @@
     and #%11110000
     ora #%00000011
     sta SID_MIX_FILTER_CONTROL
+
+
 }
 
 silence:        .byte $00, $00, $00, $00, %00000000
@@ -69,6 +85,7 @@ boring_square:  .byte $00, $04, $2A, $A2, %01000001
 triangle:       .byte $00, $00, $2A, $A2, %00010001    
 saw:            .byte $00, $00, $00, $F9, %00100001        
 lfo:            .byte $00, $00, $14, $00, %00100001
+noise:          .byte $00, $00, $00, $F0, %10000001
 
 square1: .byte $08, $04, $09 , 0, %01000001
 square2: .byte $09, $06, $09 , 0, %01000001
@@ -78,3 +95,4 @@ square3: .byte $8A, $06, $09 , 0, %01000001
 oscillator_tune_coarse: .byte 0,0,-12
 // fine in cents or you know, some number.
 oscillator_tune_fine: .byte 0,6,0
+oscillator_control: .byte 0,0,0

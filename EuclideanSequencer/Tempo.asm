@@ -69,9 +69,9 @@
         TriggerOctave(ACCENT2)
         TriggerOctave(ACCENT3)
 
-        TriggerBeat(OSCILLATOR1, Square)
-        TriggerBeat(OSCILLATOR2, Square)
-        TriggerBeat(OSCILLATOR3, Square)
+        TriggerBeat(OSCILLATOR1)
+        TriggerBeat(OSCILLATOR2)
+        TriggerBeat(OSCILLATOR3)
 
         TriggerFilter(FILTER)
     nextFrame:
@@ -148,7 +148,7 @@
         sta _voiceNoteNumber, X
     }
 
-    .macro TriggerBeat(voiceNumber, waveform) {
+    .macro TriggerBeat(voiceNumber) {
         ldy #voiceNumber
         lda _voiceNumberOfBeats, Y
         // *16 so shift 4 times
@@ -162,13 +162,13 @@
         // if 0 then REST
         beq !+
             // trigger off
-            SetWaveForm(voiceNumber, Silence)
+            TriggerOff(voiceNumber)
 
             ldx _voiceNoteNumber,Y
             SetNote()
 
             // trigger on
-            SetWaveForm(voiceNumber, waveform)
+            TriggerOn(voiceNumber)
 
         !:
     }
@@ -191,6 +191,11 @@
             clc; adc #12
             sta _voiceNoteNumber, Y
         !:
+    }
+
+    .macro Scale(transpose, scale) {
+        ldx transpose
+        clc; adc scale,X; tax
     }
 }
 

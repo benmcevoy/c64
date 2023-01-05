@@ -1,5 +1,6 @@
 ﻿.source.txt
 bin/
+obj/
 kickass/
 .vscode/
 .idea/

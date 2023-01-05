@@ -1,7 +1,5 @@
 #importonce
 
-// _voiceControl: .byte %010100001, %010100001, %010100001
-
 .const scale_length = 7
 .const chord_length = 7
 .const steps = 8
@@ -23,6 +21,9 @@ _voiceRotation: .byte 3,4,5,0,0,0,0,0,0
 // flags
 _voiceOn: .byte 0,0,0,0,0,0,0,0,0
 _voiceNoteNumber: .byte 0,0,0,0,0,0,0,0,0
+_voiceControl: .byte 0,0,0
+
+.print _tempo
 
 // double up the sequence so we can offset into it
 .align $100
