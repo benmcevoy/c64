@@ -1,13 +1,5 @@
 #importonce
 
-.const STRIDE = 5
-
-.const VOICE_NUMBER_OF_BEATS = 0
-.const VOICE_ROTATION = 1
-.const VOICE_TRANSPOSE = 2
-.const VOICE_INSTRUMENT = 3
-.const VOICE_TTL = 4
-
 .const OSCILLATOR1 = 0
 .const OSCILLATOR2 = 1
 .const OSCILLATOR3 = 2

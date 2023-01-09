@@ -74,7 +74,7 @@
     lda SID_ENV
     eor #$ff
     and #%11110000
-    ora #%00000011
+    ora #%00000111
     sta SID_MIX_FILTER_CONTROL
 
 
@@ -89,7 +89,7 @@ noise:          .byte $00, $00, $00, $F0, %10000001
 
 square1: .byte $08, $04, $09 , 0, %01000001
 square2: .byte $09, $06, $09 , 0, %01000001
-square3: .byte $8A, $06, $09 , 0, %01000001
+square3: .byte $00, $06, $09 , 0, %01000001
 
 // coarse in semitones
 oscillator_tune_coarse: .byte 0,0,-12

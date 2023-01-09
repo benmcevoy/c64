@@ -185,10 +185,25 @@
 
         lda _rhythm, X
         // if 0 then REST
-        beq !+
+        beq !++
             ldy #voiceNumber
             lda _voiceNoteNumber, Y
-            clc; adc #12
+            
+            cpy #OSCILLATOR1
+            bne !+
+                clc; adc #4
+            !:
+
+            cpy #OSCILLATOR2
+            bne !+
+                clc; adc #7
+            !:
+            cpy #OSCILLATOR3
+            bne !+
+                clc; adc #12
+            !:
+
+
             sta _voiceNoteNumber, Y
         !:
     }

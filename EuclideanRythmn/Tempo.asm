@@ -46,6 +46,10 @@
         // set next irq line number
         lda    #1
         sta    $d012
+    
+    #if MIDI
+        WasThatAMidiInterrupt()
+    #endif    
 
         dec _readInputInterval
         bne !+
@@ -92,7 +96,6 @@
 
         TriggerFilter(8)
     nextFrame:
-        
         // end irq
         pla;tay;pla;tax;pla
         rti          
@@ -218,13 +221,12 @@
             
             lda _voiceNoteNumber, Y
             clc; adc #12
+            sta _voiceNoteNumber, Y
    
         #if MIDI
             ldy #voiceNumber
             sta _voiceNoteNumber, Y
             TriggerMidiOn(voiceNumber)
-        #else
-            sta _voiceNoteNumber, Y
         #endif
         
         !:
