@@ -48,5 +48,10 @@ Start: {
         sta $0315
     cli
 
-    jmp *
+loop:
+    #if MIDI
+        PollForMidiMessage()
+    #endif    
+
+    jmp loop
 }

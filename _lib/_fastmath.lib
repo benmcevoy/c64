@@ -193,7 +193,7 @@ _dd:            lda #0
 }
 
 // TODO: allow tables to be relocatable, somehow...
-*=$2200 "Squares"
+*=$6200 "Squares"
 square1: .lohifill 512, ((i*i)/4)
 square2: .lohifill 512, ((i-255)*(i-255)/4)
 

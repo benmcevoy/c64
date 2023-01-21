@@ -22,6 +22,11 @@
         Set SID_MIX_FILTER_CONTROL:#%11110111
         Set SID_MIX_VOLUME:#%00011111
 
+        Set SID_MIX_FILTER_CUT_OFF_LO+$20:#%00000111  
+        Set SID_MIX_FILTER_CUT_OFF_HI+$20:#10
+        Set SID_MIX_FILTER_CONTROL+$20:#%11110111
+        Set SID_MIX_VOLUME+$20:#%00011111
+
         LoadPatch(OSCILLATOR1, square1)
         LoadPatch(OSCILLATOR2, square2)
         LoadPatch(OSCILLATOR3, square3)
@@ -29,8 +34,10 @@
         // lfo cycle
         lda #00
         sta SID_V3_FREQ_HI
+        sta SID_V3_FREQ_HI + $20
         lda #$04
         sta SID_V3_FREQ_LO
+        sta SID_V3_FREQ_LO + $20
 
         rts
     }
@@ -100,6 +107,7 @@
                 clc; adc #2
                 cmp #FILTER_HIGH
                 sta SID_MIX_FILTER_CUT_OFF_HI
+                sta SID_MIX_FILTER_CUT_OFF_HI + $20
                 bcs !+
                     sta _filter
                 !:
@@ -109,7 +117,8 @@
 
             lda _filter
             sec; sbc #4
-            sta SID_MIX_FILTER_CUT_OFF_HI
+            sta SID_MIX_FILTER_CUT_OFF_HI 
+            sta SID_MIX_FILTER_CUT_OFF_HI + $20
             cmp #FILTER_LOW
             bcc exit
             sta _filter
@@ -160,7 +169,9 @@
 
         lda _rhythm, X
         // if 0 then REST
-        beq !+
+        bne !+
+            jmp exit
+        !:
             // trigger off
             TriggerOff(voiceNumber)
 
@@ -169,8 +180,7 @@
 
             // trigger on
             TriggerOn(voiceNumber)
-
-        !:
+        exit:
     }
 
     .macro TriggerOctave(voiceNumber) {
@@ -198,6 +208,7 @@
             bne !+
                 clc; adc #7
             !:
+
             cpy #OSCILLATOR3
             bne !+
                 clc; adc #12

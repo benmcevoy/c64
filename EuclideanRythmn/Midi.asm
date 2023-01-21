@@ -18,24 +18,22 @@
 // https://www.codebase64.org/doku.php?id=base:c64_midi_interfaces
 
 #if MIDI
+// Sequential Circuits
 .label MidiControl = $DE00
 .label MidiTransmit = $DE01
 .label MidiStatus = $DE02
 .label MidiReceive = $DE03
 .const Velocity = 100
+.const MidiEnable = $15
+.const MidiIRQEnable = $95
+.const MidiReset = $03
 
 _index: .byte 0
 
 InitMidi: {
-    // reset
-    Set MidiControl:#$03
-    
-    // bit 7 - Rx disable, bit 6,5 tx enable?, bit 4,3,2 - 8 bit no parity, bit 1,0 counter divide by 1
-    Set MidiControl: #$95//#%10110010
+    Set MidiControl:#MidiReset
+    Set MidiControl: #MidiEnable
 
-    // $95 is irq on
-    // $15 is polling? not sure what i poll?
-    
     rts
 }
 
@@ -75,13 +73,15 @@ InitMidi: {
     jsr _transmitMidi
 }
 
-.macro WasThatAMidiInterrupt() {
+.macro PollForMidiMessage() {
         lda MidiStatus
         lsr
         bcc exit
 
         lda MidiReceive
+        // ignore the chaneel (lower nybble)
         and #$F0
+        // Bx are control change messages
         cmp #$B0
         bne flush
 

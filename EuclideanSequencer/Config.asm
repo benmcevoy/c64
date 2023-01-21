@@ -35,5 +35,5 @@ _rhythm:
 
 // tempo in units of "frame count"
 _tempo_fill:
-    .byte 64,32,24,16,12,08,06,04
+    .byte 64,32,24,16,12,10,06,04
 

@@ -11,7 +11,7 @@
         .const SPEED = 80
         .const LEFTGLYPH = 79
         .const RIGHTGLYPH = 80
-        .const IDLEGLYPH = 93
+        .const IDLEGLYPH = 3
         .const ACTION_PRESSED_BUTTON    = %00010000
         .const ACTION_IS_JUMPING        = %00100000
 
@@ -110,23 +110,96 @@
         }        
 
         Idle: {
-            Set _glyph:#IDLEGLYPH
+            dec anim
+            lda anim
+            cmp #$A0
+            bcc !+
+                Set _glyph:#3
+                rts
+            !:
+
+            cmp #$80
+            bcc !+
+                Set _glyph:#5
+                rts
+            !:
+
+            cmp #$40
+            bcc !+
+                Set _glyph:#4
+                rts
+            !:
+            
+            cmp #$20
+            bcc !+
+                Set _glyph:#3
+                rts
+            !:
+
+            Set _glyph:#4
             rts
+            anim: .byte 0
         }
 
         Running: {
+            dec anim
+            dec anim
+            dec anim
+            dec anim
+            dec anim
+            dec anim
+            dec anim
+            dec anim
             lda #128
             bit _dx
-            beq !+
-                Set _glyph:#LEFTGLYPH   
+            beq left
+                lda anim
+                cmp #$aa
+                bcc !+
+                    Set _glyph:#6   
+                    rts
+                !:
+                cmp #$55
+                bcc !+
+                    Set _glyph:#7   
+                    rts
+                !:
+                cmp #$00
+                bcc !+
+                    Set _glyph:#8  
+                    rts
+                !:
                 rts
-            !:
-                Set _glyph:#RIGHTGLYPH
-                
+            left:
+                lda anim
+                cmp #$aa
+                bcc !+
+                    Set _glyph:#0   
+                    rts
+                !:
+                cmp #$55
+                bcc !+
+                    Set _glyph:#1
+                    rts
+                !:
+                cmp #$00
+                bcc !+
+                    Set _glyph:#2
+                    rts
+                !:
+                rts
             rts
+            anim: .byte 0
         }
 
         Jumping: {
+            lda #128
+            bit _dx
+            beq left
+                Set _glyph:#7
+                rts
+            left:
+            Set _glyph:#2
             rts
         }
 

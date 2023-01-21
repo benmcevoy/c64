@@ -12,10 +12,11 @@ BasicUpstart2(Start)
 #import "./Agents/Agent.asm"
 //#import "./Backgrounds/weave.asm"
 //#import "./Backgrounds/honeycomb.asm"
-#import "./Backgrounds/colours.asm"
+//#import "./Backgrounds/colours.asm"
 //#import "./Backgrounds/jungle.asm"
 //#import "./Backgrounds/clouds.asm"
-//#import "./Backgrounds/city.asm"
+#import "./Charset/city.asm"
+#import "./Backgrounds/city.asm"
 
 .var music = LoadSid("A_Mind_Is_Born.sid")	
 
@@ -28,9 +29,13 @@ Start: {
     jsr Kernal.ClearScreen
     jsr music.init	
 
+    // set charset
+	lda #%00011100
+	sta $d018
+
     Call Background.Draw
     Call DrawGameField
-  
+
     // Raster IRQ
     sei
         lda #<Render            

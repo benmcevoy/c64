@@ -47,10 +47,7 @@
         lda    #1
         sta    $d012
     
-    #if MIDI
-        WasThatAMidiInterrupt()
-    #endif    
-
+    
         dec _readInputInterval
         bne !+
             jsr ReadInput
