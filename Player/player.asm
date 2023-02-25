@@ -15,8 +15,8 @@ BasicUpstart2(Start)
 //#import "./Backgrounds/colours.asm"
 //#import "./Backgrounds/jungle.asm"
 //#import "./Backgrounds/clouds.asm"
-#import "./Charset/city.asm"
-#import "./Backgrounds/city.asm"
+#import "./Charset/cave.asm"
+#import "./Backgrounds/meh.asm"
 
 .var music = LoadSid("A_Mind_Is_Born.sid")	
 
@@ -34,7 +34,6 @@ Start: {
 	sta $d018
 
     Call Background.Draw
-    Call DrawGameField
 
     // Raster IRQ
     sei
@@ -100,25 +99,6 @@ Render: {
     rti 
 }
 
-DrawGameField: {
-    Set CharScreen.Character:#GROUND_CHAR
-    Set CharScreen.PenColor:#GROUND_COLOR    
-    Call CharScreen.PlotRect:#0:#0:#39:#24
-
-    Call CharScreen.PlotLine:#30:#20:#38:#20
-    Call CharScreen.PlotLine:#20:#16:#30:#16
-    Call CharScreen.PlotLine:#15:#12:#22:#12
-    Call CharScreen.PlotLine:#24:#8:#26:#8
-    Call CharScreen.PlotLine:#15:#12:#22:#12
-    Call CharScreen.PlotLine:#32:#16:#38:#12
-    Call CharScreen.PlotLine:#20:#23:#14:#18
-    Call CharScreen.PlotLine:#22:#8:#22:#16
-    Call CharScreen.PlotLine:#1:#20:#10:#20
-    Call CharScreen.PlotLine:#1:#16:#10:#16
-
-    rts
-}
-
 UpdateAgents: {
     lda #MAXAGENTS
     sta index
@@ -167,5 +147,5 @@ RenderAgents: {
 
 
 //---------------------------------------------------------
-			*=music.location "Music"
-			.fill music.size, music.getData(i)	
+*=music.location "Music"
+.fill music.size, music.getData(i)	

@@ -73,7 +73,7 @@ freq_lsb:
 .byte $da,$76,$39,$26,$40,$89,$04,$b4,$9c,$c0,$23,$c8,$b4,$eb,$72,$4c
 .byte $80,$12,$08,$68,$39,$80,$45,$90,$68,$d6,$e3,$99,$00,$24,$10
 
-chords: GalaticCore()
+chords: HouseProgression()
 
 .macro HouseProgression() { 
     // house progression

@@ -28,6 +28,8 @@
         Set SID_V2_ATTACK_DECAY:#$09
         Set SID_V3_ATTACK_DECAY:#$09
 
+        Set SID_V1_SUSTAIN_RELEASE:#$00
+
         SetWaveForm(0, Saw)
         SetWaveForm(1, Saw)
         SetWaveForm(2, Saw)
@@ -92,7 +94,36 @@
         TriggerBeat(2)
 
         TriggerFilter(8)
+
     nextFrame:
+        // TODO:
+        // foreach voice
+        // if the _voiceOn, Y is true
+        // dec the _voiceEcho,Y
+        // beq retrigger the note at a lower volume somehow, reset the _voiceEcho,Y to echo
+
+        // ldx #0
+        // lda _voiceTails,X
+        // beq !+
+
+        // dec _voiceEcho,X
+        // lda _voiceEcho,X
+        // bne !+
+        //     lda #echo
+        //     sta _voiceEcho,X
+            
+        //     Set SID_V1_ATTACK_DECAY:#$09
+
+        //     dec _voiceTails,X
+        //     dec _voiceTails,X
+        //     lda _voiceTails,X
+        //     asl;asl;asl;asl
+            
+        //     sta SID_V1_SUSTAIN_RELEASE
+        //     TriggerOff(0)
+        //     TriggerOn(0)
+        // !:
+        
         // end irq
         pla;tay;pla;tax;pla
         rti          
@@ -182,6 +213,9 @@
             lda freq_lsb, X
             sta SID_V1_FREQ_LO+voiceNumber*7
 
+            lda #$00
+            sta SID_V1_SUSTAIN_RELEASE+voiceNumber*7
+
             TriggerOn(voiceNumber)
         #if MIDI
             TriggerMidiOn(voiceNumber)
@@ -190,6 +224,9 @@
             lda #1
             ldy #voiceNumber
             sta _voiceOn, Y
+            lda #tails
+            sta _voiceTails, Y
+            
         !:
     }
 

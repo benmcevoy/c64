@@ -17,13 +17,15 @@ BasicUpstart2(Start)
 
 .label ClearScreen = $E544
 .const AXIS = 8
-.const TRAILS = 4
+.const TRAILS = $8F
 .const PALETTE_LENGTH = 16
+
+_offset: .byte 16
 
 #if HIRES
     .const WIDTH = 51
     .const HEIGHT = 51
-    .const OFFSET = 16
+    .label OFFSET = _offset
 #else
     .const WIDTH = 25
     .const HEIGHT = 25
@@ -42,13 +44,33 @@ Start: {
     Set $d020:#BLACK
     Set $d021:#BLACK
 
+ sei
+        lda #<UpdateState
+        sta $0314    
+        lda #>UpdateState
+        sta $0315
+
+        //  // clear high bit of raster flag
+        // lda    #$1b
+        // sta    $d011
+        // // enable raster irq
+        // lda    #$01
+        // sta    $d01a
+        // // disable cia timers
+        // lda    #$7f
+        // sta    $dc0d
+        // sta    $dc0c
+        // lda    $dc0d
+        // lda    $dc0c
+    cli
+
     loop:
-        inc time
         jsr UpdateState
         jmp loop
 }
 
 UpdateState: {
+    inc time
     // set point, just moving along a line
     Set x:time
     Set y:#CENTERY
@@ -83,7 +105,7 @@ UpdateState: {
 
         lda x1
         clc 
-        adc #OFFSET
+        adc OFFSET
         sta x1
 
         lda #%00000001
@@ -112,6 +134,8 @@ UpdateState: {
         ldx __val0
         lda palette,X
         sta CharScreen.PenColor
+        // too slow for this  -
+        //sta 53280;sta 53281
         Plot x1:y1
 
         lda startAngle
@@ -125,6 +149,11 @@ UpdateState: {
             Set writePointer:#0
         !:
 
+       // inc _offset
+        // lda _offset
+        // clc 
+        // adc #1
+        // sta _offset
         inc j
         lda j
         cmp #AXIS
@@ -132,7 +161,9 @@ UpdateState: {
             jmp axis
         !:
     exit:
-    rts
+    // end irq
+    pla;tay;pla;tax;pla
+    rti 
 
     // indexes
     j: .byte 0
@@ -268,7 +299,12 @@ y1: .byte 0
 
 // state
 time: .byte 0
-palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9
+palette: 
+.byte CYAN,LIGHT_BLUE,PURPLE,LIGHT_RED
+.byte ORANGE,YELLOW,LIGHT_GREEN,GREEN
+.byte LIGHT_BLUE,BLUE,BLUE,BLUE
+.byte RED,WHITE,WHITE,WHITE
+.byte ORANGE,YELLOW,LIGHT_GREEN,GREEN
 
 *=$4000 "Signed trig tables"
 // values range -127..127  

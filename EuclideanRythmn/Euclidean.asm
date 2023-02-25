@@ -18,8 +18,6 @@ Start: {
 
     jsr Tempo.Init
 
-    // turning on midi seems to screw up IRQ
-    // TODO: read the documentation :)
 #if MIDI    
     jsr InitMidi
 #endif 

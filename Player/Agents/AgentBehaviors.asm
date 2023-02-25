@@ -65,35 +65,36 @@
         }
 
         Animate: {
-            Get(Agent.z, z)
-            Get(Agent.color, color)
-            Get(Agent.data, data)
-            
-            dec z
-            bne !+
-                Set z:#12
-                
-                inc data
-                Modulo data:#4
-                lda __val0
-                sta data
-                tax
-                lda palette,x
-                sta color
+            dec duration
+            bne exit
 
-                Set(Agent.color, color)
-                Set(Agent.data, data)
-            !:
-            
-            
-            Set(Agent.z, z)
-            
+            ldy #Agent.data
+            lda (Agent.Current),y
+            tax
+            lda animation,X
+            cmp #$ff
+            beq reset
+
+            ldy #Agent.glyph
+            sta (Agent.Current),Y
+            inx 
+            lda animation,X
+            sta duration
+            inx
+            txa
+            ldy #Agent.data
+            sta (Agent.Current),Y
             rts
-            
-            color: .byte 0
-            z: .byte 0
-            data: .byte 0
-            palette: .byte GREY,GREY,GREY,WHITE
+
+        reset:   
+            lda #0
+            ldy #Agent.data
+            sta (Agent.Current),Y
+            inc duration
+        
+        exit: rts
+            animation: .byte 54,8,55,8, $ff  
+            duration: .byte 1
         }
     }
 }

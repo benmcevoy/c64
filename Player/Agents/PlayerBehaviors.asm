@@ -7,13 +7,19 @@
 
 .namespace Agent{
     .namespace PlayerBehaviors {
-        .const JERK = -120
-        .const SPEED = 80
+        .const JERK = -100
+        .const SPEED = 50
         .const LEFTGLYPH = 79
         .const RIGHTGLYPH = 80
         .const IDLEGLYPH = 3
         .const ACTION_PRESSED_BUTTON    = %00010000
         .const ACTION_IS_JUMPING        = %00100000
+
+        .const SPIKEL = 40
+        .const SPIKER = 38
+        .const SPIKEU = 39
+        .const SPIKED = 37
+
 
         Update: {
             GetW(Agent.x, _x)
@@ -110,96 +116,88 @@
         }        
 
         Idle: {
-            dec anim
-            lda anim
-            cmp #$A0
-            bcc !+
-                Set _glyph:#3
+            dec duration
+            bne exit
+
+            ldx frame
+            lda animation,X
+            cmp #$ff
+            beq !+
+                sta _glyph
+                inx 
+                lda animation,X
+                sta duration
+                inx
+                stx frame
                 rts
             !:
 
-            cmp #$80
-            bcc !+
-                Set _glyph:#5
-                rts
-            !:
-
-            cmp #$40
-            bcc !+
-                Set _glyph:#4
-                rts
-            !:
-            
-            cmp #$20
-            bcc !+
-                Set _glyph:#3
-                rts
-            !:
-
-            Set _glyph:#4
-            rts
-            anim: .byte 0
+        reset:   
+            lda #0
+            sta frame
+            inc duration
+        
+        exit: rts
+            animation: .byte 5,40,4,40, $ff  // and 3 for the foot tap
+            frame: .byte 0
+            duration: .byte 1
         }
 
         Running: {
-            dec anim
-            dec anim
-            dec anim
-            dec anim
-            dec anim
-            dec anim
-            dec anim
-            dec anim
-            lda #128
-            bit _dx
-            beq left
-                lda anim
-                cmp #$aa
-                bcc !+
-                    Set _glyph:#6   
-                    rts
-                !:
-                cmp #$55
-                bcc !+
-                    Set _glyph:#7   
-                    rts
-                !:
-                cmp #$00
-                bcc !+
-                    Set _glyph:#8  
-                    rts
-                !:
+            dec duration
+            bne exit
+
+            lda _dx
+            bpl right
+
+        left:
+            ldx frame
+            lda runningLeft,X
+            cmp #$ff
+            beq !+
+                sta _glyph
+                inx 
+                lda runningLeft,X
+                sta duration
+                inx
+                stx frame
                 rts
-            left:
-                lda anim
-                cmp #$aa
-                bcc !+
-                    Set _glyph:#0   
-                    rts
-                !:
-                cmp #$55
-                bcc !+
-                    Set _glyph:#1
-                    rts
-                !:
-                cmp #$00
-                bcc !+
-                    Set _glyph:#2
-                    rts
-                !:
+            !:
+            jmp reset
+            
+        right:    
+            ldx frame
+            lda runningRight,X
+            cmp #$ff
+            beq !+
+                sta _glyph
+                inx 
+                lda runningRight,X
+                sta duration
+                inx
+                stx frame
                 rts
-            rts
-            anim: .byte 0
+            !:
+
+        reset:
+            lda #0
+            sta frame
+            inc duration
+        
+        exit: rts
+            runningLeft: .byte 15,10, 14,10, 13,10, $ff  
+            runningRight: .byte 1,10, 2,10, 3,10, $ff  
+            frame: .byte 0
+            duration: .byte 1
         }
 
         Jumping: {
-            lda #128
-            bit _dx
-            beq left
-                Set _glyph:#7
+            lda _dx
+            bmi left
+                Set _glyph:#8
                 rts
             left:
-            Set _glyph:#2
+            Set _glyph:#7
             rts
         }
 
@@ -237,8 +235,13 @@
                     Set _x:_x0
                     Set _x+1:_x0+1
                     Set _dx:#0
-                !skip:
                     jmp end_h
+                !skip:
+                // cmp #SPIKEL
+                // bne end_h
+                //     Set _dx:#-JERK
+                    
+                jmp end_h
 
             checkRight: 
                 Call CharScreen.Read:_x+1:_y+1

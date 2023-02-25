@@ -3,6 +3,8 @@
 .const scale_length = 7
 .const chord_length = 7
 .const steps = 8
+.const echo = 24
+.const tails = 8
 
 // tempo in units of "frame count"
 _tempo: .byte $10
@@ -11,6 +13,7 @@ _stepIndex: .byte 0
 _selectedVoice: .byte 0
 _transpose: .byte 0
 _chord: .byte 0
+
 
 // TODO: voices are a bad name :) yes. how about "channel"
 // and naming the channels would help a lot
@@ -22,6 +25,8 @@ _voiceRotation: .byte 3,4,5,0,0,0,0,0,0
 _voiceOn: .byte 0,0,0,0,0,0,0,0,0
 _voiceNoteNumber: .byte 0,0,0,0,0,0,0,0,0
 _voiceControl: .byte 0,0,0
+_voiceEcho: .byte echo,echo,echo
+_voiceTails: .byte tails,tails,tails
 
 .print _tempo
 
@@ -43,3 +48,4 @@ _tempo_fill:
 
 .align $100
 _random20: .fill 256,round(5*random())
+

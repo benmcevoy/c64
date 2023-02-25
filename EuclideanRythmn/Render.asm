@@ -18,7 +18,7 @@ Render: {
     RenderPattern(0, voice0_x, voice0_y, BLANK)
     RenderPattern(1, voice1_x, voice1_y, BLANK)
     RenderPattern(2, voice2_x, voice2_y, BLANK)
-    
+
     RenderPatternSmall(3, octave0_x, octave0_y)
     RenderPatternSmall(4, octave1_x, octave1_y)
     RenderPatternSmall(5, octave2_x, octave2_y)
@@ -26,13 +26,14 @@ Render: {
     RenderPattern(6, chord_x, chord_y, BLANK_SMALL)
     RenderTempo(tempo_x, tempo_y)
     RenderPattern(8, filter_x, filter_y, BLANK_SMALL)
-
     rts
 }
 
 .macro RenderPattern(voiceNumber, voice_x, voice_y, blank) {
-    ldx #0
-    Set _stepCounter:#0
+    lda #0
+    sta _stepCounter
+    tax
+    
     Set PenColor:#DARK_GRAY
 
     lda _selectedVoice
@@ -54,9 +55,7 @@ Render: {
         tay
 
         lda _rhythm, Y
-        bne !+
-            jmp rest
-        !:
+        beq rest
 
     pattern:
         Set Character:#PATTERN
@@ -71,9 +70,7 @@ Render: {
         inc _stepCounter
         lda _stepCounter
         cmp #steps
-        beq !+
-            jmp render_pattern
-        !:
+        bne render_pattern
 
     beat:
         ldx _stepIndex
@@ -103,17 +100,14 @@ Render: {
     Set Character:#145
 
     render_pattern:
-      
-       // _tempo is 0 to $ff, where 0 is FULL ON and $ff is FULL OFF
-      lda _tempoIndicator
-      cmp _stepCounter
-      bcs next_step
-
+        // _tempo is 0 to $ff, where 0 is FULL ON and $ff is FULL OFF
+        lda _tempoIndicator
+        cmp _stepCounter
+        bcs next_step
 
     pattern:
         Set Character:#BLANK_SMALL
         jmp next_step
-        
 
     next_step:
         ldy _stepCounter
@@ -122,14 +116,14 @@ Render: {
         inc _stepCounter
         lda _stepCounter
         cmp #steps
-        beq !+
-            jmp render_pattern
-        !:
+        bne render_pattern
 }
 
 .macro RenderPatternSmall(voiceNumber, voice_x, voice_y) {
-    ldx #0
-    Set _stepCounter:#0
+    lda #0
+    sta _stepCounter
+    tax
+    
     Set PenColor:#DARK_GRAY
 
     lda _selectedVoice
@@ -151,9 +145,7 @@ Render: {
         tay
 
         lda _rhythm, Y
-        bne !+
-            jmp rest
-        !:
+        beq rest
 
     pattern:
         ldy _stepCounter
@@ -170,9 +162,7 @@ Render: {
         inc _stepCounter
         lda _stepCounter
         cmp #steps
-        beq !+
-            jmp render_pattern
-        !:
+        bne render_pattern
 
     beat:
         ldx _stepIndex
@@ -190,12 +180,11 @@ Render: {
     .var screenLO = __tmp0 
     .var screenHI = __tmp1
 
-    txa;pha;tya;pha
-
-    Set __tmp2:x
+    txa;pha;
+   
     Set __tmp3:y
     // annoyingly backwards "x is Y" due to indirect indexing below
-    ldy __tmp2
+    ldy x
     ldx __tmp3
 
     clc
@@ -218,7 +207,7 @@ Render: {
     lda PenColor
     sta (screenLO),Y  
 
-    pla;tay;pla;tax
+    pla;tax
 }
 
 screenRow: .lohifill 25, 40*i
@@ -253,4 +242,3 @@ octave1_y:  .byte 07,07,08,09,09,09,08,07,07,07,08,09,09,09,08,07
 
 octave2_x:  .byte 33,34,34,34,33,32,32,32,33,34,34,34,33,32,32,32
 octave2_y:  .byte 10,10,11,12,12,12,11,10,10,10,11,12,12,12,11,10
-
