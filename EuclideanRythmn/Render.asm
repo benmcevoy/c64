@@ -10,8 +10,8 @@
 Character: .byte 204
 PenColor: .byte GREEN
 
-_voiceColor: .byte RED, GREEN, BLUE, RED, GREEN, BLUE, YELLOW
-_voiceAltColor: .byte LIGHT_RED, LIGHT_GREEN, CYAN, LIGHT_RED, LIGHT_GREEN, CYAN, YELLOW
+_voiceColor: .byte RED, GREEN, ORANGE, RED, GREEN, ORANGE, YELLOW
+_voiceAltColor: .byte LIGHT_RED, LIGHT_GREEN, YELLOW, LIGHT_RED, LIGHT_GREEN, YELLOW, WHITE
 _stepCounter: .byte 0
 
 Render: {

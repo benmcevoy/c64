@@ -189,7 +189,7 @@ scale_circle_harmonic_major: .byte 0,5,11,2,7,12,4,8
 
 .const Noise = %10000001
 .const Square = %01000001
-.const Saw = %00100001
+.const Saw = %01100001
 .const Triangle = %00010001
 .const Silence = 0
 

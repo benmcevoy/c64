@@ -75,7 +75,7 @@ OnRasterInterrupt: {
     inc frameCounter
     ldx frameCounter
 
-    Echo(12, $9)
+    Echo(14, $9)
 
     // end irq
     pla;tay;pla;tax;pla
@@ -90,12 +90,12 @@ OnRasterInterrupt: {
         cpx #period*(i+1)
         bne !+
             Set SID_V1_SUSTAIN_RELEASE:#(volume<<4)+release
-            Set SID_V1_CONTROL:#%00100001
+            Set SID_V1_CONTROL:#%01101001
         !:
 
-        cpx #period*(i+1)+3
+        cpx #period*(i+1)+2
         bne !+
-            Set SID_V1_CONTROL:#%00100000
+            Set SID_V1_CONTROL:#%01100000
         !:
 
         .eval volume = volume>>1

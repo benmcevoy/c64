@@ -5,11 +5,12 @@ BasicUpstart2(Start)
 #import "_charscreen.lib"
 #import "_joystick.lib"
 #import "_math.lib"
+#import "Input.asm"
 
-_rotation_angle_increment: .byte 32
+
 .const AXIS = 8
-.const TRAILS = 16
-.const PALETTE_LENGTH = 8
+.const TRAILS = 8
+.const PALETTE_LENGTH = 16
 
 .const WIDTH = 51
 .const HEIGHT = 51
@@ -18,12 +19,12 @@ _rotation_angle_increment: .byte 32
 .const CENTERX = (WIDTH/2)
 .const CENTERY = (HEIGHT/2)
 .label ROTATION_ANGLE_INCREMENT = _rotation_angle_increment
-.const GLYPH = 204 // a little square
 .label ClearScreen = $E544
+.const readInputDelay = 4
+_readInputInterval: .byte readInputDelay
 
 Start: {
     // initialise
-    Set CharScreen.Character:#GLYPH
     jsr ClearScreen
     Set $d020:#BLACK
     Set $d021:#BLACK
@@ -43,7 +44,15 @@ UpdateState: {
     // set point, just moving along a line
     Set x:time
     Set j:#0
-    Set startAngle:time
+    //Set startAngle:time
+    inc startAngle 
+    inc startAngle 
+
+    dec _readInputInterval
+    bne !+
+        jsr ReadInput
+        Set _readInputInterval:#readInputDelay
+    !:
 
     axis:
         inc writePointer
@@ -258,7 +267,7 @@ y1: .byte 0
 // state
 time: .byte 0
 palette: 
-.byte 1,7,15,5,4,2,6,9,11,8,12,3,13,1,7,15
+//.byte 1,7,15,5,4,2,6,9,11,8,12,3,13,1,7,15
 
 .byte CYAN,LIGHT_BLUE,PURPLE,LIGHT_RED
 .byte ORANGE,YELLOW,LIGHT_GREEN,GREEN
