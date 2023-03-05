@@ -9,9 +9,9 @@ BasicUpstart2(Start)
 
 
 .const AXIS = 8
-.const TRAILS = 8
+.const TRAILS = 6
 .const PALETTE_LENGTH = 16
-
+.const SLOWMO = 2
 .const WIDTH = 51
 .const HEIGHT = 51
 .const OFFSET = 16
@@ -22,6 +22,8 @@ BasicUpstart2(Start)
 .label ClearScreen = $E544
 .const readInputDelay = 4
 _readInputInterval: .byte readInputDelay
+_slowTime: .byte 0
+
 
 Start: {
     // initialise
@@ -29,24 +31,55 @@ Start: {
     Set $d020:#BLACK
     Set $d021:#BLACK
 
+    // Raster IRQ
     sei
-        lda #<UpdateState
-        sta $0314    
+        // disable cia timers
+        lda    #$7f
+        sta    $dc0d
+        
+        // enable raster irq
+        lda $d01a                     
+        ora #$01
+        sta $d01a
+        lda $d011                    
+        and #$7f
+        sta $d011
+
+        // set next irq line number
+        lda    #1
+        sta    $d012
+        
+        lda #<UpdateState            
+        sta $0314
         lda #>UpdateState
         sta $0315
     cli
 
-    loop: jmp loop
+    jmp *
 }
 
 UpdateState: {
-    inc time
+    // ack irq
+    lda $d019
+    sta $d019
+    // set next irq line number
+    lda    #1
+    sta    $d012
+    
+    inc $d020
+
+    inc _slowTime
+    lda _slowTime
+    cmp _slowMo
+    bne !+
+        inc time
+        Set _slowTime:#0
+    !:
+        
     // set point, just moving along a line
     Set x:time
     Set j:#0
-    //Set startAngle:time
-    inc startAngle 
-    inc startAngle 
+    inc startAngle
 
     dec _readInputInterval
     bne !+
@@ -70,36 +103,33 @@ UpdateState: {
         sta y1
         // clear previous
         Set CharScreen.PenColor:#BLACK
+        // this call is very slow
         Plot x1:y1
+
+        // this call is very slow
         Rotate startAngle:x:y
         Set x1:__val0
         Set y1:__val1
-
-        Modulo x1:#WIDTH
-        Set x1:__val0
-        Modulo y1:#HEIGHT
-        Set y1:__val0
+        
+        _mod51(x1)
+        _mod51(y1)
 
         lda x1
         clc 
         adc #OFFSET
         sta x1
 
-        lda #%00000001
-        bit x1
-        bne !+
-            lda x1
-            eor #1
-            sta x1
-        !:
+        // a lot of "aliasing" issues if we do not make x,y even
+        // there is some other bug.  might be color issue? trying to fit multiple colurs into a single char?
+        // i am not sure
+        // make even, set bit 0 to 0
+        lda x1
+        and #%11111110
+        sta x1
 
-        lda #%00000001
-        bit y1
-        bne !+
-            lda y1
-            eor #1
-            sta y1
-        !:
+        lda y1
+        and #%11111110
+        sta y1
 
         ldx writePointer
         lda x1
@@ -107,10 +137,10 @@ UpdateState: {
         lda y1
         sta yTrails, X
 
-        Modulo time:#PALETTE_LENGTH
-        ldx __val0
+        _mod16(time)
         lda palette,X
         sta CharScreen.PenColor
+        // this call is very slow
         Plot x1:y1
                 
         lda startAngle
@@ -131,7 +161,7 @@ UpdateState: {
             jmp axis
         !:
     exit:
-
+dec $d020
     // end irq
     pla;tay;pla;tax;pla
     rti 
@@ -251,6 +281,20 @@ UpdateState: {
     Call CharScreen.PlotH:x:y
 }
 
+// lookup mod51 and put result in value
+.macro _mod51(value){
+    ldx value
+    lda mod51,x
+    sta value
+}
+
+// lookup mod16 and put result in .X
+.macro _mod16(value){
+    ldx value
+    lda mod51,x
+    tax
+}
+
 // relative to origin at centerx,y
 xRelative: .word 0
 yRelative: .word 0
@@ -264,8 +308,7 @@ y2a: .word 0
 x1: .byte 0
 y1: .byte 0
 
-// state
-time: .byte 0
+
 palette: 
 //.byte 1,7,15,5,4,2,6,9,11,8,12,3,13,1,7,15
 
@@ -274,6 +317,11 @@ palette:
 .byte LIGHT_BLUE,BLUE,BLUE,BLUE
 .byte RED,WHITE,WHITE,WHITE
 .byte ORANGE,YELLOW,LIGHT_GREEN,GREEN
+
+*=$3800 "Modulo LUT"
+mod51: .byte 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,0
+mod16: .byte 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
+
 
 *=$4000 "Signed trig tables"
 // values range -127..127  

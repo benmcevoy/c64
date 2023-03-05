@@ -13,7 +13,10 @@
 .const UP_AND_FIRE    = %00010001
 .const DOWN_AND_FIRE    = %00010010
 
+// state
+time: .byte 0
 _rotation_angle_increment: .byte 0
+_slowMo: .byte 4
 
 ReadInput: {
     check_left:
@@ -30,13 +33,27 @@ ReadInput: {
     check_right:
         lda #RIGHT
         bit PORT2
-        bne _exit
+        bne check_up
 
         // do the right action
         lda _rotation_angle_increment
         cmp #32
         beq _exit
         inc _rotation_angle_increment
+        rts
     
-    _exit:rts
+    check_up:
+        // lda #UP 
+        // bit PORT2
+        // bne check_down
+        // inc _slowMo
+        // dec $d020
+        rts
+    check_down:
+        // lda #DOWN
+        // bit PORT2
+        // bne _exit
+        // dec _slowMo
+    _exit:
+        rts
 }
