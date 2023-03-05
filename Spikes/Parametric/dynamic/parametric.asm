@@ -2,7 +2,7 @@ BasicUpstart2(Start)
 #define FASTMATH
 
 #import "_prelude.lib"
-#import "_charscreen.lib"
+//#import "_charscreen.lib"
 #import "_joystick.lib"
 #import "_math.lib"
 #import "Input.asm"
@@ -23,7 +23,7 @@ BasicUpstart2(Start)
 .const readInputDelay = 4
 _readInputInterval: .byte readInputDelay
 _slowTime: .byte 0
-
+PenColor: .byte GREEN
 
 Start: {
     // initialise
@@ -31,7 +31,7 @@ Start: {
     Set $d020:#BLACK
     Set $d021:#BLACK
 
-    Set CharScreen.Character:#126
+    //Set CharScreen.Character:#126
 
     // Raster IRQ
     sei
@@ -68,7 +68,7 @@ UpdateState: {
     lda    #1
     sta    $d012
     
-    //inc $d020
+    // inc $d020
 
     inc _slowTime
     lda _slowTime
@@ -104,8 +104,7 @@ UpdateState: {
         lda yTrails,X
         sta y1
         // clear previous
-        Set CharScreen.PenColor:#BLACK
-        // this call is very slow
+        Set PenColor:#BLACK
         Plot x1:y1
 
         // this call is very slow
@@ -129,8 +128,7 @@ UpdateState: {
 
         _mod16(time)
         lda palette,X
-        sta CharScreen.PenColor
-        // this call is very slow
+        sta PenColor
         Plot x1:y1
                 
         lda startAngle
@@ -151,7 +149,7 @@ UpdateState: {
             jmp axis
         !:
     exit:
-//dec $d020
+    // dec $d020
     // end irq
     pla;tay;pla;tax;pla
     rti 
@@ -278,8 +276,42 @@ UpdateState: {
     lsr
     sta y
 
-    Call CharScreen.Plot:x:y
+    
+    .var screenLO = __tmp0 
+    .var screenHI = __tmp1
+
+    txa;pha;
+   
+    Set __tmp3:y
+    // annoyingly backwards "x is Y" due to indirect indexing below
+    ldy x
+    ldx __tmp3
+
+    clc
+    lda screenRow.lo,X  
+    sta screenLO
+
+    lda screenRow.hi,X
+    ora #$04 
+    sta screenHI
+
+    lda #126
+    sta (screenLO),Y  
+
+    // set color ram
+    lda screenRow.hi,X
+    // ora is nice then to set the memory page
+    ora #$D8 
+    sta screenHI
+
+    lda PenColor
+    sta (screenLO),Y  
+
+    pla;tax
 }
+
+screenRow: .lohifill 25, 40*i
+
 
 // lookup mod51 and put result in value
 .macro _mod51(value){

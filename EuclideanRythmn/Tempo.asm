@@ -49,16 +49,13 @@
         lda    #1
         sta    $d012
     
-    
         dec _readInputInterval
         bne !+
             jsr ReadInput
             Set _readInputInterval:#readInputDelay
         !:
         
-        //inc $d020
         jsr Render
-        //dec $d020
         
         dec _frameCounter
         beq !+
@@ -123,7 +120,7 @@
         //     TriggerOff(0)
         //     TriggerOn(0)
         // !:
-        
+
         // end irq
         pla;tay;pla;tax;pla
         rti          

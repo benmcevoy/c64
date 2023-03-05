@@ -84,6 +84,7 @@
     nextFrame:
         UpdateModulation()
         // end irq
+
         pla;tay;pla;tax;pla
         rti          
     }
