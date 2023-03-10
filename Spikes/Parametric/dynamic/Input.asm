@@ -15,8 +15,9 @@
 
 // state
 time: .byte 0
+clock: .byte 0
 _rotation_angle_increment: .byte 0
-_slowMo: .byte 4
+_slowMo: .byte %00000010
 
 ReadInput: {
     check_left:
@@ -42,22 +43,22 @@ ReadInput: {
         inc _rotation_angle_increment
         rts
 
-    // check_down:
-    //     lda #DOWN
-    //     bit PORT2
-    //     beq !+
-    //         jmp check_up
-    //     !:
-    //     inc _slowMo
-    //     rts;
+    check_down:
+        lda #DOWN
+        bit PORT2
+        beq !+
+            jmp check_up
+        !:
+        inc _slowMo
+        rts;
 
-    // check_up:
-    //     lda #UP
-    //     bit PORT2
-    //     beq !+
-    //         jmp check_left
-    //     !:
-    //     dec _slowMo
+    check_up:
+        lda #UP
+        bit PORT2
+        beq !+
+            jmp check_left
+        !:
+        dec _slowMo
     _exit:
         rts
 }

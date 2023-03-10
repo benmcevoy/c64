@@ -79,15 +79,14 @@ OnRasterInterrupt: {
         Set frameCounter:#32
     !:
 
-    Echo(14, $9)
+    Echo($9)
 
     // end irq
     pla;tay;pla;tax;pla
     rti  
 }
 
-.macro Echo(period, release){
-    .var repeat = 4
+.macro Echo(release){
     .var volume = $f
 
         cpx #32

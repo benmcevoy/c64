@@ -13,6 +13,7 @@
     .const FILTER_HIGH = 18
     .const readInputDelay = 6
     _frameCounter: .byte 1
+    _intraBeatCounter: .byte 1
     _readInputInterval: .byte readInputDelay
     _index: .byte 0
     _filter: .byte 10
@@ -57,6 +58,7 @@
         
         jsr Render
         
+        
         dec _frameCounter
         beq !+
             jmp nextFrame
@@ -93,67 +95,83 @@
         TriggerFilter(8)
 
     nextFrame:
-        ldx _frameCounter
+        dec _intraBeatCounter
+        ldx _intraBeatCounter
+        // set voice number in Y
         ldy #0
-        lda _voiceOn,Y
-        beq!+
-        Echo(10, $9)
-        !:
-
+        Echo()
 
         // end irq
         pla;tay;pla;tax;pla
         rti          
     }
 
-.macro Echo(period, release){
-
-        // i am calling this INTRA-BEAT work
-
-        // this vaguely "works" in  that it retriggers
-        // i think some self modifying code here
-        // seed from _tempo_fill,Y - delay(frames) with the 2 frame delay bug fix thing
-        // on the beat the seed is reset _tempo_fill[Y]
-        // per voice and only reset if the beat is ON
-        // that's a bit of a vague description
-        // so we are modifying to put the next _frameCounter to trigger per voice?
-        Set SID_V1_ATTACK_DECAY:#$00
-        cpx #32
+    .macro Echo(){
+        
+        cpx _delay0_on
         bne !+
-            Set SID_V1_SUSTAIN_RELEASE:#$f9
-            Set SID_V1_CONTROL:#%01101001
+            Set SID_V1_ATTACK_DECAY:#$89
+            Set SID_V1_SUSTAIN_RELEASE:#$F9
+            Set SID_V1_CONTROL:#%00000001
+            // lda _voiceVolume,Y
+            // lsr
+            // sta _voiceVolume,Y
+            // asl;asl;asl;asl
+            // clc;adc #9
+            // sta SID_V1_SUSTAIN_RELEASE
         !:
 
-        cpx #30
+        cpx _delay0_off
         bne !+
             Set SID_V1_CONTROL:#%01100000
         !:
 
-
-        cpx #22
+        cpx _delay1_on
         bne !+
+            Set SID_V1_ATTACK_DECAY:#$A0
             Set SID_V1_SUSTAIN_RELEASE:#$89
-            Set SID_V1_CONTROL:#%01101001
+            Set SID_V1_CONTROL:#%00000001
+
+            // lda _voiceVolume,Y
+            // lsr
+            // sta _voiceVolume,Y
+            // asl;asl;asl;asl
+            // clc;adc #9
+            // sta SID_V1_SUSTAIN_RELEASE
         !:
 
-        cpx #20
+        cpx _delay1_off
         bne !+
             Set SID_V1_CONTROL:#%01100000
         !:
 
-         cpx #12
+
+        cpx _delay2_on
         bne !+
+            Set SID_V1_ATTACK_DECAY:#$C0
             Set SID_V1_SUSTAIN_RELEASE:#$49
-            Set SID_V1_CONTROL:#%01101001
+            Set SID_V1_CONTROL:#%00000001
         !:
 
-        cpx #10
+        cpx _delay2_off
         bne !+
             Set SID_V1_CONTROL:#%01100000
         !:
 
+        cpx _delay3_on
+        bne !+
+            Set SID_V1_ATTACK_DECAY:#$E0
+            Set SID_V1_SUSTAIN_RELEASE:#$29
+            Set SID_V1_CONTROL:#%00000001
+        !:
 
-}
+        cpx _delay3_off
+        bne !+
+            Set SID_V1_CONTROL:#%01100000
+        !:
+
+             
+    }
 
     .macro TriggerFilter(voiceNumber) {
             ldy #voiceNumber
@@ -229,7 +247,9 @@
 
         lda _rhythm, X
         // if 0 then REST
-        beq !+
+        bne !+
+            jmp exit
+        !:
             // trigger on
             TriggerOff(voiceNumber)
 
@@ -241,19 +261,23 @@
 
             lda #$00
             sta SID_V1_SUSTAIN_RELEASE+voiceNumber*7
-
+            Set SID_V1_ATTACK_DECAY+voiceNumber*7:#09
             TriggerOn(voiceNumber)
         #if MIDI
             TriggerMidiOn(voiceNumber)
         #endif
-            
+
             lda #1
             ldy #voiceNumber
             sta _voiceOn, Y
-            lda #tails
-            sta _voiceTails, Y
-            
-        !:
+
+            cpy #0
+            bne exit
+
+            Set _intraBeatCounter:#128
+            Set _voiceVolume,Y:#16
+    exit:
+        
     }
 
     .macro TriggerOctave(voiceNumber) {
@@ -311,4 +335,5 @@
         sta SID_V2_PW_LO
     }
 }
+
 

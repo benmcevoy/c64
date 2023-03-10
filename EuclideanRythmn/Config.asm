@@ -24,9 +24,18 @@ _voiceRotation: .byte 3,4,5,0,0,0,0,0,0
 // flags
 _voiceOn: .byte 0,0,0,0,0,0,0,0,0
 _voiceNoteNumber: .byte 0,0,0,0,0,0,0,0,0
+_voiceVolume: .byte 0,0,0
 _voiceControl: .byte 0,0,0
-_voiceEcho: .byte echo,echo,echo
-_voiceTails: .byte tails,tails,tails
+
+_delay0_on: .byte 112
+_delay0_off: .byte 110
+_delay1_on: .byte 96
+_delay1_off: .byte 94
+_delay2_on: .byte 80
+_delay2_off: .byte 78
+_delay3_on: .byte 64
+_delay3_off: .byte 62
+
 
 .print _tempo
 

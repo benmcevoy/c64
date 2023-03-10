@@ -12,7 +12,7 @@ BasicUpstart2(Start)
 .const PALETTE_LENGTH = 16
 .const WIDTH = 51
 .const HEIGHT = 51
-.const OFFSET = 16
+.const OFFSET = 15
 
 .const CENTERX = (WIDTH/2)
 .const CENTERY = (HEIGHT/2)
@@ -20,7 +20,6 @@ BasicUpstart2(Start)
 .label ClearScreen = $E544
 .const readInputDelay = 4
 _readInputInterval: .byte readInputDelay
-_slowTime: .byte 0
 PenColor: .byte GREEN
 
 Start: {
@@ -66,16 +65,15 @@ UpdateState: {
     
     // inc $d020
 
-    inc _slowTime
-    lda _slowTime
-    cmp _slowMo
+    inc time
+    lda time
+    and _slowMo
     bne !+
-        inc time
-        Set _slowTime:#0
+        inc clock
     !:
         
     // set point, just moving along a line
-    Set x:time
+    Set x:clock
     Set j:#0
     inc startAngle
 
@@ -122,7 +120,7 @@ UpdateState: {
         lda y1
         sta yTrails, X
 
-        _mod16(time)
+        _mod16(clock)
         lda palette,X
         sta PenColor
         Plot x1:y1
@@ -337,7 +335,6 @@ palette:
 .byte CYAN,LIGHT_BLUE,PURPLE,LIGHT_RED
 .byte ORANGE,YELLOW,LIGHT_GREEN,GREEN
 .byte LIGHT_BLUE,BLUE,BLUE,BLUE
-.byte RED,WHITE,WHITE,WHITE
 .byte ORANGE,YELLOW,LIGHT_GREEN,GREEN
 
 *=$3800 "Modulo LUT"
