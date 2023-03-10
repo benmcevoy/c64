@@ -62,7 +62,7 @@ Start: {
     jmp *
 }
 
-frameCounter: .byte 0
+frameCounter: .byte 32
 
 OnRasterInterrupt: {
     // ack irq
@@ -72,8 +72,12 @@ OnRasterInterrupt: {
     lda    #1
     sta    $d012
 
-    inc frameCounter
+    dec frameCounter
     ldx frameCounter
+    cpx #$ff
+    bne!+
+        Set frameCounter:#32
+    !:
 
     Echo(14, $9)
 
@@ -83,6 +87,51 @@ OnRasterInterrupt: {
 }
 
 .macro Echo(period, release){
+    .var repeat = 4
+    .var volume = $f
+
+        cpx #32
+        bne !+
+            Set SID_V1_SUSTAIN_RELEASE:#(volume<<4)+release
+            Set SID_V1_CONTROL:#%01101001
+        !:
+
+        cpx #30
+        bne !+
+            Set SID_V1_CONTROL:#%01100000
+        !:
+.eval volume = volume>>1
+
+        cpx #22
+        bne !+
+            Set SID_V1_SUSTAIN_RELEASE:#(volume<<4)+release
+            Set SID_V1_CONTROL:#%01101001
+        !:
+
+        cpx #20
+        bne !+
+            Set SID_V1_CONTROL:#%01100000
+        !:
+.eval volume = volume>>1
+         cpx #12
+        bne !+
+            Set SID_V1_SUSTAIN_RELEASE:#(volume<<4)+release
+            Set SID_V1_CONTROL:#%01101001
+        !:
+
+        cpx #10
+        bne !+
+            Set SID_V1_CONTROL:#%01100000
+        !:
+
+        cpx #2
+    bne !+
+        Set SID_V1_CONTROL:#%00100000
+    !:
+
+}
+
+.macro EchoUsingInc(period, release){
     .var repeat = 4
     .var volume = $f
 

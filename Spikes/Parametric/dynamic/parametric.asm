@@ -2,7 +2,6 @@ BasicUpstart2(Start)
 #define FASTMATH
 
 #import "_prelude.lib"
-//#import "_charscreen.lib"
 #import "_joystick.lib"
 #import "_math.lib"
 #import "Input.asm"
@@ -11,7 +10,6 @@ BasicUpstart2(Start)
 .const AXIS = 8
 .const TRAILS = 6
 .const PALETTE_LENGTH = 16
-.const SLOWMO = 2
 .const WIDTH = 51
 .const HEIGHT = 51
 .const OFFSET = 16
@@ -30,8 +28,6 @@ Start: {
     jsr ClearScreen
     Set $d020:#BLACK
     Set $d021:#BLACK
-
-    //Set CharScreen.Character:#126
 
     // Raster IRQ
     sei
@@ -275,13 +271,10 @@ UpdateState: {
     lda y
     lsr
     sta y
-
     
     .var screenLO = __tmp0 
     .var screenHI = __tmp1
 
-    txa;pha;
-   
     Set __tmp3:y
     // annoyingly backwards "x is Y" due to indirect indexing below
     ldy x
@@ -306,12 +299,9 @@ UpdateState: {
 
     lda PenColor
     sta (screenLO),Y  
-
-    pla;tax
 }
 
 screenRow: .lohifill 25, 40*i
-
 
 // lookup mod51 and put result in value
 .macro _mod51(value){
@@ -363,3 +353,5 @@ sine: .fill 256,round(127*sin(toRadians(i*360/256)))
 * = $4200 "trails"
 xTrails: .fill (TRAILS*AXIS),0
 yTrails: .fill (TRAILS*AXIS),0
+
+.print Start

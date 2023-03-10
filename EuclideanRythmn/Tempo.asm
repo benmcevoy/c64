@@ -93,38 +93,67 @@
         TriggerFilter(8)
 
     nextFrame:
-        // TODO:
-        // foreach voice
-        // if the _voiceOn, Y is true
-        // dec the _voiceEcho,Y
-        // beq retrigger the note at a lower volume somehow, reset the _voiceEcho,Y to echo
+        ldx _frameCounter
+        ldy #0
+        lda _voiceOn,Y
+        beq!+
+        Echo(10, $9)
+        !:
 
-        // ldx #0
-        // lda _voiceTails,X
-        // beq !+
-
-        // dec _voiceEcho,X
-        // lda _voiceEcho,X
-        // bne !+
-        //     lda #echo
-        //     sta _voiceEcho,X
-            
-        //     Set SID_V1_ATTACK_DECAY:#$09
-
-        //     dec _voiceTails,X
-        //     dec _voiceTails,X
-        //     lda _voiceTails,X
-        //     asl;asl;asl;asl
-            
-        //     sta SID_V1_SUSTAIN_RELEASE
-        //     TriggerOff(0)
-        //     TriggerOn(0)
-        // !:
 
         // end irq
         pla;tay;pla;tax;pla
         rti          
     }
+
+.macro Echo(period, release){
+
+        // i am calling this INTRA-BEAT work
+
+        // this vaguely "works" in  that it retriggers
+        // i think some self modifying code here
+        // seed from _tempo_fill,Y - delay(frames) with the 2 frame delay bug fix thing
+        // on the beat the seed is reset _tempo_fill[Y]
+        // per voice and only reset if the beat is ON
+        // that's a bit of a vague description
+        // so we are modifying to put the next _frameCounter to trigger per voice?
+        Set SID_V1_ATTACK_DECAY:#$00
+        cpx #32
+        bne !+
+            Set SID_V1_SUSTAIN_RELEASE:#$f9
+            Set SID_V1_CONTROL:#%01101001
+        !:
+
+        cpx #30
+        bne !+
+            Set SID_V1_CONTROL:#%01100000
+        !:
+
+
+        cpx #22
+        bne !+
+            Set SID_V1_SUSTAIN_RELEASE:#$89
+            Set SID_V1_CONTROL:#%01101001
+        !:
+
+        cpx #20
+        bne !+
+            Set SID_V1_CONTROL:#%01100000
+        !:
+
+         cpx #12
+        bne !+
+            Set SID_V1_SUSTAIN_RELEASE:#$49
+            Set SID_V1_CONTROL:#%01101001
+        !:
+
+        cpx #10
+        bne !+
+            Set SID_V1_CONTROL:#%01100000
+        !:
+
+
+}
 
     .macro TriggerFilter(voiceNumber) {
             ldy #voiceNumber
