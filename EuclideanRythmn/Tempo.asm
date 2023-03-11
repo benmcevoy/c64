@@ -12,8 +12,8 @@
     .const FILTER_LOW = 6
     .const FILTER_HIGH = 18
     .const readInputDelay = 6
-    _frameCounter: .byte 1
-    _intraBeatCounter: .byte 1
+    _frameCounter: .byte 0
+    _intraBeatCounter: .byte 0,0,0
     _readInputInterval: .byte readInputDelay
     _index: .byte 0
     _filter: .byte 10
@@ -95,82 +95,75 @@
         TriggerFilter(8)
 
     nextFrame:
-        dec _intraBeatCounter
-        ldx _intraBeatCounter
-        // set voice number in Y
-        ldy #0
-        Echo()
+        Echo(0)
+        Echo(1)
+        Echo(2)
 
         // end irq
         pla;tay;pla;tax;pla
         rti          
     }
 
-    .macro Echo(){
-        
-        cpx _delay0_on
+    .macro Echo(voiceNumber){
+        ldy #voiceNumber
+        ldx #voiceNumber
+        inc _intraBeatCounter,X
+
+        lda _intraBeatCounter,Y
+        cmp _delay0_on,Y
         bne !+
-            Set SID_V1_ATTACK_DECAY:#$89
-            Set SID_V1_SUSTAIN_RELEASE:#$F9
-            Set SID_V1_CONTROL:#%00000001
-            // lda _voiceVolume,Y
-            // lsr
-            // sta _voiceVolume,Y
-            // asl;asl;asl;asl
-            // clc;adc #9
-            // sta SID_V1_SUSTAIN_RELEASE
+            Set SID_V1_ATTACK_DECAY+voiceNumber*7:#$89
+            Set SID_V1_SUSTAIN_RELEASE+voiceNumber*7:#$F9
+            Set SID_V1_CONTROL+voiceNumber*7:#%00000001
         !:
 
-        cpx _delay0_off
+        lda _intraBeatCounter,Y
+        cmp _delay0_off,Y
         bne !+
-            Set SID_V1_CONTROL:#%01100000
+            Set SID_V1_CONTROL+voiceNumber*7:#%01100000
         !:
 
-        cpx _delay1_on
+        lda _intraBeatCounter,Y
+        cmp _delay1_on,Y
         bne !+
-            Set SID_V1_ATTACK_DECAY:#$A0
-            Set SID_V1_SUSTAIN_RELEASE:#$89
-            Set SID_V1_CONTROL:#%00000001
-
-            // lda _voiceVolume,Y
-            // lsr
-            // sta _voiceVolume,Y
-            // asl;asl;asl;asl
-            // clc;adc #9
-            // sta SID_V1_SUSTAIN_RELEASE
+            Set SID_V1_ATTACK_DECAY+voiceNumber*7:#$A0
+            Set SID_V1_SUSTAIN_RELEASE+voiceNumber*7:#$89
+            Set SID_V1_CONTROL+voiceNumber*7:#%00000001
         !:
 
-        cpx _delay1_off
+        lda _intraBeatCounter,Y
+        cmp _delay1_off,Y
         bne !+
-            Set SID_V1_CONTROL:#%01100000
+            Set SID_V1_CONTROL+voiceNumber*7:#%01100000
         !:
 
-
-        cpx _delay2_on
+        lda _intraBeatCounter,Y
+        cmp _delay2_on,Y
         bne !+
-            Set SID_V1_ATTACK_DECAY:#$C0
-            Set SID_V1_SUSTAIN_RELEASE:#$49
-            Set SID_V1_CONTROL:#%00000001
+            Set SID_V1_ATTACK_DECAY+voiceNumber*7:#$C0
+            Set SID_V1_SUSTAIN_RELEASE+voiceNumber*7:#$49
+            Set SID_V1_CONTROL+voiceNumber*7:#%00000001
         !:
 
-        cpx _delay2_off
+        lda _intraBeatCounter,Y
+        cmp _delay2_off,Y
         bne !+
-            Set SID_V1_CONTROL:#%01100000
+            Set SID_V1_CONTROL+voiceNumber*7:#%01100000
         !:
 
-        cpx _delay3_on
+        lda _intraBeatCounter,Y
+        cmp _delay3_on,Y
         bne !+
-            Set SID_V1_ATTACK_DECAY:#$E0
-            Set SID_V1_SUSTAIN_RELEASE:#$29
-            Set SID_V1_CONTROL:#%00000001
+            Set SID_V1_ATTACK_DECAY+voiceNumber*7:#$E0
+            Set SID_V1_SUSTAIN_RELEASE+voiceNumber*7:#$29
+            Set SID_V1_CONTROL+voiceNumber*7:#%00000001
         !:
 
-        cpx _delay3_off
+        lda _intraBeatCounter,Y
+        cmp _delay3_off,Y
         bne !+
-            Set SID_V1_CONTROL:#%01100000
+            Set SID_V1_CONTROL+voiceNumber*7:#%01100000
         !:
-
-             
     }
 
     .macro TriggerFilter(voiceNumber) {
@@ -271,11 +264,7 @@
             ldy #voiceNumber
             sta _voiceOn, Y
 
-            cpy #0
-            bne exit
-
-            Set _intraBeatCounter:#128
-            Set _voiceVolume,Y:#16
+            Set _intraBeatCounter,Y:#0
     exit:
         
     }

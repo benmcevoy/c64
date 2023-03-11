@@ -27,17 +27,15 @@ _voiceNoteNumber: .byte 0,0,0,0,0,0,0,0,0
 _voiceVolume: .byte 0,0,0
 _voiceControl: .byte 0,0,0
 
-_delay0_on: .byte 112
-_delay0_off: .byte 110
-_delay1_on: .byte 96
-_delay1_off: .byte 94
-_delay2_on: .byte 80
-_delay2_off: .byte 78
-_delay3_on: .byte 64
-_delay3_off: .byte 62
+_delay0_on: .byte 12,16,18
+_delay0_off: .byte 14,18,20
+_delay1_on: .byte 24,26,28
+_delay1_off: .byte 26,28,30
+_delay2_on: .byte 36,38,40
+_delay2_off: .byte 38,40,42
+_delay3_on: .byte 48,50,52
+_delay3_off: .byte 50,52,54
 
-
-.print _tempo
 
 // double up the sequence so we can offset into it
 .align $100
