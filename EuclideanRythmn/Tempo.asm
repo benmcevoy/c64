@@ -223,7 +223,7 @@
         // a scale transpose , e.g. the step with the beat provides the index into the scale.
         // scale could be constrained to a triad or e.g. 0,7,12 
         // more arp like
-        SetChord(chords, _chord, _transpose, scale_circle_harmonic_major)
+        SetChord(chords, _chord, _transpose, scale_phrygian)
     }
 
     .macro TriggerBeat(voiceNumber) {
@@ -295,6 +295,12 @@
             lda _voiceNoteNumber, Y
             clc; adc #12
             sta _voiceNoteNumber, Y
+
+            ldx _voiceNoteNumber,Y
+            lda freq_msb, X
+            sta SID_V1_FREQ_HI+(voiceNumber-3)*7
+            lda freq_lsb, X
+            sta SID_V1_FREQ_LO+(voiceNumber-3)*7
    
         #if MIDI
             ldy #voiceNumber
