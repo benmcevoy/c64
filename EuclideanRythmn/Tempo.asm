@@ -9,20 +9,20 @@
 
 .namespace Tempo {
 
-    .const FILTER_LOW = 6
-    .const FILTER_HIGH = 18
+    .const FILTER_LOW = 10
+    .const FILTER_HIGH = 40
     .const readInputDelay = 6
     _frameCounter: .byte 0
     _intraBeatCounter: .byte 0,0,0
     _readInputInterval: .byte readInputDelay
     _index: .byte 0
-    _filter: .byte 10
+    _filter: .byte 16
 
     Init: {
         // init SID
         Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111  
         Set SID_MIX_FILTER_CUT_OFF_HI:#10
-        Set SID_MIX_FILTER_CONTROL:#%11110111
+        Set SID_MIX_FILTER_CONTROL:#%01110111
         Set SID_MIX_VOLUME:#%00011111
 
         Set SID_V1_ATTACK_DECAY:#$09
@@ -95,20 +95,52 @@
         TriggerFilter(8)
 
     nextFrame:
+        inc _intraBeatCounter
+        inc _intraBeatCounter+1
+        inc _intraBeatCounter+2
+
         Echo(0)
         Echo(1)
         Echo(2)
+
+        // PWM(0)
+        // PWM(1)
+        // PWM(2)
 
         // end irq
         pla;tay;pla;tax;pla
         rti          
     }
 
+    .macro PWM(voiceNumber) {
+        ldy #voiceNumber
+        lda _intraBeatCounter,Y
+        cmp _delay0_on,Y
+        bne !+
+            SetPulseWidth(voiceNumber, $08, $04)
+        !:
+
+        lda _intraBeatCounter,Y
+        cmp _delay1_on,Y
+        bne !+
+            SetPulseWidth(voiceNumber, $0A, $06)
+        !:
+
+        lda _intraBeatCounter,Y
+        cmp _delay2_on,Y
+        bne !+
+            SetPulseWidth(voiceNumber, $0F, $04)
+        !:
+
+        lda _intraBeatCounter,Y
+        cmp _delay3_on,Y
+        bne !+
+            SetPulseWidth(voiceNumber, $0A, $06)
+        !:        
+    }
+
     .macro Echo(voiceNumber){
         ldy #voiceNumber
-        ldx #voiceNumber
-        inc _intraBeatCounter,X
-
         lda _intraBeatCounter,Y
         cmp _delay0_on,Y
         bne !+
@@ -120,7 +152,7 @@
         lda _intraBeatCounter,Y
         cmp _delay0_off,Y
         bne !+
-            Set SID_V1_CONTROL+voiceNumber*7:#%01100000
+            Set SID_V1_CONTROL+voiceNumber*7:#%00110000
         !:
 
         lda _intraBeatCounter,Y
@@ -134,7 +166,7 @@
         lda _intraBeatCounter,Y
         cmp _delay1_off,Y
         bne !+
-            Set SID_V1_CONTROL+voiceNumber*7:#%01100000
+            Set SID_V1_CONTROL+voiceNumber*7:#%00110000
         !:
 
         lda _intraBeatCounter,Y
@@ -148,7 +180,7 @@
         lda _intraBeatCounter,Y
         cmp _delay2_off,Y
         bne !+
-            Set SID_V1_CONTROL+voiceNumber*7:#%01100000
+            Set SID_V1_CONTROL+voiceNumber*7:#%00110000
         !:
 
         lda _intraBeatCounter,Y
@@ -162,7 +194,7 @@
         lda _intraBeatCounter,Y
         cmp _delay3_off,Y
         bne !+
-            Set SID_V1_CONTROL+voiceNumber*7:#%01100000
+            Set SID_V1_CONTROL+voiceNumber*7:#%00110000
         !:
     }
 
@@ -193,7 +225,6 @@
                 !:
             
                 lda #1
-                ldy #voiceNumber
                 sta _voiceOn, Y
                 jmp exit
             !:
@@ -310,25 +341,4 @@
         
         !:
     }
-
-    .macro UpdateModulation() { 
-        // filter cutoff
-        lda SID_ENV
-        // depth
-        lsr;lsr;lsr;lsr
-        clc;adc #2
-        sta SID_MIX_FILTER_CUT_OFF_HI
-
-        // resonance 
-        lda SID_ENV
-        and #%11110000
-        ora #%00000011
-        sta SID_MIX_FILTER_CONTROL
-
-        lda SID_LFO
-        lsr;lsr;
-        sta SID_V2_PW_LO
-    }
 }
-
-
