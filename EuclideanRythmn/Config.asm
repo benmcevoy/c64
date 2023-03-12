@@ -5,7 +5,7 @@
 .const steps = 8
 
 // tempo in units of "frame count"
-_tempo: .byte $10
+_tempo: .byte 12
 _tempoIndicator: .byte 3
 _stepIndex: .byte 0
 _selectedVoice: .byte 0
@@ -26,17 +26,31 @@ _echoOn: .byte 0
 _patternIndex: .byte 0
 
 .align $100
-_patterns:
-// TODO: voices are a bad name :) yes. how about "channel"
-// and naming the channels would help a lot
-// voices are a bad name :) v0, v1, v2,  octave0, octave1, octave2, filter
+_beatPatterns:
+// an Array of Structures
+// going across are the patterns
+_voice1NumberOfBeats: .byte 1,0,0,0,0,0,0,0
+_voice2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+_voice3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+_octave1NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+_octave2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+_octave3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+_filterNumberOfBeats: .byte 0,0,0,0,0,0,0,0
 
-_voiceNumberOfBeats: .byte 1,0,0,0,0,0,0
-_voiceRotation: .byte 0,0,0,0,0,0,0
+_rotationPatterns:
+_voice1Rotation: .byte 0,0,0,0,0,0,0,0
+_voice2Rotation: .byte 0,0,0,0,0,0,0,0
+_voice3Rotation: .byte 0,0,0,0,0,0,0,0
+_octave1Rotation: .byte 0,0,0,0,0,0,0,0
+_octave2Rotation: .byte 0,0,0,0,0,0,0,0
+_octave3Rotation: .byte 0,0,0,0,0,0,0,0
+_filterRotation: .byte 0,0,0,0,0,0,0,0
+
+
 _voiceOn: .byte 0,0,0,0,0,0,0
 _voiceNoteNumber: .byte 0,0,0,0,0,0,0
-
-
+// allocate space for the other seven patterns
+.fill 49,0
 
 
 _voiceControl: .byte 0,0,0

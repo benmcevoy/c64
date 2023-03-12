@@ -3,7 +3,7 @@
 #import "Config.asm"
 
 // turn on
-#define MIDI
+//#define MIDI
 
 // SEQUENTIAL CIRCUITS INC.
 // Mode 	1 MHZ IRQ 	

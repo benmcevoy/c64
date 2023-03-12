@@ -25,14 +25,15 @@ ReadInput: {
     // actions
     check_voice:
         lda _selectedVoice
-        // cheking for less than or equal to 5
-        // which is voices and octaves
-        cmp #CHANNEL_OCTAVE3
+        // checking for less than or equal to CHANNEL_FILTER
+        // which is voices and octaves and the filter as they are all manipulated the same
+        cmp #CHANNEL_FILTER
         beq !+
-            bcs check_pattern
+            bcc !+
+            jmp check_pattern
         !:
-        ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT_AND_FIRE, LEFT_AND_FIRE)
-        CycleForVoice(_selectedVoice, _voiceRotation, 0, steps, UP_AND_FIRE, DOWN_AND_FIRE)
+        ConstrainBeatsForVoice(_selectedVoice, 0, steps, RIGHT_AND_FIRE, LEFT_AND_FIRE)
+        CycleRotationForVoice(_selectedVoice, 0, steps, UP_AND_FIRE, DOWN_AND_FIRE)
         jmp end
 
     check_pattern:
@@ -48,18 +49,10 @@ ReadInput: {
     check_tempo:
         lda _selectedVoice
         cmp #CHANNEL_TEMPO
-        bne check_filter
+        bne select_voice
         Constrain(_tempoIndicator, 0, 7, RIGHT_AND_FIRE, LEFT_AND_FIRE)
         Constrain(_tempoIndicator, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)
         Toggle(_echoOn, FIRE)        
-        jmp end
-
-    check_filter:
-        lda _selectedVoice
-        cmp #CHANNEL_FILTER
-        bne select_voice
-        ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT_AND_FIRE, LEFT_AND_FIRE)
-        CycleForVoice(_selectedVoice, _voiceRotation, 0, steps, UP_AND_FIRE, DOWN_AND_FIRE)
         jmp end
 
 
@@ -349,50 +342,84 @@ _exit:rts
     !:
 }
 
-.macro CycleForVoice(voice, operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
+.macro CycleRotationForVoice(voice, lowerlimit, upperlimit, increaseAction, decreaseAction){
+    // setup pointer
+    lda #>_rotationPatterns
+    sta op1+2
+    sta op2+2
+    sta op3+2
+    sta op4+2
+    sta op5+2
+    sta op6+2    
+
+    lda voice
+    // multiply by 8
+    asl;asl;asl
+    clc; adc #<_rotationPatterns
+    sta op1+1
+    sta op2+1
+    sta op3+1
+    sta op4+1
+    sta op5+1
+    sta op6+1    
+
     lda #decreaseAction
     bit PORT2
     bne !++
-        lda voice
-        tax
-        lda operand, X
+        ldx _patternIndex
+op1:    lda $BEEF, X
         cmp #lowerlimit
         beq !+
-            dec operand, X
+op2:        dec $BEEF, X
             jmp _exit
         !:
         lda #upperlimit
-        sta operand, X
+op3:    sta $BEEF, X
         jmp _exit
     !:
 
     lda #increaseAction
     bit PORT2
     bne !++
-        lda voice
-        tax
-        lda operand, X
+        ldx _patternIndex
+op4:    lda $BEEF, X
         cmp #upperlimit
         beq !+
-            inc operand, X
+op5:        inc $BEEF, X
             jmp _exit
         !:
         lda #lowerlimit
-        sta operand, X
+op6:    sta $BEEF, X
         jmp _exit
     !:
 }
 
-.macro ConstrainForVoice(voice, operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
+
+.macro ConstrainBeatsForVoice(voice, lowerlimit, upperlimit, increaseAction, decreaseAction){
+    // setup pointer
+    lda #>_beatPatterns
+    sta op1+2
+    sta op2+2
+    sta op3+2
+    sta op4+2
+
+    lda voice
+    // multiply by 8
+    asl;asl;asl
+    clc; adc #<_beatPatterns
+    sta op1+1
+    sta op2+1
+    sta op3+1
+    sta op4+1
+
     lda #decreaseAction
     bit PORT2
     bne !++
-        lda voice
-        tax
-        lda operand, X
+        ldx _patternIndex
+op1:    lda $BEEF, X
         cmp #lowerlimit
         beq !+
-            dec operand, X
+op2:    dec $BEEF, X
         !:
         jmp _exit
     !:
@@ -400,15 +427,16 @@ _exit:rts
     lda #increaseAction
     bit PORT2
     bne !++
-        lda voice
-        tax
-        lda operand, X
+        ldx _patternIndex
+op3:    lda $BEEF, X
         cmp #upperlimit
         beq !+
-            inc operand, X
+op4:        inc $BEEF, X
         !:
         jmp _exit
-    !:        
+    !:   
+
+   
 }
 
 .macro Toggle(operand, action){
@@ -421,3 +449,4 @@ _exit:rts
         jmp _exit
     !:
 }
+

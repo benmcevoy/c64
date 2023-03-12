@@ -176,16 +176,19 @@
     }
 
     .macro TriggerFilter(voiceNumber) {
+.var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+.var voiceRotation = _rotationPatterns + (voiceNumber*8)
+
             ldy #voiceNumber
             lda #0
             sta _voiceOn,Y
-            
-            lda _voiceNumberOfBeats, Y
+            ldy _patternIndex
+            lda voiceNumberOfBeats, Y
             // *16 so shift 4 times
             asl;asl;asl;asl
             clc 
             adc _stepIndex
-            adc _voiceRotation, Y
+            adc voiceRotation, Y
             tax
 
             lda _rhythm, X
@@ -225,15 +228,20 @@
     }
 
     .macro TriggerBeat(voiceNumber) {
+
+.var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+.var voiceRotation = _rotationPatterns + (voiceNumber*8)
+
         ldy #voiceNumber
         lda #0
         sta _voiceOn,Y
-        lda _voiceNumberOfBeats, Y
+        ldy _patternIndex
+        lda voiceNumberOfBeats, Y
         // *16 so shift 4 times
         asl;asl;asl;asl
         clc 
         adc _stepIndex
-        adc _voiceRotation, Y
+        adc voiceRotation, Y
         tax
 
         lda _rhythm, X
@@ -267,15 +275,21 @@
     }
 
     .macro TriggerOctave(voiceNumber) {
+
+
+.var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+.var voiceRotation = _rotationPatterns + (voiceNumber*8)
+
         ldy #voiceNumber
         lda #0
         sta _voiceOn,Y
-        lda _voiceNumberOfBeats, Y
+        ldy _patternIndex
+        lda voiceNumberOfBeats, Y
         // *16 so shift 4 times
         asl;asl;asl;asl
         clc 
         adc _stepIndex
-        adc _voiceRotation, Y
+        adc voiceRotation, Y
         tax
 
         lda _rhythm, X

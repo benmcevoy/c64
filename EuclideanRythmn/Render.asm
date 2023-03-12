@@ -92,6 +92,10 @@ Render: {
 
 
 .macro RenderPattern(voiceNumber, voice_x, voice_y, blank) {
+
+.var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+.var voiceRotation = _rotationPatterns + (voiceNumber*8)
+
     lda #0
     sta _stepCounter
     tax
@@ -106,14 +110,14 @@ Render: {
     !:
 
     render_pattern:
-        ldy #voiceNumber
+        ldy _patternIndex
         // is this step a beat?
-        lda _voiceNumberOfBeats, Y
+        lda voiceNumberOfBeats, Y
         // *16 so shift 4 times, each rhytmn pattern is sixteeen long 
         asl;asl;asl;asl
         clc 
         adc _stepCounter
-        adc _voiceRotation, Y
+        adc voiceRotation, Y
         tay
 
         lda _rhythm, Y
@@ -182,6 +186,11 @@ Render: {
 }
 
 .macro RenderPatternSmall(voiceNumber, voice_x, voice_y) {
+
+
+.var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+.var voiceRotation = _rotationPatterns + (voiceNumber*8)
+
     lda #0
     sta _stepCounter
     tax
@@ -196,14 +205,14 @@ Render: {
     !:
 
     render_pattern:
-        ldy #voiceNumber
+        ldy _patternIndex
         // is this step a beat?
-        lda _voiceNumberOfBeats, Y
+        lda voiceNumberOfBeats, Y
         // *16 so shift 4 times, each rhytmn pattern is sixteeen long 
         asl;asl;asl;asl
         clc 
         adc _stepCounter
-        adc _voiceRotation, Y
+        adc voiceRotation, Y
         tay
 
         lda _rhythm, Y
