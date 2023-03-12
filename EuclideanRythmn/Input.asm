@@ -15,9 +15,6 @@
 .const DOWN_AND_FIRE    = %00010010
 
 ReadInput: {
-    // TODO: for even more parameters or modes
-    // just push fire to swap parameter sets for any selected "voice"
-
     // hold down fire for actions
     lda #FIRE
     bit PORT2
@@ -28,20 +25,24 @@ ReadInput: {
     // actions
     check_voice:
         lda _selectedVoice
+        // cheking for less than or equal to 5
+        // which is voices and octaves
         cmp #5
         beq !+
-            bcs check_chord
+            bcs check_pattern
         !:
         ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT_AND_FIRE, LEFT_AND_FIRE)
         CycleForVoice(_selectedVoice, _voiceRotation, 0, steps, UP_AND_FIRE, DOWN_AND_FIRE)
         jmp end
-        
-    check_chord:
+
+    check_pattern:
         lda _selectedVoice
         cmp #6
-        bne check_tempo
-        Cycle(_chord, 0, chord_length, LEFT_AND_FIRE, RIGHT_AND_FIRE)
-        Constrain(_transpose, 0, scale_length, UP_AND_FIRE, DOWN_AND_FIRE)    
+        beq !+
+            jmp check_tempo
+        !:
+        CycleForVoice(_selectedVoice, _voiceRotation, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+        CycleForVoice(_selectedVoice, _voiceRotation, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)    
         jmp end
 
     check_tempo:
@@ -50,6 +51,7 @@ ReadInput: {
         bne check_filter
         Constrain(_tempoIndicator, 0, 7, RIGHT_AND_FIRE, LEFT_AND_FIRE)
         Constrain(_tempoIndicator, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)
+        Toggle(_echoOn, FIRE)        
         jmp end
 
     check_filter:
@@ -59,6 +61,7 @@ ReadInput: {
         ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT_AND_FIRE, LEFT_AND_FIRE)
         CycleForVoice(_selectedVoice, _voiceRotation, 0, steps, UP_AND_FIRE, DOWN_AND_FIRE)
         jmp end
+
 
     // selection
     select_voice:
@@ -404,4 +407,15 @@ _exit:rts
         !:
         jmp _exit
     !:        
+}
+
+.macro Toggle(operand, action){
+    lda #action
+    bit PORT2
+    bne !+
+        lda operand
+        eor #$FF
+        sta operand
+        jmp _exit
+    !:
 }

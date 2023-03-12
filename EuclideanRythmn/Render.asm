@@ -23,11 +23,28 @@ Render: {
     RenderPatternSmall(4, octave1_x, octave1_y)
     RenderPatternSmall(5, octave2_x, octave2_y)
     
-    RenderPattern(6, chord_x, chord_y, BLANK_SMALL)
+    RenderPattern(6, pattern_x, pattern_y, BLANK_SMALL)
     RenderTempo(tempo_x, tempo_y)
     RenderPattern(8, filter_x, filter_y, BLANK_SMALL)
+
+    RenderEcho()
     rts
 }
+
+.macro RenderEcho() {
+    
+    Set Character: #150
+    Set PenColor: #DARK_GRAY
+
+    lda _echoOn
+    beq !+
+        Set Character: #151
+        Set PenColor: #GREEN
+    !:
+
+    Plot #25: #19
+}
+
 
 .macro RenderPattern(voiceNumber, voice_x, voice_y, blank) {
     lda #0
@@ -225,8 +242,8 @@ voice1_y:   .byte 10,11,15,19,20,19,15,11,10,11,15,19,20,19,15,11
 voice2_x:   .byte 09,15,16,15,09,03,02,03,09,15,16,15,09,03,02,03
 voice2_y:   .byte 08,09,15,21,22,21,15,09,08,09,15,21,22,21,15,09
 
-chord_x:    .byte 33,35,36,35,33,31,30,31,33,35,36,35,33,31,30,31
-chord_y:    .byte 16,17,19,21,22,21,19,17,16,17,19,21,22,21,19,17
+pattern_x:    .byte 33,35,36,35,33,31,30,31,33,35,36,35,33,31,30,31
+pattern_y:    .byte 16,17,19,21,22,21,19,17,16,17,19,21,22,21,19,17
 
 tempo_x:    .byte 25,23,22,23,25,27,28,27
 tempo_y:    .byte 22,21,19,17,16,17,19,21

@@ -82,6 +82,7 @@
         TriggerMidiOff(4)
         TriggerMidiOff(5)
     #endif    
+        TriggerPattern()
         TriggerChord()
 
         TriggerOctave(3)
@@ -99,44 +100,19 @@
         inc _intraBeatCounter+1
         inc _intraBeatCounter+2
 
+        lda _echoOn
+        bne !+
+            jmp exit
+        !:
+
         Echo(0)
         Echo(1)
         Echo(2)
 
-        // PWM(0)
-        // PWM(1)
-        // PWM(2)
-
+    exit:
         // end irq
         pla;tay;pla;tax;pla
         rti          
-    }
-
-    .macro PWM(voiceNumber) {
-        ldy #voiceNumber
-        lda _intraBeatCounter,Y
-        cmp _delay0_on,Y
-        bne !+
-            SetPulseWidth(voiceNumber, $08, $04)
-        !:
-
-        lda _intraBeatCounter,Y
-        cmp _delay1_on,Y
-        bne !+
-            SetPulseWidth(voiceNumber, $0A, $06)
-        !:
-
-        lda _intraBeatCounter,Y
-        cmp _delay2_on,Y
-        bne !+
-            SetPulseWidth(voiceNumber, $0F, $04)
-        !:
-
-        lda _intraBeatCounter,Y
-        cmp _delay3_on,Y
-        bne !+
-            SetPulseWidth(voiceNumber, $0A, $06)
-        !:        
     }
 
     .macro Echo(voiceNumber){
@@ -239,21 +215,14 @@
         exit:
     }
     
-    .macro TriggerChord() {
+    .macro TriggerPattern() {
+        // TODO: _voiceRotation, Y contains the currently selected pattern
         ldy #6
-        lda _chord
-        sta _voiceRotation, Y
+        lda _voiceRotation, Y
+        sta _pattern
+    }
 
-        // i was thinking about reading the chord then setting some v0-2 reference notes
-        // then calculating octave from the reference
-        // also - scale, use the step index to index into the scale and add that as the transpose
-        // so rather than transposing, that action cycles throgh scales?
-        // the chord sets the reference
-
-        // or use the scale to add variety to the octave, not an 12 step transpose but
-        // a scale transpose , e.g. the step with the beat provides the index into the scale.
-        // scale could be constrained to a triad or e.g. 0,7,12 
-        // more arp like
+    .macro TriggerChord() {
         SetChord(chords, _chord, _transpose, scale_phrygian)
     }
 
