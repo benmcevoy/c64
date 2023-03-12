@@ -13,9 +13,7 @@ Start: {
 
     // clear screen
     jsr $E544
-
     jsr Screen.Draw
-
     jsr Tempo.Init
 
 #if MIDI    

@@ -24,8 +24,9 @@ Render: {
     RenderPatternSmall(CHANNEL_OCTAVE3, octave2_x, octave2_y)
     
     RenderPattern(CHANNEL_FILTER, filter_x, filter_y, BLANK_SMALL)
+
+    RenderSelectedPattern(pattern_x, pattern_y, BLANK_SMALL)
     RenderTempo(tempo_x, tempo_y)
-    RenderPattern(CHANNEL_PATTERN, pattern_x, pattern_y, BLANK_SMALL)
 
     RenderEcho()
     rts
@@ -43,6 +44,50 @@ Render: {
     !:
 
     Plot #25: #19
+}
+
+.macro RenderSelectedPattern(voice_x, voice_y, blank) {
+    lda #0
+    sta _stepCounter
+    tax
+    
+    Set PenColor:#DARK_GRAY
+
+    lda _selectedVoice
+    cmp #CHANNEL_PATTERN
+    bne !+
+        ldy #CHANNEL_PATTERN
+        Set PenColor:_voiceColor, Y
+    !:
+
+    render_pattern:
+        ldy #CHANNEL_PATTERN
+        // is this step a beat?
+        lda #1
+        // *16 so shift 4 times, each rhytmn pattern is sixteeen long 
+        asl;asl;asl;asl
+        clc 
+        adc _stepCounter
+        adc _patternIndex
+        tay
+
+        lda _rhythm, Y
+        beq rest
+
+    pattern:
+        Set Character:#PATTERN
+        jmp next_step
+
+    rest:
+        Set Character:#blank
+
+    next_step:
+        Plot voice_x,X:voice_y,X
+        inx
+        inc _stepCounter
+        lda _stepCounter
+        cmp #steps
+        bne render_pattern
 }
 
 

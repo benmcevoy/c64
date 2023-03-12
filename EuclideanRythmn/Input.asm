@@ -41,8 +41,8 @@ ReadInput: {
         beq !+
             jmp check_tempo
         !:
-        CycleForVoice(_selectedVoice, _voiceRotation, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
-        CycleForVoice(_selectedVoice, _voiceRotation, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)    
+        Cycle(_patternIndex, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+        Cycle(_patternIndex, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)    
         jmp end
 
     check_tempo:

@@ -29,12 +29,14 @@ _patternIndex: .byte 0
 _patterns:
 // TODO: voices are a bad name :) yes. how about "channel"
 // and naming the channels would help a lot
-// v6 (pattern) must be 1.  voices are a bad name :) v0, v1, v2,  octave0, octave1, octave2, filter, tempo, pattern
+// voices are a bad name :) v0, v1, v2,  octave0, octave1, octave2, filter
 
-_voiceNumberOfBeats: .byte 1,0,0,0,0,0,0,0,1
-_voiceRotation: .byte 0,0,0,0,0,0,0,0,0
-_voiceOn: .byte 0,0,0,0,0,0,0,0,0
-_voiceNoteNumber: .byte 0,0,0,0,0,0,0,0,0
+_voiceNumberOfBeats: .byte 1,0,0,0,0,0,0
+_voiceRotation: .byte 0,0,0,0,0,0,0
+_voiceOn: .byte 0,0,0,0,0,0,0
+_voiceNoteNumber: .byte 0,0,0,0,0,0,0
+
+
 
 
 _voiceControl: .byte 0,0,0

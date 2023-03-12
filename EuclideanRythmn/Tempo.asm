@@ -217,10 +217,7 @@
     }
     
     .macro TriggerPattern() {
-        // TODO: _voiceRotation, Y contains the currently selected pattern
-        ldy #CHANNEL_PATTERN
-        lda _voiceRotation, Y
-        sta _patternIndex
+        // TODO: 
     }
 
     .macro TriggerChord() {
