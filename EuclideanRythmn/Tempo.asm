@@ -31,13 +31,13 @@
 
         Set SID_V1_SUSTAIN_RELEASE:#$00
 
-        SetWaveForm(0, Saw)
-        SetWaveForm(1, Saw)
-        SetWaveForm(2, Saw)
+        SetWaveForm(CHANNEL_VOICE1, Saw)
+        SetWaveForm(CHANNEL_VOICE2, Saw)
+        SetWaveForm(CHANNEL_VOICE3, Saw)
 
-        SetPulseWidth(0, $08, $04)
-        SetPulseWidth(1, $09, $06)
-        SetPulseWidth(2, $8A, $06)
+        SetPulseWidth(CHANNEL_VOICE1, $08, $04)
+        SetPulseWidth(CHANNEL_VOICE2, $09, $06)
+        SetPulseWidth(CHANNEL_VOICE3, $8A, $06)
 
         rts
     }
@@ -75,25 +75,26 @@
             Set _stepIndex:#0
         !:
     #if MIDI
-        TriggerMidiOff(0)
-        TriggerMidiOff(1)
-        TriggerMidiOff(2)
-        TriggerMidiOff(3)
-        TriggerMidiOff(4)
-        TriggerMidiOff(5)
+        TriggerMidiOff(CHANNEL_VOICE1)
+        TriggerMidiOff(CHANNEL_VOICE2)
+        TriggerMidiOff(CHANNEL_VOICE3)
+        TriggerMidiOff(CHANNEL_OCTAVE1)
+        TriggerMidiOff(CHANNEL_OCTAVE2)
+        TriggerMidiOff(CHANNEL_OCTAVE3)
+        // filter is not sent to midi
     #endif    
         TriggerPattern()
         TriggerChord()
 
-        TriggerOctave(3)
-        TriggerOctave(4)
-        TriggerOctave(5)
+        TriggerOctave(CHANNEL_OCTAVE1)
+        TriggerOctave(CHANNEL_OCTAVE2)
+        TriggerOctave(CHANNEL_OCTAVE3)
 
-        TriggerBeat(0)
-        TriggerBeat(1)
-        TriggerBeat(2)
+        TriggerBeat(CHANNEL_VOICE1)
+        TriggerBeat(CHANNEL_VOICE2)
+        TriggerBeat(CHANNEL_VOICE3)
 
-        TriggerFilter(8)
+        TriggerFilter(CHANNEL_FILTER)
 
     nextFrame:
         inc _intraBeatCounter
@@ -105,9 +106,9 @@
             jmp exit
         !:
 
-        Echo(0)
-        Echo(1)
-        Echo(2)
+        Echo(CHANNEL_VOICE1)
+        Echo(CHANNEL_VOICE2)
+        Echo(CHANNEL_VOICE3)
 
     exit:
         // end irq
@@ -217,9 +218,9 @@
     
     .macro TriggerPattern() {
         // TODO: _voiceRotation, Y contains the currently selected pattern
-        ldy #6
+        ldy #CHANNEL_PATTERN
         lda _voiceRotation, Y
-        sta _pattern
+        sta _patternIndex
     }
 
     .macro TriggerChord() {
@@ -265,8 +266,7 @@
             sta _voiceOn, Y
 
             Set _intraBeatCounter,Y:#0
-    exit:
-        
+        exit:
     }
 
     .macro TriggerOctave(voiceNumber) {
@@ -307,7 +307,6 @@
             sta _voiceNoteNumber, Y
             TriggerMidiOn(voiceNumber)
         #endif
-        
         !:
     }
 }

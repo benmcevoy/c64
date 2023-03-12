@@ -15,17 +15,17 @@ _voiceAltColor: .byte LIGHT_RED, LIGHT_GREEN, YELLOW, LIGHT_RED, LIGHT_GREEN, YE
 _stepCounter: .byte 0
 
 Render: {
-    RenderPattern(0, voice0_x, voice0_y, BLANK)
-    RenderPattern(1, voice1_x, voice1_y, BLANK)
-    RenderPattern(2, voice2_x, voice2_y, BLANK)
+    RenderPattern(CHANNEL_VOICE1, voice0_x, voice0_y, BLANK)
+    RenderPattern(CHANNEL_VOICE2, voice1_x, voice1_y, BLANK)
+    RenderPattern(CHANNEL_VOICE3, voice2_x, voice2_y, BLANK)
 
-    RenderPatternSmall(3, octave0_x, octave0_y)
-    RenderPatternSmall(4, octave1_x, octave1_y)
-    RenderPatternSmall(5, octave2_x, octave2_y)
+    RenderPatternSmall(CHANNEL_OCTAVE1, octave0_x, octave0_y)
+    RenderPatternSmall(CHANNEL_OCTAVE2, octave1_x, octave1_y)
+    RenderPatternSmall(CHANNEL_OCTAVE3, octave2_x, octave2_y)
     
-    RenderPattern(6, pattern_x, pattern_y, BLANK_SMALL)
+    RenderPattern(CHANNEL_FILTER, filter_x, filter_y, BLANK_SMALL)
     RenderTempo(tempo_x, tempo_y)
-    RenderPattern(8, filter_x, filter_y, BLANK_SMALL)
+    RenderPattern(CHANNEL_PATTERN, pattern_x, pattern_y, BLANK_SMALL)
 
     RenderEcho()
     rts
@@ -105,9 +105,9 @@ Render: {
     Set PenColor:#DARK_GRAY
 
     lda _selectedVoice
-    cmp #7
+    cmp #CHANNEL_TEMPO
     bne !+
-        ldy #7
+        ldy #CHANNEL_TEMPO
         // or selected
         Set PenColor:_voiceColor, Y
     !:

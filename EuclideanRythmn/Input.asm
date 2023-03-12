@@ -27,7 +27,7 @@ ReadInput: {
         lda _selectedVoice
         // cheking for less than or equal to 5
         // which is voices and octaves
-        cmp #5
+        cmp #CHANNEL_OCTAVE3
         beq !+
             bcs check_pattern
         !:
@@ -37,7 +37,7 @@ ReadInput: {
 
     check_pattern:
         lda _selectedVoice
-        cmp #6
+        cmp #CHANNEL_PATTERN
         beq !+
             jmp check_tempo
         !:
@@ -47,7 +47,7 @@ ReadInput: {
 
     check_tempo:
         lda _selectedVoice
-        cmp #7
+        cmp #CHANNEL_TEMPO
         bne check_filter
         Constrain(_tempoIndicator, 0, 7, RIGHT_AND_FIRE, LEFT_AND_FIRE)
         Constrain(_tempoIndicator, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)
@@ -56,7 +56,7 @@ ReadInput: {
 
     check_filter:
         lda _selectedVoice
-        cmp #8
+        cmp #CHANNEL_FILTER
         bne select_voice
         ConstrainForVoice(_selectedVoice, _voiceNumberOfBeats, 0, steps, RIGHT_AND_FIRE, LEFT_AND_FIRE)
         CycleForVoice(_selectedVoice, _voiceRotation, 0, steps, UP_AND_FIRE, DOWN_AND_FIRE)
@@ -80,50 +80,50 @@ _exit:rts
         !:
 
         lda _selectedVoice
-        cmp #0
+        cmp #CHANNEL_VOICE1
         bne !+
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #1
+        cmp #CHANNEL_VOICE2
         bne !+
-            Set _selectedVoice:#0
+            Set _selectedVoice:#CHANNEL_VOICE1
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #2
+        cmp #CHANNEL_VOICE3
         bne !+
-            Set _selectedVoice:#1
+            Set _selectedVoice:#CHANNEL_VOICE2
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #3
+        cmp #CHANNEL_OCTAVE1
         bne !+
-            Set _selectedVoice:#5
+            Set _selectedVoice:#CHANNEL_OCTAVE3
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #4
+        cmp #CHANNEL_OCTAVE2
         bne !+
-            Set _selectedVoice:#5
+            Set _selectedVoice:#CHANNEL_OCTAVE3
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #5
+        cmp #CHANNEL_OCTAVE3
         bne !+
-            Set _selectedVoice:#6
+            Set _selectedVoice:#CHANNEL_PATTERN
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #8
+        cmp #CHANNEL_FILTER
         bne !+
-            Set _selectedVoice:#7
+            Set _selectedVoice:#CHANNEL_TEMPO
             jmp _exit
         !:
 
@@ -135,43 +135,43 @@ _exit:rts
         !:
 
         lda _selectedVoice
-        cmp #0
+        cmp #CHANNEL_VOICE1
         bne !+
-            Set _selectedVoice:#1
+            Set _selectedVoice:#CHANNEL_VOICE2
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #1
+        cmp #CHANNEL_VOICE2
         bne !+
-            Set _selectedVoice:#2
+            Set _selectedVoice:#CHANNEL_VOICE3
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #2
+        cmp #CHANNEL_VOICE3
         bne !+
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #5
+        cmp #CHANNEL_OCTAVE3
         bne !+
-            Set _selectedVoice:#4
+            Set _selectedVoice:#CHANNEL_OCTAVE2
             jmp _exit
         !:  
 
         lda _selectedVoice
-        cmp #6
+        cmp #CHANNEL_PATTERN
         bne !+
-            Set _selectedVoice:#5
+            Set _selectedVoice:#CHANNEL_OCTAVE3
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #7
+        cmp #CHANNEL_TEMPO
         bne !+
-            Set _selectedVoice:#8
+            Set _selectedVoice:#CHANNEL_FILTER
             jmp _exit
         !:
 
@@ -183,64 +183,66 @@ _exit:rts
         !:
 
         lda _selectedVoice
-        cmp #0
+        cmp #CHANNEL_VOICE1
         bne !+
-            Set _selectedVoice:#1
+            Set _selectedVoice:#CHANNEL_VOICE2
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #1
+        cmp #CHANNEL_VOICE2
         bne !+
-            Set _selectedVoice:#2
+            Set _selectedVoice:#CHANNEL_VOICE3
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #2
+        cmp #CHANNEL_VOICE3
         bne !+
+            // not sure
+            //Set _selectedVoice:#CHANNEL_VOICE2
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #3
+        cmp #CHANNEL_OCTAVE1
         bne !+
-            Set _selectedVoice:#8
+            Set _selectedVoice:#CHANNEL_FILTER
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #4
+        cmp #CHANNEL_OCTAVE2
         bne !+
-            Set _selectedVoice:#3
+            Set _selectedVoice:#CHANNEL_OCTAVE1
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #5
+        cmp #CHANNEL_OCTAVE3
         bne !+
-            Set _selectedVoice:#3
+            Set _selectedVoice:#CHANNEL_OCTAVE1
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #8
+        cmp #CHANNEL_FILTER
         bne !+
-            Set _selectedVoice:#2
+            Set _selectedVoice:#CHANNEL_VOICE3
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #6
+        cmp #CHANNEL_PATTERN
         bne !+
-            Set _selectedVoice:#7
+            Set _selectedVoice:#CHANNEL_TEMPO
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #7
+        cmp #CHANNEL_TEMPO
         bne !+
-            Set _selectedVoice:#2
+            Set _selectedVoice:#CHANNEL_VOICE3
             jmp _exit
         !:
 
@@ -252,44 +254,44 @@ _exit:rts
         !:
 
         lda _selectedVoice
-        cmp #0
+        cmp #CHANNEL_VOICE1
         bne !+
-            Set _selectedVoice:#1
+            Set _selectedVoice:#CHANNEL_VOICE2
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #1
+        cmp #CHANNEL_VOICE2
         bne !+
-            Set _selectedVoice:#2
+            Set _selectedVoice:#CHANNEL_VOICE3
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #2
+        cmp #CHANNEL_VOICE3
         bne !+
-            Set _selectedVoice:#8
+            Set _selectedVoice:#CHANNEL_FILTER
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #8
+        cmp #CHANNEL_FILTER
         bne !+
-            Set _selectedVoice:#3
+            Set _selectedVoice:#CHANNEL_OCTAVE1
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #3
+        cmp #CHANNEL_OCTAVE1
         bne !+
-            Set _selectedVoice:#4
+            Set _selectedVoice:#CHANNEL_OCTAVE2
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #7
+        cmp #CHANNEL_TEMPO
         bne !+
-            Set _selectedVoice:#6
+            Set _selectedVoice:#CHANNEL_PATTERN
             jmp _exit
         !:        
 

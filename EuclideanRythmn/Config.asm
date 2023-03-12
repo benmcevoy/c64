@@ -12,18 +12,31 @@ _selectedVoice: .byte 0
 _transpose: .byte 0
 _chord: .byte 0
 _echoOn: .byte 0
-_pattern: .byte 0
 
+.const CHANNEL_VOICE1 = 0
+.const CHANNEL_VOICE2 = 1
+.const CHANNEL_VOICE3 = 2
+.const CHANNEL_OCTAVE1 = 3
+.const CHANNEL_OCTAVE2 = 4
+.const CHANNEL_OCTAVE3 = 5
+.const CHANNEL_FILTER = 6
+.const CHANNEL_TEMPO = 7
+.const CHANNEL_PATTERN = 8
+
+_patternIndex: .byte 0
+
+.align $100
+_patterns:
 // TODO: voices are a bad name :) yes. how about "channel"
 // and naming the channels would help a lot
-// v6 (pattern) must be 1.  voices are a bad name :) v0, v1, v2,  octave0, octave1, octave2, pattern, tempo, filter
-_voiceNumberOfBeats: .byte 1,0,0,0,0,0,1,0,0
-// offset 0-8
+// v6 (pattern) must be 1.  voices are a bad name :) v0, v1, v2,  octave0, octave1, octave2, filter, tempo, pattern
+
+_voiceNumberOfBeats: .byte 1,0,0,0,0,0,0,0,1
 _voiceRotation: .byte 0,0,0,0,0,0,0,0,0
-// flags
 _voiceOn: .byte 0,0,0,0,0,0,0,0,0
 _voiceNoteNumber: .byte 0,0,0,0,0,0,0,0,0
-_voiceVolume: .byte 0,0,0
+
+
 _voiceControl: .byte 0,0,0
 
 _delay0_on: .byte 12,13,14
