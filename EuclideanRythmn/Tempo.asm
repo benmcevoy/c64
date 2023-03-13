@@ -49,7 +49,7 @@
         // set next irq line number
         lda    #1
         sta    $d012
-    
+
         dec _readInputInterval
         bne !+
             jsr ReadInput
@@ -83,7 +83,6 @@
         TriggerMidiOff(CHANNEL_OCTAVE3)
         // filter is not sent to midi
     #endif    
-        TriggerPattern()
         TriggerChord()
 
         TriggerOctave(CHANNEL_OCTAVE1)
@@ -176,61 +175,57 @@
     }
 
     .macro TriggerFilter(voiceNumber) {
-.var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
-.var voiceRotation = _rotationPatterns + (voiceNumber*8)
+        .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+        .var voiceRotation = _rotationPatterns + (voiceNumber*8)
 
-            ldy #voiceNumber
-            lda #0
-            sta _voiceOn,Y
-            ldy _patternIndex
-            lda voiceNumberOfBeats, Y
-            // *16 so shift 4 times
-            asl;asl;asl;asl
-            clc 
-            adc _stepIndex
-            adc voiceRotation, Y
-            tax
+        ldy #voiceNumber
+        lda #0
+        sta _voiceOn,Y
+        ldy _patternIndex
+        lda voiceNumberOfBeats, Y
+        // *16 so shift 4 times
+        asl;asl;asl;asl
+        clc 
+        adc _stepIndex
+        adc voiceRotation, Y
+        tax
 
-            lda _rhythm, X
-            // if 0 then REST
-            beq !++
-                // trigger on
-                // filter
-                lda _filter
-                clc; adc #2
-                cmp #FILTER_HIGH
-                sta SID_MIX_FILTER_CUT_OFF_HI
-                bcs !+
-                    sta _filter
-                !:
-            
-                lda #1
-                sta _voiceOn, Y
-                jmp exit
-            !:
-
+        lda _rhythm, X
+        // if 0 then REST
+        beq !++
+            // trigger on
+            // filter
             lda _filter
-            sec; sbc #4
+            clc; adc #2
+            cmp #FILTER_HIGH
             sta SID_MIX_FILTER_CUT_OFF_HI
-            cmp #FILTER_LOW
-            bcc exit
-            sta _filter
+            bcs !+
+                sta _filter
+            !:
+        
+            lda #1
+            ldy #voiceNumber
+            sta _voiceOn, Y
+            jmp exit
+        !:
 
-        exit:
+        lda _filter
+        sec; sbc #4
+        sta SID_MIX_FILTER_CUT_OFF_HI
+        cmp #FILTER_LOW
+        bcc exit
+        sta _filter
+
+    exit:
     }
     
-    .macro TriggerPattern() {
-        // TODO: 
-    }
-
     .macro TriggerChord() {
         SetChord(chords, _chord, _transpose, scale_phrygian)
     }
 
     .macro TriggerBeat(voiceNumber) {
-
-.var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
-.var voiceRotation = _rotationPatterns + (voiceNumber*8)
+        .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+        .var voiceRotation = _rotationPatterns + (voiceNumber*8)
 
         ldy #voiceNumber
         lda #0
@@ -275,10 +270,8 @@
     }
 
     .macro TriggerOctave(voiceNumber) {
-
-
-.var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
-.var voiceRotation = _rotationPatterns + (voiceNumber*8)
+        .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+        .var voiceRotation = _rotationPatterns + (voiceNumber*8)
 
         ldy #voiceNumber
         lda #0
@@ -297,6 +290,7 @@
         beq !+
             // trigger on
             lda #1
+            ldy #voiceNumber
             sta _voiceOn, Y
 
             lda #voiceNumber

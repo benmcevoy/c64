@@ -10,8 +10,8 @@
 Character: .byte 204
 PenColor: .byte GREEN
 
-_voiceColor: .byte RED, GREEN, ORANGE, RED, GREEN, ORANGE, YELLOW
-_voiceAltColor: .byte LIGHT_RED, LIGHT_GREEN, YELLOW, LIGHT_RED, LIGHT_GREEN, YELLOW, WHITE
+_voiceColor: .byte RED, GREEN, ORANGE, RED, GREEN, ORANGE, RED
+_voiceAltColor: .byte LIGHT_RED, LIGHT_GREEN, YELLOW, LIGHT_RED, LIGHT_GREEN, YELLOW, LIGHT_RED
 _stepCounter: .byte 0
 
 Render: {
@@ -22,18 +22,16 @@ Render: {
     RenderPatternSmall(CHANNEL_OCTAVE1, octave0_x, octave0_y)
     RenderPatternSmall(CHANNEL_OCTAVE2, octave1_x, octave1_y)
     RenderPatternSmall(CHANNEL_OCTAVE3, octave2_x, octave2_y)
-    
-    RenderPattern(CHANNEL_FILTER, filter_x, filter_y, BLANK_SMALL)
-
     RenderSelectedPattern(pattern_x, pattern_y, BLANK_SMALL)
     RenderTempo(tempo_x, tempo_y)
-
     RenderEcho()
+    RenderPattern(CHANNEL_FILTER, filter_x, filter_y, BLANK_SMALL)
+
+
     rts
 }
 
 .macro RenderEcho() {
-    
     Set Character: #150
     Set PenColor: #DARK_GRAY
 
@@ -92,19 +90,19 @@ Render: {
 
 
 .macro RenderPattern(voiceNumber, voice_x, voice_y, blank) {
-
-.var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
-.var voiceRotation = _rotationPatterns + (voiceNumber*8)
+    .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+    .var voiceRotation = _rotationPatterns + (voiceNumber*8)
 
     lda #0
-    sta _stepCounter
     tax
+    sta _stepCounter
     
     Set PenColor:#DARK_GRAY
 
     lda _selectedVoice
     cmp #voiceNumber
     bne !+
+        // this is the currently selected voice
         ldy #voiceNumber
         Set PenColor:_voiceColor, Y
     !:
@@ -139,57 +137,19 @@ Render: {
         bne render_pattern
 
     beat:
-        ldx _stepIndex
         ldy #voiceNumber
         lda _voiceOn, Y
         beq !+
+            ldx _stepIndex        
             Set PenColor:_voiceAltColor, Y
             Set Character:#BEAT
             Plot voice_x,X:voice_y,X
         !:
 }
 
-.macro RenderTempo(voice_x, voice_y) {
-    // set pen color to unselected 
-    Set PenColor:#DARK_GRAY
-
-    lda _selectedVoice
-    cmp #CHANNEL_TEMPO
-    bne !+
-        ldy #CHANNEL_TEMPO
-        // or selected
-        Set PenColor:_voiceColor, Y
-    !:
-
-    ldx #0
-    Set _stepCounter:#0
-    Set Character:#145
-
-    render_pattern:
-        // _tempo is 0 to $ff, where 0 is FULL ON and $ff is FULL OFF
-        lda _tempoIndicator
-        cmp _stepCounter
-        bcs next_step
-
-    pattern:
-        Set Character:#BLANK_SMALL
-        jmp next_step
-
-    next_step:
-        ldy _stepCounter
-        Plot voice_x,X:voice_y,X
-        inx
-        inc _stepCounter
-        lda _stepCounter
-        cmp #steps
-        bne render_pattern
-}
-
 .macro RenderPatternSmall(voiceNumber, voice_x, voice_y) {
-
-
-.var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
-.var voiceRotation = _rotationPatterns + (voiceNumber*8)
+    .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+    .var voiceRotation = _rotationPatterns + (voiceNumber*8)
 
     lda #0
     sta _stepCounter
@@ -236,15 +196,50 @@ Render: {
         bne render_pattern
 
     beat:
-        ldx _stepIndex
         ldy #voiceNumber
         lda _voiceOn, Y
         beq !+
+            ldx _stepIndex
             Set PenColor:_voiceAltColor, Y
-            ldy _stepCounter
             Set Character:beat_small_char,X
             Plot voice_x,X:voice_y,X
         !:
+}
+
+.macro RenderTempo(voice_x, voice_y) {
+    // set pen color to unselected 
+    Set PenColor:#DARK_GRAY
+
+    lda _selectedVoice
+    cmp #CHANNEL_TEMPO
+    bne !+
+        ldy #CHANNEL_TEMPO
+        // or selected
+        Set PenColor:_voiceColor, Y
+    !:
+
+    ldx #0
+    Set _stepCounter:#0
+    Set Character:#145
+
+    render_pattern:
+        // _tempo is 0 to $ff, where 0 is FULL ON and $ff is FULL OFF
+        lda _tempoIndicator
+        cmp _stepCounter
+        bcs next_step
+
+    pattern:
+        Set Character:#BLANK_SMALL
+        jmp next_step
+
+    next_step:
+        ldy _stepCounter
+        Plot voice_x,X:voice_y,X
+        inx
+        inc _stepCounter
+        lda _stepCounter
+        cmp #steps
+        bne render_pattern
 }
 
 .pseudocommand Plot x:y {
