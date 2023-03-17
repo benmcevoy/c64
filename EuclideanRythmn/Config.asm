@@ -22,6 +22,9 @@ _echoOn: .byte 0
 .const CHANNEL_FILTER = 6
 .const CHANNEL_TEMPO = 7
 .const CHANNEL_PATTERN = 8
+.const CHANNEL_ECHO = 9
+.const CHANNEL_LOAD = 10
+.const CHANNEL_SAVE = 11
 
 _patternIndex: .byte 2
 

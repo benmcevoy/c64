@@ -300,8 +300,7 @@
             lda _voiceNoteNumber, Y
             clc; adc #12
             sta _voiceNoteNumber, Y
-
-            ldx _voiceNoteNumber,Y
+            tax
             lda freq_msb, X
             sta SID_V1_FREQ_HI+(voiceNumber-3)*7
             lda freq_lsb, X

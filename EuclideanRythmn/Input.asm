@@ -49,22 +49,41 @@ ReadInput: {
     check_tempo:
         lda _selectedVoice
         cmp #CHANNEL_TEMPO
-        bne select_voice
+        bne check_echo
         Constrain(_tempoIndicator, 0, 7, RIGHT_AND_FIRE, LEFT_AND_FIRE)
         Constrain(_tempoIndicator, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)
+        jmp end
+
+    check_echo:
+        lda _selectedVoice
+        cmp #CHANNEL_ECHO
+        bne check_load
         Toggle(_echoOn, FIRE)        
         jmp end
 
+    check_load:
+        lda _selectedVoice
+        cmp #CHANNEL_LOAD
+        bne check_save
+        // TODO: a bit of work, aiming to leverage the KERNAL        
+        jmp end
+
+    check_save:
+        lda _selectedVoice
+        cmp #CHANNEL_SAVE
+        bne select_voice
+        // TODO: a bit of work, aiming to leverage the KERNAL
+        jmp end                
 
     // selection
     select_voice:
         /*all-voices*/
-        SelectVoiceUpDown()
+        SelectVoice()
     end:
 }
 _exit:rts
 
-.macro SelectVoiceUpDown() {
+.macro SelectVoice() {
     check_down:
         lda #DOWN
         bit PORT2
@@ -120,6 +139,20 @@ _exit:rts
             jmp _exit
         !:
 
+        lda _selectedVoice
+        cmp #CHANNEL_TEMPO
+        bne !+
+            Set _selectedVoice:#CHANNEL_ECHO
+            jmp _exit
+        !:   
+
+        lda _selectedVoice
+        cmp #CHANNEL_PATTERN
+        bne !+
+            Set _selectedVoice:#CHANNEL_LOAD
+            jmp _exit
+        !:               
+
     check_up:
         lda #UP
         bit PORT2
@@ -167,6 +200,27 @@ _exit:rts
             Set _selectedVoice:#CHANNEL_FILTER
             jmp _exit
         !:
+
+        lda _selectedVoice
+        cmp #CHANNEL_ECHO
+        bne !+
+            Set _selectedVoice:#CHANNEL_TEMPO
+            jmp _exit
+        !:         
+
+        lda _selectedVoice
+        cmp #CHANNEL_LOAD
+        bne !+
+            Set _selectedVoice:#CHANNEL_PATTERN
+            jmp _exit
+        !:    
+
+        lda _selectedVoice
+        cmp #CHANNEL_SAVE
+        bne !+
+            Set _selectedVoice:#CHANNEL_PATTERN
+            jmp _exit
+        !:  
 
     check_left:
         lda #LEFT
@@ -239,6 +293,27 @@ _exit:rts
             jmp _exit
         !:
 
+        lda _selectedVoice
+        cmp #CHANNEL_ECHO
+        bne !+
+            Set _selectedVoice:#CHANNEL_VOICE3
+            jmp _exit
+        !: 
+
+        lda _selectedVoice
+        cmp #CHANNEL_SAVE
+        bne !+
+            Set _selectedVoice:#CHANNEL_LOAD
+            jmp _exit
+        !:   
+
+        lda _selectedVoice
+        cmp #CHANNEL_LOAD
+        bne !+
+            Set _selectedVoice:#CHANNEL_ECHO
+            jmp _exit
+        !:       
+
     check_right:
         lda #RIGHT
         bit PORT2
@@ -286,8 +361,28 @@ _exit:rts
         bne !+
             Set _selectedVoice:#CHANNEL_PATTERN
             jmp _exit
-        !:        
+        !:   
 
+        lda _selectedVoice
+        cmp #CHANNEL_TEMPO
+        bne !+
+            Set _selectedVoice:#CHANNEL_VOICE3
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #CHANNEL_LOAD
+        bne !+
+            Set _selectedVoice:#CHANNEL_SAVE
+            jmp _exit
+        !: 
+
+        lda _selectedVoice
+        cmp #CHANNEL_ECHO
+        bne !+
+            Set _selectedVoice:#CHANNEL_LOAD
+            jmp _exit
+        !:              
 }
 
 .macro Constrain(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){

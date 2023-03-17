@@ -10,38 +10,90 @@
 Character: .byte 204
 PenColor: .byte GREEN
 
-_voiceColor: .byte RED, GREEN, ORANGE, RED, GREEN, ORANGE, RED
-_voiceAltColor: .byte LIGHT_RED, LIGHT_GREEN, YELLOW, LIGHT_RED, LIGHT_GREEN, YELLOW, LIGHT_RED
+_selectedColor: .byte GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN
+_beatColor: .byte LIGHT_GREEN, LIGHT_GREEN, LIGHT_GREEN, LIGHT_GREEN, LIGHT_GREEN, LIGHT_GREEN, LIGHT_GREEN, LIGHT_GREEN
 _stepCounter: .byte 0
 
 Render: {
     RenderPattern(CHANNEL_VOICE1, voice0_x, voice0_y, BLANK)
     RenderPattern(CHANNEL_VOICE2, voice1_x, voice1_y, BLANK)
     RenderPattern(CHANNEL_VOICE3, voice2_x, voice2_y, BLANK)
-
     RenderPatternSmall(CHANNEL_OCTAVE1, octave0_x, octave0_y)
     RenderPatternSmall(CHANNEL_OCTAVE2, octave1_x, octave1_y)
     RenderPatternSmall(CHANNEL_OCTAVE3, octave2_x, octave2_y)
     RenderSelectedPattern(pattern_x, pattern_y, BLANK_SMALL)
+
     RenderTempo(tempo_x, tempo_y)
     RenderEcho()
+    RenderLoad()
+    RenderSave()
     RenderPattern(CHANNEL_FILTER, filter_x, filter_y, BLANK_SMALL)
-
-
     rts
 }
 
+.macro RenderLoad() {
+    lda _selectedVoice
+    cmp #CHANNEL_LOAD
+    beq on        
+    jmp off
+
+    on:
+        PlotColor #31: #24: #GREEN
+        PlotColor #32: #24: #GREEN
+        jmp end  
+    !:
+
+    off:
+        PlotColor #31: #24: #DARK_GREY
+        PlotColor #32: #24: #DARK_GREY
+    end:
+}
+
+.macro RenderSave() {
+    lda _selectedVoice
+    cmp #CHANNEL_SAVE
+    beq on        
+    jmp off
+
+    on:
+        PlotColor #34: #24: #GREEN
+        PlotColor #35: #24: #GREEN
+        jmp end  
+    !:
+
+    off:
+        PlotColor #34: #24: #DARK_GREY
+        PlotColor #35: #24: #DARK_GREY
+    end:
+}
+
 .macro RenderEcho() {
-    Set Character: #150
-    Set PenColor: #DARK_GRAY
+    lda _selectedVoice
+    cmp #CHANNEL_ECHO
+    beq on        
+    jmp off
+
+on:
+        PlotColor #26: #24: #GREEN
+        PlotColor #27: #24: #GREEN
+        jmp endSelected  
+
+off:
+        PlotColor #26: #24: #DARK_GREY
+        PlotColor #27: #24: #DARK_GREY
+
+endSelected:
 
     lda _echoOn
     beq !+
-        Set Character: #151
-        Set PenColor: #GREEN
+        PlotColor #24: #24: #GREEN
+        PlotColor #25: #24: #GREEN
+        jmp endEchoOn
     !:
 
-    Plot #25: #19
+    PlotColor #24: #24: #DARK_GREY
+    PlotColor #25: #24: #DARK_GREY
+endEchoOn:
 }
 
 .macro RenderSelectedPattern(voice_x, voice_y, blank) {
@@ -55,7 +107,7 @@ Render: {
     cmp #CHANNEL_PATTERN
     bne !+
         ldy #CHANNEL_PATTERN
-        Set PenColor:_voiceColor, Y
+        Set PenColor:_selectedColor, Y
     !:
 
     render_pattern:
@@ -104,7 +156,7 @@ Render: {
     bne !+
         // this is the currently selected voice
         ldy #voiceNumber
-        Set PenColor:_voiceColor, Y
+        Set PenColor:_selectedColor, Y
     !:
 
     render_pattern:
@@ -141,7 +193,7 @@ Render: {
         lda _voiceOn, Y
         beq !+
             ldx _stepIndex        
-            Set PenColor:_voiceAltColor, Y
+            Set PenColor:_beatColor, Y
             Set Character:#BEAT
             Plot voice_x,X:voice_y,X
         !:
@@ -161,7 +213,7 @@ Render: {
     cmp #voiceNumber
     bne !+
         ldy #voiceNumber
-        Set PenColor:_voiceColor, Y
+        Set PenColor:_selectedColor, Y
     !:
 
     render_pattern:
@@ -200,7 +252,7 @@ Render: {
         lda _voiceOn, Y
         beq !+
             ldx _stepIndex
-            Set PenColor:_voiceAltColor, Y
+            Set PenColor:_beatColor, Y
             Set Character:beat_small_char,X
             Plot voice_x,X:voice_y,X
         !:
@@ -215,7 +267,7 @@ Render: {
     bne !+
         ldy #CHANNEL_TEMPO
         // or selected
-        Set PenColor:_voiceColor, Y
+        Set PenColor:_selectedColor, Y
     !:
 
     ldx #0
@@ -276,6 +328,32 @@ Render: {
     pla;tax
 }
 
+.pseudocommand PlotColor x:y:color {
+    .var screenLO = __tmp0 
+    .var screenHI = __tmp1
+
+    // annoyingly backwards "x is Y" due to indirect indexing below
+    ldy x
+    ldx y
+
+    clc
+    lda screenRow.lo,X  
+    sta screenLO
+
+    lda screenRow.hi,X
+    ora #$04 
+    sta screenHI
+    
+    // set color ram
+    lda screenRow.hi,X
+    // ora is nice then to set the memory page
+    ora #$D8 
+    sta screenHI
+
+    lda color
+    sta (screenLO),Y  
+}
+
 screenRow: .lohifill 25, 40*i
 
 blank_small_char:   .byte 142,143,159,175,174,173,157,141
@@ -283,28 +361,29 @@ pattern_small_char: .byte 187,188,204,220,219,218,202,186
 beat_small_char:    .byte 190,191,207,223,222,221,205,189
 
 voice0_x:   .byte 09,11,12,11,09,07,06,07,09,11,12,11,09,07,06,07
-voice0_y:   .byte 12,13,15,17,18,17,15,13,12,13,15,17,18,17,15,13
+voice0_y:   .byte 10,11,13,15,16,15,13,11,10,11,13,15,16,15,13,11
 
 voice1_x:   .byte 09,13,14,13,09,05,04,05,09,13,14,13,09,05,04,05
-voice1_y:   .byte 10,11,15,19,20,19,15,11,10,11,15,19,20,19,15,11
+voice1_y:   .byte 08,09,13,17,18,17,13,09,08,09,13,17,18,17,13,09
 
 voice2_x:   .byte 09,15,16,15,09,03,02,03,09,15,16,15,09,03,02,03
-voice2_y:   .byte 08,09,15,21,22,21,15,09,08,09,15,21,22,21,15,09
+voice2_y:   .byte 06,07,13,19,20,19,13,07,06,07,13,19,20,19,13,07
 
-pattern_x:    .byte 33,35,36,35,33,31,30,31,33,35,36,35,33,31,30,31
-pattern_y:    .byte 16,17,19,21,22,21,19,17,16,17,19,21,22,21,19,17
+pattern_x:  .byte 33,35,36,35,33,31,30,31,33,35,36,35,33,31,30,31
+pattern_y:  .byte 14,15,17,19,20,19,17,15,14,15,17,19,20,19,17,15
 
+// this is in a different order, first entry is the bottom of the circle, goes clockwise
 tempo_x:    .byte 25,23,22,23,25,27,28,27
-tempo_y:    .byte 22,21,19,17,16,17,19,21
+tempo_y:    .byte 20,19,17,15,14,15,17,19
 
 filter_x:   .byte 25,27,28,27,25,23,22,23,25,27,28,27,25,23,22,23
-filter_y:   .byte 06,07,09,11,12,11,09,07,06,07,09,11,12,11,09,07
+filter_y:   .byte 04,05,07,09,10,09,07,05,04,05,07,09,10,09,07,05
 
 octave0_x:  .byte 31,32,32,32,31,30,30,30,31,32,32,32,31,30,30,30
-octave0_y:  .byte 07,07,08,09,09,09,08,07,07,07,08,09,09,09,08,07
+octave0_y:  .byte 05,05,06,07,07,07,06,05,05,05,06,07,07,07,06,05
 
 octave1_x:  .byte 35,36,36,36,35,34,34,34,35,36,36,36,35,34,34,34
-octave1_y:  .byte 07,07,08,09,09,09,08,07,07,07,08,09,09,09,08,07
+octave1_y:  .byte 05,05,06,07,07,07,06,05,05,05,06,07,07,07,06,05
 
 octave2_x:  .byte 33,34,34,34,33,32,32,32,33,34,34,34,33,32,32,32
-octave2_y:  .byte 10,10,11,12,12,12,11,10,10,10,11,12,12,12,11,10
+octave2_y:  .byte 08,08,09,10,10,10,09,08,08,08,09,10,10,10,09,08
