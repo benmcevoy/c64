@@ -28,7 +28,27 @@ Render: {
     RenderCopy()
     RenderPaste()
     RenderPattern(CHANNEL_FILTER, filter_x, filter_y, BLANK_SMALL)
+
+    //RenderJoy()
     rts
+}
+
+.macro RenderJoy(){
+
+    //9,13
+    ldy joy_palette_index
+    Set __tmp2:joy_palette,Y
+    PlotColor #9:#13:__tmp2
+    PlotColor #25:#7:__tmp2
+    PlotColor #25:#17:__tmp2
+    PlotColor #33:#17:__tmp2
+    inc joy_palette_index
+    lda joy_palette_index
+    cmp #4
+    bne!+
+        Set joy_palette_index:#0
+    !:
+
 }
 
 .macro RenderCopy() {
@@ -361,6 +381,9 @@ screenRow: .lohifill 25, 40*i
 blank_small_char:   .byte 142,143,159,175,174,173,157,141
 pattern_small_char: .byte 187,188,204,220,219,218,202,186
 beat_small_char:    .byte 190,191,207,223,222,221,205,189
+
+joy_palette_index: .byte 0
+joy_palette: .byte 11,12,13,1
 
 voice0_x:   .byte 09,11,12,11,09,07,06,07,09,11,12,11,09,07,06,07
 voice0_y:   .byte 10,11,13,15,16,15,13,11,10,11,13,15,16,15,13,11

@@ -16,13 +16,14 @@
     _intraBeatCounter: .byte 0,0,0
     _readInputInterval: .byte readInputDelay
     _index: .byte 0
-    _filter: .byte 16
+    _filterCutOffHi: .byte 16
+    _filterResonance: .byte 8
 
     Init: {
         // init SID
         Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111  
         Set SID_MIX_FILTER_CUT_OFF_HI:#10
-        Set SID_MIX_FILTER_CONTROL:#%01110111
+        Set SID_MIX_FILTER_CONTROL:#%01000111
         Set SID_MIX_VOLUME:#%00011111
 
         Set SID_V1_ATTACK_DECAY:#$09
@@ -57,7 +58,6 @@
         !:
         
         jsr Render
-        
         
         dec _frameCounter
         beq !+
@@ -192,16 +192,26 @@
 
         lda _rhythm, X
         // if 0 then REST
-        beq !++
+        beq !+++
             // trigger on
             // filter
-            lda _filter
+            lda _filterCutOffHi
             clc; adc #2
             cmp #FILTER_HIGH
             sta SID_MIX_FILTER_CUT_OFF_HI
             bcs !+
-                sta _filter
+                sta _filterCutOffHi
             !:
+
+            lda _filterResonance
+            clc; adc #2
+            cmp #16
+            bcs !+
+                sta _filterResonance
+                asl;asl;asl;asl;
+                ora #%00000111
+                sta SID_MIX_FILTER_CONTROL
+            !:            
         
             lda #1
             ldy #voiceNumber
@@ -209,12 +219,21 @@
             jmp exit
         !:
 
-        lda _filter
+        lda _filterCutOffHi
         sec; sbc #4
         sta SID_MIX_FILTER_CUT_OFF_HI
         cmp #FILTER_LOW
         bcc exit
-        sta _filter
+        sta _filterCutOffHi
+
+        lda _filterResonance
+        sec; sbc #4
+        cmp #FILTER_LOW
+        bcc exit
+        sta _filterResonance
+        asl;asl;asl;asl
+        ora #%00000111
+        sta SID_MIX_FILTER_CONTROL
 
     exit:
     }
