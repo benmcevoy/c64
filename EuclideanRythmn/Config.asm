@@ -23,30 +23,30 @@ _echoOn: .byte 0
 .const CHANNEL_TEMPO = 7
 .const CHANNEL_PATTERN = 8
 .const CHANNEL_ECHO = 9
-.const CHANNEL_LOAD = 10
-.const CHANNEL_SAVE = 11
+.const CHANNEL_COPY = 10
+.const CHANNEL_PASTE = 11
 
-_patternIndex: .byte 2
+_patternIndex: .byte 0
 
 .align $100
 _beatPatterns:
 // going across are the patterns
-    _voice1NumberOfBeats: .byte 5,5,4,0,0,0,0,0
-    _voice2NumberOfBeats: .byte 4,2,3,0,0,0,0,0
-    _voice3NumberOfBeats: .byte 4,5,5,0,0,0,0,0
-    _octave1NumberOfBeats: .byte 4,3,4,0,0,0,0,0
-    _octave2NumberOfBeats: .byte 2,1,5,0,0,0,0,0
-    _octave3NumberOfBeats: .byte 3,3,8,0,0,0,0,0,0
-    _filterNumberOfBeats: .byte 1,5,6,0,0,0,0,0
+    _voice1NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _voice2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _voice3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _octave1NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _octave2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _octave3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _filterNumberOfBeats: .byte 0,0,0,0,0,0,0,0
 
 _rotationPatterns:
-    _voice1Rotation: .byte 3,1,0,0,0,0,0,0
-    _voice2Rotation: .byte 1,0,0,0,0,0,0,0
-    _voice3Rotation: .byte 0,7,0,0,0,0,0,0
-    _octave1Rotation: .byte 0,4,0,0,0,0,0,0
-    _octave2Rotation: .byte 7,0,0,0,0,0,0,0
-    _octave3Rotation: .byte 6,4,0,0,0,0,0,0
-    _filterRotation: .byte 0,5,0,0,0,0,0,0
+    _voice1Rotation: .byte 0,0,0,0,0,0,0,0
+    _voice2Rotation: .byte 0,0,0,0,0,0,0,0
+    _voice3Rotation: .byte 0,0,0,0,0,0,0,0
+    _octave1Rotation: .byte 0,0,0,0,0,0,0,0
+    _octave2Rotation: .byte 0,0,0,0,0,0,0,0
+    _octave3Rotation: .byte 0,0,0,0,0,0,0,0
+    _filterRotation: .byte 0,0,0,0,0,0,0,0
 
 _voiceOn: .byte 0,0,0,0,0,0,0
 _voiceNoteNumber: .byte 0,0,0,0,0,0,0
@@ -60,6 +60,9 @@ _delay2_on: .byte 36,37,38
 _delay2_off: .byte 38,39,40
 _delay3_on: .byte 48,49,50
 _delay3_off: .byte 50,51,52
+
+//_clipBoardOn: .byte 0
+_clipBoard: .fill 14,0
 
 // double up the sequence so we can offset into it
 .align $100

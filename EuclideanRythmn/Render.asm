@@ -25,45 +25,47 @@ Render: {
 
     RenderTempo(tempo_x, tempo_y)
     RenderEcho()
-    RenderLoad()
-    RenderSave()
+    RenderCopy()
+    RenderPaste()
     RenderPattern(CHANNEL_FILTER, filter_x, filter_y, BLANK_SMALL)
     rts
 }
 
-.macro RenderLoad() {
+.macro RenderCopy() {
     lda _selectedVoice
-    cmp #CHANNEL_LOAD
+    cmp #CHANNEL_COPY
     beq on        
     jmp off
 
     on:
-        PlotColor #31: #24: #GREEN
-        PlotColor #32: #24: #GREEN
+        PlotColor #31: #23: #GREEN
+        PlotColor #32: #23: #GREEN
         jmp end  
     !:
 
     off:
-        PlotColor #31: #24: #DARK_GREY
-        PlotColor #32: #24: #DARK_GREY
+        PlotColor #31: #23: #DARK_GREY
+        PlotColor #32: #23: #DARK_GREY
     end:
 }
 
-.macro RenderSave() {
+.macro RenderPaste() {
     lda _selectedVoice
-    cmp #CHANNEL_SAVE
+    cmp #CHANNEL_PASTE
     beq on        
     jmp off
 
     on:
-        PlotColor #34: #24: #GREEN
-        PlotColor #35: #24: #GREEN
+        PlotColor #34: #23: #GREEN
+        PlotColor #35: #23: #GREEN
+        PlotColor #36: #23: #GREEN
         jmp end  
     !:
 
     off:
-        PlotColor #34: #24: #DARK_GREY
-        PlotColor #35: #24: #DARK_GREY
+        PlotColor #34: #23: #DARK_GREY
+        PlotColor #35: #23: #DARK_GREY
+        PlotColor #36: #23: #DARK_GREY
     end:
 }
 
@@ -74,25 +76,25 @@ Render: {
     jmp off
 
 on:
-        PlotColor #26: #24: #GREEN
-        PlotColor #27: #24: #GREEN
+        PlotColor #26: #23: #GREEN
+        PlotColor #27: #23: #GREEN
         jmp endSelected  
 
 off:
-        PlotColor #26: #24: #DARK_GREY
-        PlotColor #27: #24: #DARK_GREY
+        PlotColor #26: #23: #DARK_GREY
+        PlotColor #27: #23: #DARK_GREY
 
 endSelected:
 
     lda _echoOn
     beq !+
-        PlotColor #24: #24: #GREEN
-        PlotColor #25: #24: #GREEN
+        PlotColor #24: #23: #GREEN
+        PlotColor #25: #23: #GREEN
         jmp endEchoOn
     !:
 
-    PlotColor #24: #24: #DARK_GREY
-    PlotColor #25: #24: #DARK_GREY
+    PlotColor #24: #23: #DARK_GREY
+    PlotColor #25: #23: #DARK_GREY
 endEchoOn:
 }
 

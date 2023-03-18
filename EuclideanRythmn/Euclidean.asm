@@ -51,3 +51,4 @@ loop:
 
     jmp loop
 }
+.print _clipBoard

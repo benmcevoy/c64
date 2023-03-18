@@ -57,22 +57,51 @@ ReadInput: {
     check_echo:
         lda _selectedVoice
         cmp #CHANNEL_ECHO
-        bne check_load
+        bne check_copy
         Toggle(_echoOn, FIRE)        
         jmp end
 
-    check_load:
+    check_copy:
         lda _selectedVoice
-        cmp #CHANNEL_LOAD
-        bne check_save
-        // TODO: a bit of work, aiming to leverage the KERNAL        
-        jmp end
+        cmp #CHANNEL_COPY
+        bne check_paste
+        ldy _patternIndex
+        ldx #0
+        //Set _clipBoardOn:#1
+        nextCopy:
+            lda _beatPatterns, Y
+            sta _clipBoard, X
+            inx
+            cpx #14
+            beq !+
+                tya
+                clc; adc #8
+                tay
+                jmp nextCopy
+        !:
+        jmp end    
 
-    check_save:
+    check_paste:
         lda _selectedVoice
-        cmp #CHANNEL_SAVE
+        cmp #CHANNEL_PASTE
         bne select_voice
-        // TODO: a bit of work, aiming to leverage the KERNAL
+
+        // lda _clipBoardOn
+        // beq !+
+            ldy _patternIndex
+            ldx #0
+            //Set _clipBoardOn:#0
+            nextPaste:
+                lda _clipBoard, X
+                sta _beatPatterns, Y
+                inx
+                cpx #14
+                beq !+
+                    tya
+                    clc; adc #8
+                    tay
+                    jmp nextPaste
+        !:
         jmp end                
 
     // selection
@@ -149,7 +178,7 @@ _exit:rts
         lda _selectedVoice
         cmp #CHANNEL_PATTERN
         bne !+
-            Set _selectedVoice:#CHANNEL_LOAD
+            Set _selectedVoice:#CHANNEL_COPY
             jmp _exit
         !:               
 
@@ -177,6 +206,7 @@ _exit:rts
         lda _selectedVoice
         cmp #CHANNEL_VOICE3
         bne !+
+        Set _selectedVoice:#CHANNEL_FILTER
             jmp _exit
         !:
 
@@ -209,14 +239,14 @@ _exit:rts
         !:         
 
         lda _selectedVoice
-        cmp #CHANNEL_LOAD
+        cmp #CHANNEL_COPY
         bne !+
             Set _selectedVoice:#CHANNEL_PATTERN
             jmp _exit
         !:    
 
         lda _selectedVoice
-        cmp #CHANNEL_SAVE
+        cmp #CHANNEL_PASTE
         bne !+
             Set _selectedVoice:#CHANNEL_PATTERN
             jmp _exit
@@ -243,13 +273,13 @@ _exit:rts
             jmp _exit
         !:
 
-        lda _selectedVoice
-        cmp #CHANNEL_VOICE3
-        bne !+
-            // not sure
-            //Set _selectedVoice:#CHANNEL_VOICE2
-            jmp _exit
-        !:
+        // lda _selectedVoice
+        // cmp #CHANNEL_VOICE3
+        // bne !+
+        //     // not sure
+        //     //Set _selectedVoice:#CHANNEL_VOICE2
+        //     jmp _exit
+        // !:
 
         lda _selectedVoice
         cmp #CHANNEL_OCTAVE1
@@ -301,14 +331,14 @@ _exit:rts
         !: 
 
         lda _selectedVoice
-        cmp #CHANNEL_SAVE
+        cmp #CHANNEL_PASTE
         bne !+
-            Set _selectedVoice:#CHANNEL_LOAD
+            Set _selectedVoice:#CHANNEL_COPY
             jmp _exit
         !:   
 
         lda _selectedVoice
-        cmp #CHANNEL_LOAD
+        cmp #CHANNEL_COPY
         bne !+
             Set _selectedVoice:#CHANNEL_ECHO
             jmp _exit
@@ -357,6 +387,13 @@ _exit:rts
         !:
 
         lda _selectedVoice
+        cmp #CHANNEL_OCTAVE3
+        bne !+
+            Set _selectedVoice:#CHANNEL_OCTAVE2
+            jmp _exit
+        !:
+
+        lda _selectedVoice
         cmp #CHANNEL_TEMPO
         bne !+
             Set _selectedVoice:#CHANNEL_PATTERN
@@ -371,16 +408,16 @@ _exit:rts
         !:
 
         lda _selectedVoice
-        cmp #CHANNEL_LOAD
+        cmp #CHANNEL_COPY
         bne !+
-            Set _selectedVoice:#CHANNEL_SAVE
+            Set _selectedVoice:#CHANNEL_PASTE
             jmp _exit
         !: 
 
         lda _selectedVoice
         cmp #CHANNEL_ECHO
         bne !+
-            Set _selectedVoice:#CHANNEL_LOAD
+            Set _selectedVoice:#CHANNEL_COPY
             jmp _exit
         !:              
 }
@@ -488,7 +525,6 @@ op6:    sta $BEEF, X
         jmp _exit
     !:
 }
-
 
 .macro ConstrainBeatsForVoice(voice, lowerlimit, upperlimit, increaseAction, decreaseAction){
     // setup pointer
