@@ -41,68 +41,50 @@ Render: {
         jmp exit
     !:
 
-    inc joy_palette_index
     ldy joy_palette_index
-    lda _random20,Y
-    tay
-    Set __tmp2:joy_palette,Y
+    Set __tmp2:_random20,Y
     PlotColor #0:#0:__tmp2
-
     inc joy_palette_index
+
     ldy joy_palette_index
-    lda _random20,Y
-    tay
-    Set __tmp2:joy_palette,Y
+    Set __tmp2:_random20,Y
     PlotColor #0:#1:__tmp2
-
     inc joy_palette_index
+
     ldy joy_palette_index
-    lda _random20,Y
-    tay
-    Set __tmp2:joy_palette,Y
+    Set __tmp2:_random20,Y
     PlotColor #0:#2:__tmp2
-
     inc joy_palette_index
+
     ldy joy_palette_index
-    lda _random20,Y
-    tay
-    Set __tmp2:joy_palette,Y
+    Set __tmp2:_random20,Y
     PlotColor #1:#0:__tmp2
-
     inc joy_palette_index
+
     ldy joy_palette_index
-    lda _random20,Y
-    tay
-    Set __tmp2:joy_palette,Y
+    Set __tmp2:_random20,Y
     PlotColor #1:#1:__tmp2
-
     inc joy_palette_index
+
     ldy joy_palette_index
-    lda _random20,Y
-    tay
-    Set __tmp2:joy_palette,Y
+    Set __tmp2:_random20,Y
     PlotColor #1:#2:__tmp2
-
     inc joy_palette_index
+
     ldy joy_palette_index
-    lda _random20,Y
-    tay
-    Set __tmp2:joy_palette,Y
+    Set __tmp2:_random20,Y
     PlotColor #2:#0:__tmp2
-
     inc joy_palette_index
+
     ldy joy_palette_index
-    lda _random20,Y
-    tay
-    Set __tmp2:joy_palette,Y
+    Set __tmp2:_random20,Y
     PlotColor #2:#1:__tmp2
-
     inc joy_palette_index
+
     ldy joy_palette_index
-    lda _random20,Y
-    tay
-    Set __tmp2:joy_palette,Y
+    Set __tmp2:_random20,Y
     PlotColor #2:#2:__tmp2
+    inc joy_palette_index
     
 exit:
 }
@@ -439,7 +421,6 @@ pattern_small_char: .byte 187,188,204,220,219,218,202,186
 beat_small_char:    .byte 190,191,207,223,222,221,205,189
 
 joy_palette_index: .byte 0
-joy_palette: .byte 14,2,3,4,5,6,7,13,9,14,2,3,4,5,6,7,13,9,14,2,3,4,5,6,7,13,9,14,2,3,4,5,6,7,13,9
 
 voice0_x:   .byte 09,11,12,11,09,07,06,07,09,11,12,11,09,07,06,07
 voice0_y:   .byte 10,11,13,15,16,15,13,11,10,11,13,15,16,15,13,11
