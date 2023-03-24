@@ -27,19 +27,21 @@
         Set SID_MIX_FILTER_CONTROL:#%11110111
         Set SID_MIX_VOLUME:#%00011111
 
-        Set SID_V1_ATTACK_DECAY:#$09
-        Set SID_V2_ATTACK_DECAY:#$09
-        Set SID_V3_ATTACK_DECAY:#$09
+        Set SID_V1_ATTACK_DECAY:#$00
+        Set SID_V2_ATTACK_DECAY:#$00
+        Set SID_V3_ATTACK_DECAY:#$00
 
-        Set SID_V1_SUSTAIN_RELEASE:#$00
+        Set SID_V1_SUSTAIN_RELEASE:#$F0
+        Set SID_V2_SUSTAIN_RELEASE:#$F0
+        Set SID_V3_SUSTAIN_RELEASE:#$F0
 
-        SetWaveForm(CHANNEL_VOICE1, Saw)
-        SetWaveForm(CHANNEL_VOICE2, Saw)
-        SetWaveForm(CHANNEL_VOICE3, Saw)
+        SetWaveForm(CHANNEL_VOICE1, Square)
+        SetWaveForm(CHANNEL_VOICE2, Square)
+        SetWaveForm(CHANNEL_VOICE3, Square)
 
-        SetPulseWidth(CHANNEL_VOICE1, $08, $04)
-        SetPulseWidth(CHANNEL_VOICE2, $09, $06)
-        SetPulseWidth(CHANNEL_VOICE3, $8A, $06)
+        SetPulseWidth(CHANNEL_VOICE1, $FF, $7F)
+        SetPulseWidth(CHANNEL_VOICE2, $FF, $7F)
+        SetPulseWidth(CHANNEL_VOICE3, $FF, $7F)
 
         rts
     }
@@ -57,8 +59,6 @@
             jsr ReadInput
             Set _readInputInterval:#readInputDelay
         !:
-        
-
 
         dec _frameCounter
         
@@ -133,7 +133,7 @@
         lda _intraBeatCounter,Y
         cmp _delay0_off,Y
         bne !+
-            Set SID_V1_CONTROL+voiceNumber*7:#%00110000
+            Set SID_V1_CONTROL+voiceNumber*7:#%01000000
         !:
 
         lda _intraBeatCounter,Y
@@ -147,7 +147,7 @@
         lda _intraBeatCounter,Y
         cmp _delay1_off,Y
         bne !+
-            Set SID_V1_CONTROL+voiceNumber*7:#%00110000
+            Set SID_V1_CONTROL+voiceNumber*7:#%01000000
         !:
 
         lda _intraBeatCounter,Y
@@ -161,7 +161,7 @@
         lda _intraBeatCounter,Y
         cmp _delay2_off,Y
         bne !+
-            Set SID_V1_CONTROL+voiceNumber*7:#%00110000
+            Set SID_V1_CONTROL+voiceNumber*7:#%01000000
         !:
 
         lda _intraBeatCounter,Y
@@ -175,7 +175,7 @@
         lda _intraBeatCounter,Y
         cmp _delay3_off,Y
         bne !+
-            Set SID_V1_CONTROL+voiceNumber*7:#%00110000
+            Set SID_V1_CONTROL+voiceNumber*7:#%01000000
         !:
     }
 

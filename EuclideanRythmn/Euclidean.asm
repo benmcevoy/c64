@@ -1,7 +1,6 @@
 BasicUpstart2(Start)
 
 #import "_prelude.lib"
-//#import "char/charset.asm"
 #import "char/screen.asm"
 #import "Tempo.asm"
 #import "Midi.asm"
@@ -51,4 +50,3 @@ loop:
 
     jmp loop
 }
-.print _clipBoard

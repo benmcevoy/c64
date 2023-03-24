@@ -45,8 +45,8 @@ ReadInput: {
         beq !+
             jmp check_tempo
         !:
-        Cycle(_patternIndex, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
-        Cycle(_patternIndex, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)    
+        CyclePattern(_patternIndex, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+        CyclePattern(_patternIndex, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)    
         jmp end
 
     check_tempo:
@@ -507,7 +507,7 @@ checkUp:
     exit:
 }
 
-.macro Cycle(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
+.macro CyclePattern(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
     lda #decreaseAction
     bit PORT2
     bne !++
