@@ -42,47 +42,47 @@ Render: {
     !:
 
     ldy joy_palette_index
-    Set __tmp2:_random20,Y
+    Set __tmp2:_randomJoy,Y
     PlotColor #0:#0:__tmp2
     inc joy_palette_index
 
     ldy joy_palette_index
-    Set __tmp2:_random20,Y
+    Set __tmp2:_randomJoy,Y
     PlotColor #0:#1:__tmp2
     inc joy_palette_index
 
     ldy joy_palette_index
-    Set __tmp2:_random20,Y
+    Set __tmp2:_randomJoy,Y
     PlotColor #0:#2:__tmp2
     inc joy_palette_index
 
     ldy joy_palette_index
-    Set __tmp2:_random20,Y
+    Set __tmp2:_randomJoy,Y
     PlotColor #1:#0:__tmp2
     inc joy_palette_index
 
     ldy joy_palette_index
-    Set __tmp2:_random20,Y
+    Set __tmp2:_randomJoy,Y
     PlotColor #1:#1:__tmp2
     inc joy_palette_index
 
     ldy joy_palette_index
-    Set __tmp2:_random20,Y
+    Set __tmp2:_randomJoy,Y
     PlotColor #1:#2:__tmp2
     inc joy_palette_index
 
     ldy joy_palette_index
-    Set __tmp2:_random20,Y
+    Set __tmp2:_randomJoy,Y
     PlotColor #2:#0:__tmp2
     inc joy_palette_index
 
     ldy joy_palette_index
-    Set __tmp2:_random20,Y
+    Set __tmp2:_randomJoy,Y
     PlotColor #2:#1:__tmp2
     inc joy_palette_index
 
     ldy joy_palette_index
-    Set __tmp2:_random20,Y
+    Set __tmp2:_randomJoy,Y
     PlotColor #2:#2:__tmp2
     inc joy_palette_index
     

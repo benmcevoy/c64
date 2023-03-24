@@ -50,5 +50,3 @@ loop:
 
     jmp loop
 }
-
-.print _random20
