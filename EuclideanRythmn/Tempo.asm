@@ -40,8 +40,8 @@
         SetWaveForm(CHANNEL_VOICE3, Square)
 
         SetPulseWidth(CHANNEL_VOICE1, $FF, $7F)
-        SetPulseWidth(CHANNEL_VOICE2, $FF, $7F)
-        SetPulseWidth(CHANNEL_VOICE3, $FF, $7F)
+        SetPulseWidth(CHANNEL_VOICE2, $8F, $7F)
+        SetPulseWidth(CHANNEL_VOICE3, $0F, $7F)
 
         rts
     }
@@ -113,7 +113,6 @@
         Echo(CHANNEL_VOICE1)
         Echo(CHANNEL_VOICE2)
         Echo(CHANNEL_VOICE3)
-
     exit:
         // end irq
         pla;tay;pla;tax;pla

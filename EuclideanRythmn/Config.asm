@@ -81,5 +81,5 @@ _tempo_fill:
     .byte 64,32,24,16,12,08,06,04
 
 .align $100
-_random20: .fill 256,round(1*random())
+_random20: .fill 256,round(8*random())
 

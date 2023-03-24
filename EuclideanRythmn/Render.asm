@@ -41,15 +41,68 @@ Render: {
         jmp exit
     !:
 
-    PlotColor #0:#0:SID_LFO
-    PlotColor #0:#1:SID_LFO
-    PlotColor #0:#2:SID_LFO
-    PlotColor #1:#0:SID_LFO
-    PlotColor #1:#1:SID_LFO
-    PlotColor #1:#2:SID_LFO
-    PlotColor #2:#0:SID_LFO
-    PlotColor #2:#1:SID_LFO
-    PlotColor #2:#2:SID_LFO
+    inc joy_palette_index
+    ldy joy_palette_index
+    lda _random20,Y
+    tay
+    Set __tmp2:joy_palette,Y
+    PlotColor #0:#0:__tmp2
+
+    inc joy_palette_index
+    ldy joy_palette_index
+    lda _random20,Y
+    tay
+    Set __tmp2:joy_palette,Y
+    PlotColor #0:#1:__tmp2
+
+    inc joy_palette_index
+    ldy joy_palette_index
+    lda _random20,Y
+    tay
+    Set __tmp2:joy_palette,Y
+    PlotColor #0:#2:__tmp2
+
+    inc joy_palette_index
+    ldy joy_palette_index
+    lda _random20,Y
+    tay
+    Set __tmp2:joy_palette,Y
+    PlotColor #1:#0:__tmp2
+
+    inc joy_palette_index
+    ldy joy_palette_index
+    lda _random20,Y
+    tay
+    Set __tmp2:joy_palette,Y
+    PlotColor #1:#1:__tmp2
+
+    inc joy_palette_index
+    ldy joy_palette_index
+    lda _random20,Y
+    tay
+    Set __tmp2:joy_palette,Y
+    PlotColor #1:#2:__tmp2
+
+    inc joy_palette_index
+    ldy joy_palette_index
+    lda _random20,Y
+    tay
+    Set __tmp2:joy_palette,Y
+    PlotColor #2:#0:__tmp2
+
+    inc joy_palette_index
+    ldy joy_palette_index
+    lda _random20,Y
+    tay
+    Set __tmp2:joy_palette,Y
+    PlotColor #2:#1:__tmp2
+
+    inc joy_palette_index
+    ldy joy_palette_index
+    lda _random20,Y
+    tay
+    Set __tmp2:joy_palette,Y
+    PlotColor #2:#2:__tmp2
     
 exit:
 }
