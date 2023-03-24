@@ -11,8 +11,9 @@
 
     .const FILTER_LOW = 10
     .const FILTER_HIGH = 40
+    .const FILTER_RESONANCE_LOW = 6
     .const readInputDelay = 6
-    _frameCounter: .byte 0
+    
     _intraBeatCounter: .byte 0,0,0
     _readInputInterval: .byte readInputDelay
     _index: .byte 0
@@ -23,7 +24,7 @@
         // init SID
         Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111  
         Set SID_MIX_FILTER_CUT_OFF_HI:#10
-        Set SID_MIX_FILTER_CONTROL:#%01000111
+        Set SID_MIX_FILTER_CONTROL:#%11110111
         Set SID_MIX_VOLUME:#%00011111
 
         Set SID_V1_ATTACK_DECAY:#$09
@@ -57,9 +58,13 @@
             Set _readInputInterval:#readInputDelay
         !:
         
-        jsr Render
-        
+
+
         dec _frameCounter
+        
+        jsr Render
+
+        lda _frameCounter        
         beq !+
             jmp nextFrame
         !: 
@@ -204,7 +209,7 @@
             !:
 
             lda _filterResonance
-            clc; adc #2
+            clc; adc #3
             cmp #16
             bcs !+
                 sta _filterResonance
@@ -228,7 +233,7 @@
 
         lda _filterResonance
         sec; sbc #4
-        cmp #FILTER_LOW
+        cmp #FILTER_RESONANCE_LOW
         bcc exit
         sta _filterResonance
         asl;asl;asl;asl

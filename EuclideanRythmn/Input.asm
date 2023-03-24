@@ -9,10 +9,13 @@
 .const RIGHT   = %00001000
 .const FIRE    = %00010000
 
-.const LEFT_AND_FIRE    = %00010100
-.const RIGHT_AND_FIRE    = %00011000
+.const LEFT_AND_FIRE  = %00010100
+.const RIGHT_AND_FIRE = %00011000
 .const UP_AND_FIRE    = %00010001
-.const DOWN_AND_FIRE    = %00010010
+.const DOWN_AND_FIRE  = %00010010
+
+_previousTempo: .byte 0
+.const TempoTop = 5
 
 ReadInput: {
     // hold down fire for actions
@@ -49,9 +52,11 @@ ReadInput: {
     check_tempo:
         lda _selectedVoice
         cmp #CHANNEL_TEMPO
-        bne check_echo
-        Constrain(_tempoIndicator, 0, 7, RIGHT_AND_FIRE, LEFT_AND_FIRE)
-        Constrain(_tempoIndicator, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)
+        beq !+
+            jmp check_echo
+        !:
+        ConstrainTempoLR(_tempoIndicator, 0, 7)
+        ConstrainTempoUD(_tempoIndicator)
         jmp end
 
     check_echo:
@@ -67,7 +72,6 @@ ReadInput: {
         bne check_paste
         ldy _patternIndex
         ldx #0
-        //Set _clipBoardOn:#1
         nextCopy:
             lda _beatPatterns, Y
             sta _clipBoard, X
@@ -85,22 +89,18 @@ ReadInput: {
         lda _selectedVoice
         cmp #CHANNEL_PASTE
         bne select_voice
-
-        // lda _clipBoardOn
-        // beq !+
-            ldy _patternIndex
-            ldx #0
-            //Set _clipBoardOn:#0
-            nextPaste:
-                lda _clipBoard, X
-                sta _beatPatterns, Y
-                inx
-                cpx #14
-                beq !+
-                    tya
-                    clc; adc #8
-                    tay
-                    jmp nextPaste
+        ldy _patternIndex
+        ldx #0
+        nextPaste:
+            lda _clipBoard, X
+            sta _beatPatterns, Y
+            inx
+            cpx #14
+            beq !+
+                tya
+                clc; adc #8
+                tay
+                jmp nextPaste
         !:
         jmp end                
 
@@ -204,13 +204,6 @@ _exit:rts
         !:
 
         lda _selectedVoice
-        cmp #CHANNEL_VOICE3
-        bne !+
-        Set _selectedVoice:#CHANNEL_FILTER
-            jmp _exit
-        !:
-
-        lda _selectedVoice
         cmp #CHANNEL_OCTAVE3
         bne !+
             Set _selectedVoice:#CHANNEL_OCTAVE2
@@ -272,14 +265,6 @@ _exit:rts
             Set _selectedVoice:#CHANNEL_VOICE3
             jmp _exit
         !:
-
-        // lda _selectedVoice
-        // cmp #CHANNEL_VOICE3
-        // bne !+
-        //     // not sure
-        //     //Set _selectedVoice:#CHANNEL_VOICE2
-        //     jmp _exit
-        // !:
 
         lda _selectedVoice
         cmp #CHANNEL_OCTAVE1
@@ -422,11 +407,15 @@ _exit:rts
         !:              
 }
 
-.macro Constrain(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
-    lda #decreaseAction
+.macro ConstrainTempoLR(operand, lowerlimit, upperlimit) {
+    lda #LEFT_AND_FIRE
     bit PORT2
     bne !++
         lda operand
+        cmp #TempoTop
+        bne skip
+            sta _previousTempo
+        skip:
         cmp #lowerlimit
         beq !+
             dec operand
@@ -434,9 +423,10 @@ _exit:rts
         jmp _exit
     !:
 
-    lda #increaseAction
+    lda #RIGHT_AND_FIRE
     bit PORT2
     bne !++
+        inc _previousTempo
         lda operand
         cmp #upperlimit
         beq !+
@@ -444,6 +434,77 @@ _exit:rts
         !:
         jmp _exit
     !:
+}
+
+.macro ConstrainTempoUD(operand) {
+    lda #DOWN_AND_FIRE
+    bit PORT2
+    beq !+
+        jmp checkUp
+    !:
+    lda operand
+    cmp #1
+    bne !+
+        dec operand
+        jmp _exit
+    !:
+    cmp #2
+    bne !+
+        dec operand
+        jmp _exit
+    !:
+    cmp #3
+    bne !+
+        dec operand
+        jmp _exit
+    !:
+    cmp #4
+    bne !+
+        lda _previousTempo
+        cmp #TempoTop
+        bne skip
+            inc operand
+            inc _previousTempo
+            jmp _exit    
+        skip:
+        dec operand
+        jmp _exit
+    !:
+    cmp #5
+    bne !+
+        inc operand
+        jmp _exit
+    !:
+    cmp #6
+    bne !+
+        inc operand
+        jmp _exit
+    !:
+
+checkUp:
+    lda #UP_AND_FIRE
+    bit PORT2
+    bne exit
+        lda operand
+        cmp #3
+        beq threeOrless
+        bcs !+
+            threeOrless:
+            inc operand
+            jmp _exit
+        !:
+        cmp #5
+        bne !+
+            sta _previousTempo
+            dec operand
+            jmp _exit
+        !:
+        cmp #6 // or 7
+        bcc !+
+            dec operand
+            jmp _exit
+        !:
+    exit:
 }
 
 .macro Cycle(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){

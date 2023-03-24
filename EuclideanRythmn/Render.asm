@@ -1,6 +1,7 @@
 #importonce
 #import "_prelude.lib"
 #import "Config.asm"
+#import "Sid.asm"
 
 .const BLANK = 2
 .const BLANK_SMALL = 144
@@ -29,26 +30,28 @@ Render: {
     RenderPaste()
     RenderPattern(CHANNEL_FILTER, filter_x, filter_y, BLANK_SMALL)
 
-    //RenderJoy()
+    RenderJoy()
     rts
 }
 
 .macro RenderJoy(){
 
-    //9,13
-    ldy joy_palette_index
-    Set __tmp2:joy_palette,Y
-    PlotColor #9:#13:__tmp2
-    PlotColor #25:#7:__tmp2
-    PlotColor #25:#17:__tmp2
-    PlotColor #33:#17:__tmp2
-    inc joy_palette_index
-    lda joy_palette_index
-    cmp #4
-    bne!+
-        Set joy_palette_index:#0
+    lda _frameCounter
+    beq !+
+        jmp exit
     !:
 
+    PlotColor #0:#0:SID_LFO
+    PlotColor #0:#1:SID_LFO
+    PlotColor #0:#2:SID_LFO
+    PlotColor #1:#0:SID_LFO
+    PlotColor #1:#1:SID_LFO
+    PlotColor #1:#2:SID_LFO
+    PlotColor #2:#0:SID_LFO
+    PlotColor #2:#1:SID_LFO
+    PlotColor #2:#2:SID_LFO
+    
+exit:
 }
 
 .macro RenderCopy() {
@@ -64,8 +67,8 @@ Render: {
     !:
 
     off:
-        PlotColor #31: #23: #DARK_GREY
-        PlotColor #32: #23: #DARK_GREY
+        PlotColor #31: #23: #GREY
+        PlotColor #32: #23: #GREY
     end:
 }
 
@@ -83,9 +86,9 @@ Render: {
     !:
 
     off:
-        PlotColor #34: #23: #DARK_GREY
-        PlotColor #35: #23: #DARK_GREY
-        PlotColor #36: #23: #DARK_GREY
+        PlotColor #34: #23: #GREY
+        PlotColor #35: #23: #GREY
+        PlotColor #36: #23: #GREY
     end:
 }
 
@@ -101,8 +104,8 @@ on:
         jmp endSelected  
 
 off:
-        PlotColor #26: #23: #DARK_GREY
-        PlotColor #27: #23: #DARK_GREY
+        PlotColor #26: #23: #GREY
+        PlotColor #27: #23: #GREY
 
 endSelected:
 
@@ -113,8 +116,8 @@ endSelected:
         jmp endEchoOn
     !:
 
-    PlotColor #24: #23: #DARK_GREY
-    PlotColor #25: #23: #DARK_GREY
+    PlotColor #24: #23: #GREY
+    PlotColor #25: #23: #GREY
 endEchoOn:
 }
 
@@ -383,7 +386,7 @@ pattern_small_char: .byte 187,188,204,220,219,218,202,186
 beat_small_char:    .byte 190,191,207,223,222,221,205,189
 
 joy_palette_index: .byte 0
-joy_palette: .byte 11,12,13,1
+joy_palette: .byte 14,2,3,4,5,6,7,13,9,14,2,3,4,5,6,7,13,9,14,2,3,4,5,6,7,13,9,14,2,3,4,5,6,7,13,9
 
 voice0_x:   .byte 09,11,12,11,09,07,06,07,09,11,12,11,09,07,06,07
 voice0_y:   .byte 10,11,13,15,16,15,13,11,10,11,13,15,16,15,13,11

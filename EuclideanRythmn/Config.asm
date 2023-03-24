@@ -5,6 +5,7 @@
 .const steps = 8
 
 // tempo in units of "frame count"
+_frameCounter: .byte 0
 _tempo: .byte 12
 _tempoIndicator: .byte 3
 _stepIndex: .byte 0
@@ -61,7 +62,6 @@ _delay2_off: .byte 38,39,40
 _delay3_on: .byte 48,49,50
 _delay3_off: .byte 50,51,52
 
-//_clipBoardOn: .byte 0
 _clipBoard: .fill 14,0
 
 // double up the sequence so we can offset into it
@@ -81,5 +81,5 @@ _tempo_fill:
     .byte 64,32,24,16,12,08,06,04
 
 .align $100
-_random20: .fill 256,round(5*random())
+_random20: .fill 256,round(1*random())
 
