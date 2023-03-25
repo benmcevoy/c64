@@ -6,13 +6,13 @@
 
 // tempo in units of "frame count"
 _frameCounter: .byte 0
-_tempo: .byte 12
-_tempoIndicator: .byte 3
+_tempo: .byte 16
+_tempoIndicator: .byte 4
 _stepIndex: .byte 0
 _selectedVoice: .byte 0
 _transpose: .byte 0
 _chord: .byte 0
-_echoOn: .byte 0
+_echoOn: .byte 1
 
 .const CHANNEL_VOICE1 = 0
 .const CHANNEL_VOICE2 = 1
@@ -32,22 +32,22 @@ _patternIndex: .byte 0
 .align $100
 _beatPatterns:
 // going across are the patterns
-    _voice1NumberOfBeats: .byte 0,0,0,0,0,0,0,0
-    _voice2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
-    _voice3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
-    _octave1NumberOfBeats: .byte 0,0,0,0,0,0,0,0
-    _octave2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
-    _octave3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
-    _filterNumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _voice1NumberOfBeats: .byte 3,3,3,3,0,0,0,0
+    _voice2NumberOfBeats: .byte 0,1,2,2,0,0,0,0
+    _voice3NumberOfBeats: .byte 0,1,3,3,0,0,0,0
+    _octave1NumberOfBeats: .byte 5,5,4,4,0,0,0,0
+    _octave2NumberOfBeats: .byte 1,1,2,2,0,0,0,0
+    _octave3NumberOfBeats: .byte 1,1,3,3,0,0,0,0
+    _filterNumberOfBeats: .byte 3,3,3,6,0,0,0,0
 
 _rotationPatterns:
     _voice1Rotation: .byte 0,0,0,0,0,0,0,0
     _voice2Rotation: .byte 0,0,0,0,0,0,0,0
-    _voice3Rotation: .byte 0,0,0,0,0,0,0,0
+    _voice3Rotation: .byte 0,2,2,2,0,0,0,0
     _octave1Rotation: .byte 0,0,0,0,0,0,0,0
     _octave2Rotation: .byte 0,0,0,0,0,0,0,0
-    _octave3Rotation: .byte 0,0,0,0,0,0,0,0
-    _filterRotation: .byte 0,0,0,0,0,0,0,0
+    _octave3Rotation: .byte 2,2,2,2,0,0,0,0
+    _filterRotation: .byte 7,7,7,7,0,0,0,0
 
 _voiceOn: .byte 0,0,0,0,0,0,0
 _voiceNoteNumber: .byte 0,0,0,0,0,0,0

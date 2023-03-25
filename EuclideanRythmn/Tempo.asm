@@ -31,9 +31,9 @@
         Set SID_V2_ATTACK_DECAY:#$00
         Set SID_V3_ATTACK_DECAY:#$00
 
-        Set SID_V1_SUSTAIN_RELEASE:#$F0
-        Set SID_V2_SUSTAIN_RELEASE:#$F0
-        Set SID_V3_SUSTAIN_RELEASE:#$F0
+        Set SID_V1_SUSTAIN_RELEASE:#$00
+        Set SID_V2_SUSTAIN_RELEASE:#$00
+        Set SID_V3_SUSTAIN_RELEASE:#$00
 
         SetWaveForm(CHANNEL_VOICE1, Square)
         SetWaveForm(CHANNEL_VOICE2, Square)

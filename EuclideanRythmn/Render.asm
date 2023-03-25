@@ -7,12 +7,11 @@
 .const BLANK_SMALL = 144
 .const PATTERN = 3
 .const BEAT = 4
+.const SelectedColor = GREEN
+.const BeatColor = LIGHT_GREEN
 
 Character: .byte 204
 PenColor: .byte GREEN
-
-_selectedColor: .byte GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN
-_beatColor: .byte LIGHT_GREEN, LIGHT_GREEN, LIGHT_GREEN, LIGHT_GREEN, LIGHT_GREEN, LIGHT_GREEN, LIGHT_GREEN, LIGHT_GREEN
 _stepCounter: .byte 0
 
 Render: {
@@ -166,15 +165,14 @@ endEchoOn:
     lda _selectedVoice
     cmp #CHANNEL_PATTERN
     bne !+
-        ldy #CHANNEL_PATTERN
-        Set PenColor:_selectedColor, Y
+        Set PenColor:#SelectedColor
     !:
 
     render_pattern:
         ldy #CHANNEL_PATTERN
         // is this step a beat?
         lda #1
-        // *16 so shift 4 times, each rhytmn pattern is sixteeen long 
+        // *16 so shift 4 times, each rhythm pattern is sixteeen long 
         asl;asl;asl;asl
         clc 
         adc _stepCounter
@@ -208,22 +206,20 @@ endEchoOn:
     lda #0
     tax
     sta _stepCounter
-    
+
     Set PenColor:#DARK_GRAY
 
     lda _selectedVoice
     cmp #voiceNumber
     bne !+
-        // this is the currently selected voice
-        ldy #voiceNumber
-        Set PenColor:_selectedColor, Y
+        Set PenColor:#SelectedColor
     !:
 
-    render_pattern:
+     render_pattern:
         ldy _patternIndex
         // is this step a beat?
         lda voiceNumberOfBeats, Y
-        // *16 so shift 4 times, each rhytmn pattern is sixteeen long 
+        // *16 so shift 4 times, each rhythm pattern is sixteeen long 
         asl;asl;asl;asl
         clc 
         adc _stepCounter
@@ -253,7 +249,7 @@ endEchoOn:
         lda _voiceOn, Y
         beq !+
             ldx _stepIndex        
-            Set PenColor:_beatColor, Y
+            Set PenColor:#BeatColor
             Set Character:#BEAT
             Plot voice_x,X:voice_y,X
         !:
@@ -272,8 +268,7 @@ endEchoOn:
     lda _selectedVoice
     cmp #voiceNumber
     bne !+
-        ldy #voiceNumber
-        Set PenColor:_selectedColor, Y
+        Set PenColor:#SelectedColor
     !:
 
     render_pattern:
@@ -312,7 +307,7 @@ endEchoOn:
         lda _voiceOn, Y
         beq !+
             ldx _stepIndex
-            Set PenColor:_beatColor, Y
+            Set PenColor:#BeatColor
             Set Character:beat_small_char,X
             Plot voice_x,X:voice_y,X
         !:
@@ -325,9 +320,8 @@ endEchoOn:
     lda _selectedVoice
     cmp #CHANNEL_TEMPO
     bne !+
-        ldy #CHANNEL_TEMPO
         // or selected
-        Set PenColor:_selectedColor, Y
+        Set PenColor:#SelectedColor
     !:
 
     ldx #0
