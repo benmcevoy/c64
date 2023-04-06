@@ -627,8 +627,6 @@ op4:        inc $BEEF, X
         !:
         jmp _exit
     !:   
-
-   
 }
 
 .macro Toggle(operand, action){

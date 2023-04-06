@@ -11,7 +11,7 @@ Start: {
     Set $d021:#BLACK
 
     // clear screen
-    jsr $E544
+    //jsr $E544
     jsr Screen.Draw
     jsr Tempo.Init
 

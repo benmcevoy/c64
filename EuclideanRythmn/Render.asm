@@ -35,56 +35,103 @@ Render: {
 
 .macro RenderJoy(){
 
-    lda _frameCounter
+    .var paletteIndex = __tmp2
+    .var color = __tmp3
+
+    ldy _tempoIndicator
+    lda _tempo_fill,Y
+    tay; dey; 
+    cpy _frameCounter
     beq !+
         jmp exit
     !:
 
-    ldy joy_palette_index
-    Set __tmp2:_randomJoy,Y
-    PlotColor #0:#0:__tmp2
-    inc joy_palette_index
+    PlotColor #0:#0:#BLACK
+    PlotColor #1:#0:#BLACK
+    PlotColor #2:#0:#BLACK
+    PlotColor #0:#1:#BLACK
+    PlotColor #1:#1:#BLACK
+    PlotColor #2:#1:#BLACK
+    PlotColor #0:#2:#BLACK
+    PlotColor #1:#2:#BLACK
+    PlotColor #2:#2:#BLACK
 
-    ldy joy_palette_index
-    Set __tmp2:_randomJoy,Y
-    PlotColor #0:#1:__tmp2
-    inc joy_palette_index
+    ldy #CHANNEL_VOICE1
+    lda _voiceOn,y
+    beq !++
+        Set paletteIndex:#2
+        ldy paletteIndex
+        Set color:joy_palette,Y
+        PlotColor #0:paletteIndex:color
+        dec paletteIndex
 
-    ldy joy_palette_index
-    Set __tmp2:_randomJoy,Y
-    PlotColor #0:#2:__tmp2
-    inc joy_palette_index
-
-    ldy joy_palette_index
-    Set __tmp2:_randomJoy,Y
-    PlotColor #1:#0:__tmp2
-    inc joy_palette_index
-
-    ldy joy_palette_index
-    Set __tmp2:_randomJoy,Y
-    PlotColor #1:#1:__tmp2
-    inc joy_palette_index
-
-    ldy joy_palette_index
-    Set __tmp2:_randomJoy,Y
-    PlotColor #1:#2:__tmp2
-    inc joy_palette_index
-
-    ldy joy_palette_index
-    Set __tmp2:_randomJoy,Y
-    PlotColor #2:#0:__tmp2
-    inc joy_palette_index
-
-    ldy joy_palette_index
-    Set __tmp2:_randomJoy,Y
-    PlotColor #2:#1:__tmp2
-    inc joy_palette_index
-
-    ldy joy_palette_index
-    Set __tmp2:_randomJoy,Y
-    PlotColor #2:#2:__tmp2
-    inc joy_palette_index
+        ldy #CHANNEL_OCTAVE1
+        lda _voiceOn,y
+        beq !+
+            ldy paletteIndex
+            Set color:joy_palette,Y
+            PlotColor #0:paletteIndex:color
+            dec paletteIndex
+        !:
+        ldy #CHANNEL_FILTER
+        lda _voiceOn,y
+        beq !+
+        ldy paletteIndex
+        Set color:joy_palette,Y
+        PlotColor #0:paletteIndex:color
+    !:
     
+    ldy #CHANNEL_VOICE2
+    lda _voiceOn,y
+    beq !++
+        Set paletteIndex:#2
+        ldy paletteIndex
+        Set color:joy_palette,Y
+        PlotColor #1:paletteIndex:color
+        dec paletteIndex
+
+        ldy #CHANNEL_OCTAVE2
+        lda _voiceOn,y
+        beq !+
+            ldy paletteIndex
+            Set color:joy_palette,Y
+            PlotColor #1:paletteIndex:color
+            dec paletteIndex
+        !:
+
+        ldy #CHANNEL_FILTER
+        lda _voiceOn,y
+        beq !+
+        ldy paletteIndex
+        Set color:joy_palette,Y
+        PlotColor #1:paletteIndex:color
+    !:
+    
+    ldy #CHANNEL_VOICE3
+    lda _voiceOn,y
+    beq !++
+        Set paletteIndex:#2
+        ldy paletteIndex
+        Set color:joy_palette,Y
+        PlotColor #2:paletteIndex:color
+        dec paletteIndex
+
+        ldy #CHANNEL_OCTAVE3
+        lda _voiceOn,y
+        beq !+
+            ldy paletteIndex
+            Set color:joy_palette,Y
+            PlotColor #2:paletteIndex:color
+            dec paletteIndex
+        !:
+
+        ldy #CHANNEL_FILTER
+        lda _voiceOn,y
+        beq !+
+        ldy paletteIndex
+        Set color:joy_palette,Y
+        PlotColor #2:paletteIndex:color
+    !:
 exit:
 }
 
@@ -414,7 +461,8 @@ blank_small_char:   .byte 142,143,159,175,174,173,157,141
 pattern_small_char: .byte 187,188,204,220,219,218,202,186
 beat_small_char:    .byte 190,191,207,223,222,221,205,189
 
-joy_palette_index: .byte 0
+// reversed
+joy_palette: .byte LIGHT_GREEN,YELLOW,LIGHT_RED
 
 voice0_x:   .byte 09,11,12,11,09,07,06,07,09,11,12,11,09,07,06,07
 voice0_y:   .byte 10,11,13,15,16,15,13,11,10,11,13,15,16,15,13,11

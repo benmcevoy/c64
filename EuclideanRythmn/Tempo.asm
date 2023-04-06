@@ -107,16 +107,44 @@
 
         lda _echoOn
         bne !+
-            jmp exit
+            jmp proceed
         !:
 
         Echo(CHANNEL_VOICE1)
         Echo(CHANNEL_VOICE2)
         Echo(CHANNEL_VOICE3)
+
+proceed:
+        lda _proceedOn
+        beq exit
+        Proceed()
+
     exit:
         // end irq
         pla;tay;pla;tax;pla
         rti          
+    }
+
+    // TODO: needs tuning
+    .macro Proceed(){
+        lda _readInputInterval
+        cmp #readInputDelay
+        bne !+
+            lda _intraBeatCounter
+            cmp #1
+            bne skip
+                dec _patternIndex
+                lda _patternIndex
+                cmp #$ff
+                bne skip
+                Set _patternIndex:#0
+            skip:
+            inc _patternIndex
+            lda _patternIndex
+            cmp #8
+            bne !+
+            Set _patternIndex:#0
+        !:
     }
 
     .macro Echo(voiceNumber){
