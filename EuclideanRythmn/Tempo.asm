@@ -13,7 +13,8 @@
     .const FILTER_HIGH = 40
     .const FILTER_RESONANCE_LOW = 6
     .const readInputDelay = 6
-    
+    .const patternSpeed = 1
+
     _intraBeatCounter: .byte 0,0,0
     _readInputInterval: .byte readInputDelay
     _index: .byte 0
@@ -125,7 +126,6 @@ proceed:
         rti          
     }
 
-    // TODO: needs tuning
     .macro Proceed(){
         lda _readInputInterval
         cmp #readInputDelay
@@ -133,17 +133,18 @@ proceed:
             lda _intraBeatCounter
             cmp #1
             bne skip
-                dec _patternIndex
+                inc _patternIndex
                 lda _patternIndex
-                cmp #$ff
-                bne skip
-                Set _patternIndex:#0
+                //sec; sbc #patternSpeed
+                clc; adc #patternSpeed
+                sta _patternIndex
             skip:
-            inc _patternIndex
-            lda _patternIndex
-            cmp #8
-            bne !+
-            Set _patternIndex:#0
+                lda _patternIndex
+                sec; sbc #patternSpeed
+                //clc; adc #patternSpeed
+                sta _patternIndex
+
+            Modulo _patternIndex:#8
         !:
     }
 
@@ -363,5 +364,16 @@ proceed:
             TriggerMidiOn(voiceNumber)
         #endif
         !:
+    }
+
+    /* @Command Return remainder in value */
+    .pseudocommand Modulo value:modulus {
+        sec
+        lda value
+    subtract:
+        sbc modulus
+        bcs subtract
+        adc modulus
+        sta value 
     }
 }

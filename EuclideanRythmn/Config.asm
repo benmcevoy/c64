@@ -13,7 +13,7 @@ _selectedVoice: .byte 0
 _transpose: .byte 0
 _chord: .byte 0
 _echoOn: .byte $ff
-_proceedOn: .byte 0
+_proceedOn: .byte $FF
 
 .const CHANNEL_VOICE1 = 0
 .const CHANNEL_VOICE2 = 1
@@ -53,22 +53,22 @@ _patternIndex: .byte 0
 // chill patterns that are built around 3 beat
 _beatPatterns:
 // going across are the patterns
-    _voice1NumberOfBeats: .byte 3,3,3,3,0,0,0,0
-    _voice2NumberOfBeats: .byte 0,1,2,2,0,0,0,0
-    _voice3NumberOfBeats: .byte 0,1,3,3,0,0,0,0
-    _octave1NumberOfBeats: .byte 5,5,4,4,0,0,0,0
-    _octave2NumberOfBeats: .byte 1,1,2,2,0,0,0,0
-    _octave3NumberOfBeats: .byte 1,1,3,3,0,0,0,0
-    _filterNumberOfBeats: .byte 3,3,3,6,0,0,0,0
+    _voice1NumberOfBeats: .byte 3,3,3,3,0,3,3,3
+    _voice2NumberOfBeats: .byte 0,1,2,2,0,2,2,1
+    _voice3NumberOfBeats: .byte 0,1,3,3,0,3,3,1
+    _octave1NumberOfBeats: .byte 5,5,4,4,0,4,4,5
+    _octave2NumberOfBeats: .byte 1,1,2,2,0,2,2,1
+    _octave3NumberOfBeats: .byte 1,1,3,3,0,3,3,1
+    _filterNumberOfBeats: .byte 3,3,3,6,0,3,3,3
 
 _rotationPatterns:
     _voice1Rotation: .byte 0,0,0,0,0,0,0,0
     _voice2Rotation: .byte 0,0,0,0,0,0,0,0
-    _voice3Rotation: .byte 0,2,2,2,0,0,0,0
+    _voice3Rotation: .byte 0,2,2,2,0,2,2,2
     _octave1Rotation: .byte 0,0,0,0,0,0,0,0
     _octave2Rotation: .byte 0,0,0,0,0,0,0,0
-    _octave3Rotation: .byte 2,2,2,2,0,0,0,0
-    _filterRotation: .byte 7,7,7,7,0,0,0,0
+    _octave3Rotation: .byte 2,2,2,2,0,2,2,2
+    _filterRotation: .byte 7,7,7,7,0,7,7,7
 
 _voiceOn: .byte 0,0,0,0,0,0,0
 _voiceNoteNumber: .byte 0,0,0,0,0,0,0
@@ -100,44 +100,3 @@ _rhythm:
 
 _tempo_fill:
     .byte 64,32,24,16,12,08,06,04
-
-// .align $100
-// _randomJoy: 
-//     .byte 10,04,07,03,02,10,03,02,06
-//     .byte 13,03,04,02,05,02,07,14,03
-//     .byte 03,05,06,05,04,05,02,05,13
-//     .byte 05,05,05,05,10,05,05,05,05
-//     .byte 05,02,05,13,04,07,05,06,05
-//     .byte 04,13,10,13,13,03,10,14,04
-
-//     .byte 13,10,04,14,10,10,04,04,03
-//     .byte 14,07,03,06,05,06,14,04,13
-//     .byte 03,05,06,05,13,05,14,05,07
-//     .byte 05,05,05,05,13,05,05,05,05
-//     .byte 05,07,05,13,07,13,05,03,05
-//     .byte 06,10,13,13,03,07,14,14,14
-
-//     .byte 03,10,06,10,03,04,10,04,02
-//     .byte 04,02,06,14,05,07,07,02,07
-//     .byte 03,05,07,05,14,05,07,05,14
-//     .byte 05,05,05,05,07,05,05,05,05
-//     .byte 05,03,05,06,03,07,05,06,05
-//     .byte 04,14,03,14,06,04,04,03,02
-
-//     .byte 03,13,07,03,07,13,02,02,10
-//     .byte 13,13,06,14,05,02,07,13,03
-//     .byte 02,05,03,05,10,05,04,05,04
-//     .byte 05,05,05,05,07,05,05,05,05
-//     .byte 05,06,05,10,10,14,05,06,05
-//     .byte 02,04,10,10,02,07,07,14,10
-
-//     .byte 03,07,02,10,03,04,13,03,02
-//     .byte 14,03,13,14,05,14,02,02,03
-//     .byte 04,05,06,05,04,05,03,05,04
-//     .byte 05,05,05,05,13,05,05,05,05
-//     .byte 05,03,05,03,13,14,05,10,05
-//     .byte 10,13,14,07,04,06,13,02,04
-    
-
-    
-

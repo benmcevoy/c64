@@ -55,6 +55,7 @@ ReadInput: {
         beq !+
             jmp check_echo
         !:
+        // TODO: is this better? reuse on the other controls then if it is
         ConstrainTempoLR(_tempoIndicator, 0, 7)
         ConstrainTempoUD(_tempoIndicator)
         jmp end
@@ -630,6 +631,7 @@ op4:        inc $BEEF, X
 }
 
 .macro Toggle(operand, action){
+    // TODO: debounce!
     lda #action
     bit PORT2
     bne !+
