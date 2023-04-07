@@ -72,44 +72,44 @@ _randomDistribution:
 
 
 .align $100  // 112 bytes
-// _beatPatterns:
-// // going across are the patterns
-//     _voice1NumberOfBeats: .byte 0,0,0,0,0,0,0,0
-//     _voice2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
-//     _voice3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
-//     _octave1NumberOfBeats: .byte 0,0,0,0,0,0,0,0
-//     _octave2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
-//     _octave3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
-//     _filterNumberOfBeats: .byte 0,0,0,0,0,0,0,0
-
-// _rotationPatterns:
-//     _voice1Rotation: .byte 0,0,0,0,0,0,0,0
-//     _voice2Rotation: .byte 0,0,0,0,0,0,0,0
-//     _voice3Rotation: .byte 0,0,0,0,0,0,0,0
-//     _octave1Rotation: .byte 0,0,0,0,0,0,0,0
-//     _octave2Rotation: .byte 0,0,0,0,0,0,0,0
-//     _octave3Rotation: .byte 0,0,0,0,0,0,0,0
-//     _filterRotation: .byte 0,0,0,0,0,0,0,0
-
-// chill patterns that are built around 3 beat
-_beatPatterns:  // 8*7 bytes  = 56
+ _beatPatterns:
 // going across are the patterns
-    _voice1NumberOfBeats: .byte 3,3,3,3,0,3,3,3
-    _voice2NumberOfBeats: .byte 0,1,2,2,0,2,2,1
-    _voice3NumberOfBeats: .byte 0,1,3,3,0,3,3,1
-    _octave1NumberOfBeats: .byte 5,5,4,4,0,4,4,5
-    _octave2NumberOfBeats: .byte 1,1,2,2,0,2,2,1
-    _octave3NumberOfBeats: .byte 1,1,3,3,0,3,3,1
-    _filterNumberOfBeats: .byte 3,3,3,6,0,3,3,3
+    _voice1NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _voice2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _voice3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _octave1NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _octave2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _octave3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _filterNumberOfBeats: .byte 0,0,0,0,0,0,0,0
 
-_rotationPatterns: // 8*7 bytes  = 56
+_rotationPatterns:
     _voice1Rotation: .byte 0,0,0,0,0,0,0,0
     _voice2Rotation: .byte 0,0,0,0,0,0,0,0
-    _voice3Rotation: .byte 0,2,2,2,0,2,2,2
+    _voice3Rotation: .byte 0,0,0,0,0,0,0,0
     _octave1Rotation: .byte 0,0,0,0,0,0,0,0
     _octave2Rotation: .byte 0,0,0,0,0,0,0,0
-    _octave3Rotation: .byte 2,2,2,2,0,2,2,2
-    _filterRotation: .byte 7,7,7,7,0,7,7,7
+    _octave3Rotation: .byte 0,0,0,0,0,0,0,0
+    _filterRotation: .byte 0,0,0,0,0,0,0,0
+
+// chill patterns that are built around 3 beat
+// _beatPatterns:  // 8*7 bytes  = 56
+// // going across are the patterns
+//     _voice1NumberOfBeats: .byte 3,3,3,3,0,3,3,3
+//     _voice2NumberOfBeats: .byte 0,1,2,2,0,2,2,1
+//     _voice3NumberOfBeats: .byte 0,1,3,3,0,3,3,1
+//     _octave1NumberOfBeats: .byte 5,5,4,4,0,4,4,5
+//     _octave2NumberOfBeats: .byte 1,1,2,2,0,2,2,1
+//     _octave3NumberOfBeats: .byte 1,1,3,3,0,3,3,1
+//     _filterNumberOfBeats: .byte 3,3,3,6,0,3,3,3
+
+// _rotationPatterns: // 8*7 bytes  = 56
+//     _voice1Rotation: .byte 0,0,0,0,0,0,0,0
+//     _voice2Rotation: .byte 0,0,0,0,0,0,0,0
+//     _voice3Rotation: .byte 0,2,2,2,0,2,2,2
+//     _octave1Rotation: .byte 0,0,0,0,0,0,0,0
+//     _octave2Rotation: .byte 0,0,0,0,0,0,0,0
+//     _octave3Rotation: .byte 2,2,2,2,0,2,2,2
+//     _filterRotation: .byte 7,7,7,7,0,7,7,7
 
 // double up the sequence so we can offset into it
 .align $100  // 144 bytes

@@ -117,7 +117,7 @@ ReadInput: {
         lda _selectedVoice
         cmp #CHANNEL_RANDOM
         bne select_voice
-        Randomize()        
+        RandomizeCurrentPattern()        
         jmp end                             
 
     // selection
@@ -129,10 +129,25 @@ ReadInput: {
 _exit:rts
 
 
-_rnd: .byte 23
-.macro Randomize(){
-    ldx #0
+_rnd: .byte 123
+.macro RandomizeCurrentPattern(){
+    ldx _patternIndex
 next:
+    NextRandom()
+    tay
+    lda _randomDistribution, Y
+    sta _beatPatterns,X
+    
+    // increase x by 8 to advance to the next CHANNEL
+    clc
+    txa; adc #8
+    tax
+
+    cpx #112
+    bcc next
+}
+
+.macro NextRandom() {
     lda _rnd
     asl
     eor _rnd
@@ -140,15 +155,9 @@ next:
     lsr
     eor _rnd
     sta _rnd
-    asl;asl; asl
+    asl;asl;asl
     eor _rnd
     sta _rnd
-    tay
-    lda _randomDistribution, Y
-    sta _beatPatterns,X
-    inx
-    cpx #112
-    bne next
 }
 
 .macro SelectVoice() {
