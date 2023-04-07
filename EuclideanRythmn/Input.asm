@@ -129,19 +129,19 @@ ReadInput: {
 _exit:rts
 
 
-_rnd: .byte 123
+_rnd: .byte 23
 .macro Randomize(){
-    // TODO: get a rnd number, maybe read v3 env, v3 freq, framecounter, intrabeatcounter and EOR them all together?
-    // i dunno...
-    // wikipedia say eor and shift
-    // generate the next number in the sequence by repeatedly taking the exclusive or of a number 
-    // with a bit-shifted version of itself.
-
     ldx #0
 next:
     lda _rnd
-    ror;ror;ror;ror;ror
-    eor SID_ENV
+    asl
+    eor _rnd
+    sta _rnd
+    lsr
+    eor _rnd
+    sta _rnd
+    asl;asl; asl
+    eor _rnd
     sta _rnd
     tay
     lda _randomDistribution, Y
@@ -149,8 +149,6 @@ next:
     inx
     cpx #112
     bne next
-
-
 }
 
 .macro SelectVoice() {
