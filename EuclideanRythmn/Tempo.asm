@@ -54,6 +54,8 @@
         // set next irq line number
         lda    #1
         sta    $d012
+        
+        inc _time
 
         dec _readInputInterval
         bne !+
@@ -130,19 +132,10 @@ proceed:
         lda _readInputInterval
         cmp #readInputDelay
         bne !+
-            lda _intraBeatCounter
-            cmp #1
-            bne skip
-                inc _patternIndex
-                lda _patternIndex
-                //sec; sbc #patternSpeed
-                clc; adc #patternSpeed
-                sta _patternIndex
-            skip:
-                lda _patternIndex
-                sec; sbc #patternSpeed
-                //clc; adc #patternSpeed
-                sta _patternIndex
+            lda _patternIndex
+            //sec; sbc #patternSpeed
+            clc; adc #patternSpeed
+            sta _patternIndex
 
             Modulo _patternIndex:#8
         !:

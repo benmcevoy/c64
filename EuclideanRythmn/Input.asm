@@ -1,6 +1,7 @@
 #importonce
 #import "_prelude.lib"
 #import "Config.asm"
+#import "Sid.asm"
 
 .const PORT2   = $dc00
 .const UP      = %00000001
@@ -89,7 +90,7 @@ ReadInput: {
     check_paste:
         lda _selectedVoice
         cmp #CHANNEL_PASTE
-        bne select_voice
+        bne check_auto
         ldy _patternIndex
         ldx #0
         nextPaste:
@@ -103,7 +104,21 @@ ReadInput: {
                 tay
                 jmp nextPaste
         !:
-        jmp end                
+        jmp end    
+
+    check_auto:
+        lda _selectedVoice
+        cmp #CHANNEL_AUTO
+        bne check_random
+        Toggle(_proceedOn, FIRE)        
+        jmp end  
+
+    check_random:
+        lda _selectedVoice
+        cmp #CHANNEL_RANDOM
+        bne select_voice
+        Randomize()        
+        jmp end                             
 
     // selection
     select_voice:
@@ -112,6 +127,31 @@ ReadInput: {
     end:
 }
 _exit:rts
+
+
+_rnd: .byte 123
+.macro Randomize(){
+    // TODO: get a rnd number, maybe read v3 env, v3 freq, framecounter, intrabeatcounter and EOR them all together?
+    // i dunno...
+    // wikipedia say eor and shift
+    // generate the next number in the sequence by repeatedly taking the exclusive or of a number 
+    // with a bit-shifted version of itself.
+
+    ldx #0
+next:
+    lda _rnd
+    ror;ror;ror;ror;ror
+    eor SID_ENV
+    sta _rnd
+    tay
+    lda _randomDistribution, Y
+    sta _beatPatterns,X
+    inx
+    cpx #112
+    bne next
+
+
+}
 
 .macro SelectVoice() {
     check_down:
@@ -170,13 +210,6 @@ _exit:rts
         !:
 
         lda _selectedVoice
-        cmp #CHANNEL_TEMPO
-        bne !+
-            Set _selectedVoice:#CHANNEL_ECHO
-            jmp _exit
-        !:   
-
-        lda _selectedVoice
         cmp #CHANNEL_PATTERN
         bne !+
             Set _selectedVoice:#CHANNEL_COPY
@@ -228,9 +261,23 @@ _exit:rts
         lda _selectedVoice
         cmp #CHANNEL_ECHO
         bne !+
-            Set _selectedVoice:#CHANNEL_TEMPO
+            Set _selectedVoice:#CHANNEL_VOICE3
             jmp _exit
         !:         
+
+        lda _selectedVoice
+        cmp #CHANNEL_AUTO
+        bne !+
+            Set _selectedVoice:#CHANNEL_VOICE3
+            jmp _exit
+        !:  
+
+        lda _selectedVoice
+        cmp #CHANNEL_RANDOM
+        bne !+
+            Set _selectedVoice:#CHANNEL_VOICE3
+            jmp _exit
+        !:                  
 
         lda _selectedVoice
         cmp #CHANNEL_COPY
@@ -312,9 +359,16 @@ _exit:rts
         lda _selectedVoice
         cmp #CHANNEL_ECHO
         bne !+
-            Set _selectedVoice:#CHANNEL_VOICE3
+            Set _selectedVoice:#CHANNEL_AUTO
             jmp _exit
         !: 
+
+        lda _selectedVoice
+        cmp #CHANNEL_AUTO
+        bne !+
+            Set _selectedVoice:#CHANNEL_RANDOM
+            jmp _exit
+        !:         
 
         lda _selectedVoice
         cmp #CHANNEL_PASTE
@@ -406,6 +460,20 @@ _exit:rts
             Set _selectedVoice:#CHANNEL_COPY
             jmp _exit
         !:              
+
+        lda _selectedVoice
+        cmp #CHANNEL_AUTO
+        bne !+
+            Set _selectedVoice:#CHANNEL_ECHO
+            jmp _exit
+        !:  
+
+        lda _selectedVoice
+        cmp #CHANNEL_RANDOM
+        bne !+
+            Set _selectedVoice:#CHANNEL_AUTO
+            jmp _exit
+        !:  
 }
 
 .macro ConstrainTempoLR(operand, lowerlimit, upperlimit) {
@@ -641,4 +709,5 @@ op4:        inc $BEEF, X
         jmp _exit
     !:
 }
+
 

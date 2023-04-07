@@ -24,9 +24,11 @@ Render: {
     RenderSelectedPattern(pattern_x, pattern_y, BLANK_SMALL)
 
     RenderTempo(tempo_x, tempo_y)
-    RenderEcho()
+    RenderEcho(_echoOn)
     RenderCopy()
     RenderPaste()
+    RenderAuto(_proceedOn)
+    RenderRandom()
     RenderPattern(CHANNEL_FILTER, filter_x, filter_y, BLANK_SMALL)
 
     RenderJoy()
@@ -142,12 +144,14 @@ exit:
     jmp off
 
     on:
+        PlotColor #30: #23: #GREEN
         PlotColor #31: #23: #GREEN
         PlotColor #32: #23: #GREEN
         jmp end  
     !:
 
     off:
+        PlotColor #30: #23: #GREY
         PlotColor #31: #23: #GREY
         PlotColor #32: #23: #GREY
     end:
@@ -163,6 +167,7 @@ exit:
         PlotColor #34: #23: #GREEN
         PlotColor #35: #23: #GREEN
         PlotColor #36: #23: #GREEN
+        PlotColor #37: #23: #GREEN
         jmp end  
     !:
 
@@ -170,36 +175,93 @@ exit:
         PlotColor #34: #23: #GREY
         PlotColor #35: #23: #GREY
         PlotColor #36: #23: #GREY
+        PlotColor #37: #23: #GREY
     end:
 }
 
-.macro RenderEcho() {
+.macro RenderEcho(operand) {
     lda _selectedVoice
     cmp #CHANNEL_ECHO
     beq on        
     jmp off
 
 on:
-        PlotColor #26: #23: #GREEN
-        PlotColor #27: #23: #GREEN
+        PlotColor #14: #23: #GREEN
+        PlotColor #15: #23: #GREEN
         jmp endSelected  
 
 off:
-        PlotColor #26: #23: #GREY
-        PlotColor #27: #23: #GREY
+        PlotColor #14: #23: #GREY
+        PlotColor #15: #23: #GREY
 
 endSelected:
 
-    lda _echoOn
+    lda operand
     beq !+
-        PlotColor #24: #23: #GREEN
-        PlotColor #25: #23: #GREEN
+        PlotColor #12: #23: #GREEN
+        PlotColor #13: #23: #GREEN
         jmp endEchoOn
     !:
 
-    PlotColor #24: #23: #GREY
-    PlotColor #25: #23: #GREY
+    PlotColor #12: #23: #GREY
+    PlotColor #13: #23: #GREY
 endEchoOn:
+}
+
+.macro RenderAuto(operand) {
+    lda _selectedVoice
+    cmp #CHANNEL_AUTO
+    beq on        
+    jmp off
+
+on:
+        PlotColor #9: #23: #GREEN
+        PlotColor #10: #23: #GREEN
+        jmp endSelected  
+
+off:
+        PlotColor #9: #23: #GREY
+        PlotColor #10: #23: #GREY
+
+endSelected:
+
+    lda operand
+    beq !+
+        PlotColor #8: #23: #GREEN
+        jmp end
+    !:
+
+    PlotColor #8: #23: #GREY
+end:
+}
+
+.macro RenderRandom() {
+    lda _selectedVoice
+    cmp #CHANNEL_RANDOM
+    beq on        
+    jmp off
+
+on:
+    PlotColor #4: #23: #GREEN
+    PlotColor #5: #23: #GREEN
+    PlotColor #6: #23: #GREEN
+    jmp endSelected  
+
+off:
+    PlotColor #4: #23: #DARK_GREY
+    PlotColor #5: #23: #GREY
+    PlotColor #6: #23: #GREY
+
+endSelected:
+
+    // lda operand
+    // beq !+
+    //     PlotColor #8: #23: #GREEN
+    //     jmp end
+    // !:
+
+    //PlotColor #8: #23: #GREY
+end:
 }
 
 .macro RenderSelectedPattern(voice_x, voice_y, blank) {
@@ -462,7 +524,7 @@ pattern_small_char: .byte 187,188,204,220,219,218,202,186
 beat_small_char:    .byte 190,191,207,223,222,221,205,189
 
 // reversed
-joy_palette: .byte LIGHT_GREEN,YELLOW,LIGHT_RED
+joy_palette: .byte GREEN,LIGHT_GREEN,LIGHT_RED
 
 voice0_x:   .byte 09,11,12,11,09,07,06,07,09,11,12,11,09,07,06,07
 voice0_y:   .byte 10,11,13,15,16,15,13,11,10,11,13,15,16,15,13,11
