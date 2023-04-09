@@ -129,7 +129,7 @@ ReadInput: {
 _exit:rts
 
 
-_rnd: .byte 123
+_rnd: .byte 17
 .macro RandomizeCurrentPattern(){
     ldx _patternIndex
 next:
@@ -155,7 +155,7 @@ next:
     lsr
     eor _rnd
     sta _rnd
-    asl;asl;asl
+    asl;asl
     eor _rnd
     sta _rnd
 }
@@ -171,20 +171,21 @@ next:
         lda _selectedVoice
         cmp #CHANNEL_VOICE1
         bne !+
+            Set _selectedVoice:#CHANNEL_VOICE2
             jmp _exit
         !:
 
         lda _selectedVoice
         cmp #CHANNEL_VOICE2
         bne !+
-            Set _selectedVoice:#CHANNEL_VOICE1
+            Set _selectedVoice:#CHANNEL_VOICE3
             jmp _exit
         !:
 
         lda _selectedVoice
         cmp #CHANNEL_VOICE3
         bne !+
-            Set _selectedVoice:#CHANNEL_VOICE2
+            Set _selectedVoice:#CHANNEL_RANDOM
             jmp _exit
         !:
 
@@ -231,18 +232,18 @@ next:
         !:
 
         lda _selectedVoice
-        cmp #CHANNEL_VOICE1
+        cmp #CHANNEL_VOICE2
         bne !+
-            Set _selectedVoice:#CHANNEL_VOICE2
+            Set _selectedVoice:#CHANNEL_VOICE1
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #CHANNEL_VOICE2
+        cmp #CHANNEL_VOICE3
         bne !+
-            Set _selectedVoice:#CHANNEL_VOICE3
+            Set _selectedVoice:#CHANNEL_VOICE2
             jmp _exit
-        !:
+        !:        
 
         lda _selectedVoice
         cmp #CHANNEL_OCTAVE3

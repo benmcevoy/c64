@@ -23,13 +23,13 @@
 _time: .byte 0
 _frameCounter: .byte 0
 _tempo: .byte 16
-_tempoIndicator: .byte 6
+_tempoIndicator: .byte 4
 _stepIndex: .byte 0
 _selectedVoice: .byte 0
 _transpose: .byte 0
 _chord: .byte 0
-_echoOn: .byte $ff
-_proceedOn: .byte $FF
+_echoOn: .byte $0
+_proceedOn: .byte $0
 _patternIndex: .byte 0
 _voiceOn: .byte 0,0,0,0,0,0,0
 _voiceNoteNumber: .byte 0,0,0,0,0,0,0
@@ -61,10 +61,10 @@ _randomDistribution:
     .byte 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
     .byte 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
     .byte 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
-    .byte 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+    .byte 2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3
     .byte 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
     .byte 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-    .byte 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+    .byte 3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4
     .byte 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
     .byte 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
     .byte 6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7  // 16, ~3% chance of 6 or 7
