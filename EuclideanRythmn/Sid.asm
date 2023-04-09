@@ -109,12 +109,24 @@ freq_lsb:
     sta SID_V1_CONTROL + (voiceNumber * 7)
 }
 
+// https://en.wikipedia.org/wiki/Xorshift
+// https://gist.github.com/t-mat/8b2c183ae50480c7998f4d9ab2271b1d
+// "With given triples, if RNG state can forward (2^N)-1 steps without
+// collision, we can say it's not bad N-bit Xorshift triple, basically."
+//
+// Result:  number of asl, lsr, asl
+//  static const int xorshift8_triples[12][3] = {
+//   { 1, 1, 2}, { 1, 1, 3}, { 1, 7, 3}, { 1, 7, 6}, { 1, 7, 7},
+//   { 2, 5, 5}, { 3, 1, 5}, { 3, 5, 4}, { 3, 5, 5}, { 3, 5, 7},
+//   { 5, 3, 6}, { 5, 3, 7},
+//  };
+
 .macro NextRandom() {
     lda _rnd
-    asl
+    asl;
     eor _rnd
     sta _rnd
-    lsr
+    lsr;
     eor _rnd
     sta _rnd
     asl;asl
