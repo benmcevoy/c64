@@ -128,8 +128,6 @@ ReadInput: {
 }
 _exit:rts
 
-
-_rnd: .byte 17
 .macro RandomizeCurrentPattern(){
     ldx _patternIndex
 next:
@@ -145,19 +143,6 @@ next:
 
     cpx #112
     bcc next
-}
-
-.macro NextRandom() {
-    lda _rnd
-    asl
-    eor _rnd
-    sta _rnd
-    lsr
-    eor _rnd
-    sta _rnd
-    asl;asl
-    eor _rnd
-    sta _rnd
 }
 
 .macro SelectVoice() {
@@ -222,7 +207,14 @@ next:
         bne !+
             Set _selectedVoice:#CHANNEL_COPY
             jmp _exit
-        !:               
+        !:   
+
+        lda _selectedVoice
+        cmp #CHANNEL_TEMPO
+        bne !+
+            Set _selectedVoice:#CHANNEL_COPY
+            jmp _exit
+        !:                      
 
     check_up:
         lda #UP

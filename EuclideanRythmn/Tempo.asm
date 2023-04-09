@@ -91,7 +91,7 @@
         TriggerMidiOff(CHANNEL_OCTAVE3)
         // filter is not sent to midi
     #endif    
-        TriggerChord()
+        TriggerChord(chords)
 
         TriggerOctave(CHANNEL_OCTAVE1)
         TriggerOctave(CHANNEL_OCTAVE2)
@@ -264,8 +264,21 @@ proceed:
     exit:
     }
     
-    .macro TriggerChord() {
-        SetChord(chords, _chord, _transpose, scale_phrygian)
+    .macro TriggerChord(chord) {
+        ldy #0
+        ldx #0
+        lda chord, Y
+        sta _voiceNoteNumber, X
+        
+        iny
+        inx
+        lda chord, Y
+        sta _voiceNoteNumber, X
+
+        iny
+        inx
+        lda chord, Y
+        sta _voiceNoteNumber, X
     }
 
     .macro TriggerBeat(voiceNumber) {
@@ -300,7 +313,7 @@ proceed:
 
             lda #$00
             sta SID_V1_SUSTAIN_RELEASE+voiceNumber*7
-            Set SID_V1_ATTACK_DECAY+voiceNumber*7:#09
+            Set SID_V1_ATTACK_DECAY+voiceNumber*7:#$19
             TriggerOn(voiceNumber)
         #if MIDI
             TriggerMidiOn(voiceNumber)
@@ -341,9 +354,8 @@ proceed:
             lda #voiceNumber
             sec; sbc #3
             tay
-            
-            lda _voiceNoteNumber, Y
-            clc; adc #12
+
+            lda accent_chords, Y
             sta _voiceNoteNumber, Y
             tax
             lda freq_msb, X
