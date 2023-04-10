@@ -16,7 +16,8 @@
 .const DOWN_AND_FIRE  = %00010010
 
 _previousTempo: .byte 0
-.const TempoTop = 5
+_previousPattern: .byte 0
+.const Top = 5
 
 ReadInput: {
     // hold down fire for actions
@@ -46,8 +47,8 @@ ReadInput: {
         beq !+
             jmp check_tempo
         !:
-        CyclePattern(_patternIndex, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
-        CyclePattern(_patternIndex, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)    
+        CyclePatternLR(_patternIndex)
+        CyclePatternUD(_patternIndex)    
         jmp end
 
     check_tempo:
@@ -57,7 +58,7 @@ ReadInput: {
             jmp check_echo
         !:
         // TODO: is this better? reuse on the other controls then if it is
-        ConstrainTempoLR(_tempoIndicator, 0, 7)
+        ConstrainTempoLR(_tempoIndicator)
         ConstrainTempoUD(_tempoIndicator)
         jmp end
 
@@ -476,16 +477,16 @@ next:
         !:  
 }
 
-.macro ConstrainTempoLR(operand, lowerlimit, upperlimit) {
+.macro ConstrainTempoLR(operand) {
     lda #LEFT_AND_FIRE
     bit PORT2
     bne !++
         lda operand
-        cmp #TempoTop
+        cmp #Top
         bne skip
             sta _previousTempo
         skip:
-        cmp #lowerlimit
+        cmp #0
         beq !+
             dec operand
         !:
@@ -497,7 +498,7 @@ next:
     bne !++
         inc _previousTempo
         lda operand
-        cmp #upperlimit
+        cmp #7
         beq !+
             inc operand
         !:
@@ -530,7 +531,7 @@ next:
     cmp #4
     bne !+
         lda _previousTempo
-        cmp #TempoTop
+        cmp #Top
         bne skip
             inc operand
             inc _previousTempo
@@ -576,32 +577,276 @@ checkUp:
     exit:
 }
 
-.macro CyclePattern(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
-    lda #decreaseAction
+.macro CyclePatternLR(operand){
+check_left:
+    lda #LEFT_AND_FIRE
     bit PORT2
-    bne !++
-        lda operand
-        cmp #lowerlimit
-        beq !+
+    beq !+
+        jmp check_right
+    !:
+    
+    // if operand is 0,1,7 then inc
+    // if 2 do nothing
+    // if 3,4,5 then dec
+    // if 6 then test previous to see if 
+    
+    lda operand
+    cmp #0
+    bne !+
+        sta _previousPattern
+        inc operand
+        jmp _exit
+    !:
+    cmp #1
+    bne !+
+        sta _previousPattern
+        inc operand
+        jmp _exit
+    !:
+    cmp #2
+    bne !+
+        jmp _exit
+    !:    
+    cmp #3
+    bne !+
+        sta _previousPattern
+        dec operand
+        jmp _exit
+    !:
+    cmp #4
+    bne !+
+        sta _previousPattern
+        dec operand
+        jmp _exit
+    !:
+    cmp #5
+    bne !+
+        sta _previousPattern
+        dec operand
+        jmp _exit
+    !:
+    cmp #6
+    bne !+
+        lda _previousPattern
+        cmp #5
+        bne skip
             dec operand
-            jmp _exit
-        !:
-        Set operand:#upperlimit
+            dec _previousPattern
+            jmp _exit    
+        skip:
+        inc operand
+        inc _previousPattern
+        jmp _exit        
+    !:
+    cmp #7
+    bne !+
+        sta _previousPattern
+        Set operand:#0
+         
         jmp _exit
     !:
 
-    lda #increaseAction
+check_right:
+    lda #RIGHT_AND_FIRE
     bit PORT2
-    bne !++
-        lda operand
-        cmp #upperlimit
-        beq !+
-            inc operand
-            jmp _exit
-        !:
-        Set operand:#lowerlimit
+    beq !+
+        jmp exit
+    !:
+
+    // if operand is 1,0,7,6 then dec
+    // if 6 do nothing
+    // if 3,4,5 then inc
+    // if 2 then test previous to see if 
+    lda operand
+    cmp #0
+    bne !+
+        sta _previousPattern
+        Set operand:#7
         jmp _exit
     !:
+    cmp #1
+    bne !+
+        sta _previousPattern
+        dec operand
+        jmp _exit
+    !:
+    cmp #2
+    bne !+
+        lda _previousPattern
+        cmp #1
+        bne skip1
+            dec operand
+            dec _previousPattern
+            jmp _exit    
+        skip1:
+        inc operand
+        inc _previousPattern
+        jmp _exit 
+    !:
+    cmp #3
+    bne !+
+        sta _previousPattern
+        inc operand
+        jmp _exit
+    !:
+    cmp #4
+    bne !+
+        sta _previousPattern
+        inc operand
+        jmp _exit
+    !:
+    cmp #5
+    bne !+
+        sta _previousPattern
+        inc operand
+        jmp _exit
+    !:
+    cmp #6
+    bne !+
+        jmp _exit
+    !:    
+    cmp #7
+    bne !+
+        sta _previousPattern
+        dec operand
+        jmp _exit
+    !:
+exit:
+}
+
+.macro CyclePatternUD(operand){
+check_up:
+    lda #UP_AND_FIRE
+    bit PORT2
+    beq !+
+        jmp check_down
+    !:
+    // if operand is 1,2,3 then dec
+    // if 7,6,5 then inc
+    // if 0 do nothing
+    // if 4 then test previous to see if 
+    lda operand
+    cmp #0
+    bne !+
+        jmp _exit
+    !:
+    cmp #1
+    bne !+
+        sta _previousPattern
+        dec operand
+        jmp _exit
+    !:
+    cmp #2
+    bne !+
+        sta _previousPattern
+        dec operand
+        jmp _exit
+    !:    
+    cmp #3
+    bne !+
+        sta _previousPattern
+        dec operand
+        jmp _exit
+    !:
+    cmp #4
+    bne !+
+        lda _previousPattern
+        cmp #3
+        bne skip
+            dec operand
+            dec _previousPattern
+            jmp _exit    
+        skip:
+        inc operand
+        inc _previousPattern
+        jmp _exit 
+    !:
+    cmp #5
+    bne !+
+        sta _previousPattern
+        inc operand
+        jmp _exit
+    !:
+    cmp #6
+    bne !+
+        sta _previousPattern
+        inc operand
+        jmp _exit        
+    !:
+    cmp #7
+    bne !+
+        sta _previousPattern
+        Set operand:#0
+        jmp _exit
+    !:
+
+check_down:
+    lda #DOWN_AND_FIRE
+    bit PORT2
+    beq !+
+        jmp exit
+    !:
+
+    // if operand is 1,2,3 then inc
+    // if 7,6,5 then dec
+    // if 4 do nothing
+    // if 0 then test previous to see if 
+    lda operand
+    cmp #0
+    bne !+
+        lda _previousPattern
+        cmp #1
+        bne skip1
+            inc operand
+            inc _previousPattern
+            jmp _exit    
+        skip1:
+        Set _previousPattern:#0
+        Set operand:#7
+        jmp _exit
+    !:
+    lda operand
+    cmp #1
+    bne !+
+        sta _previousPattern
+        inc operand
+        jmp _exit
+    !:
+    cmp #2
+    bne !+
+        sta _previousPattern
+        inc operand
+        jmp _exit 
+    !:
+    cmp #3
+    bne !+
+        sta _previousPattern
+        inc operand
+        jmp _exit
+    !:
+    cmp #4
+    bne !+
+        jmp _exit
+    !:    
+    cmp #5
+    bne !+
+        sta _previousPattern
+        dec operand
+        jmp _exit
+    !:
+    cmp #6
+    bne !+
+        sta _previousPattern
+        dec operand
+        jmp _exit
+    !:    
+    cmp #7
+    bne !+
+        sta _previousPattern
+        dec operand
+        jmp _exit
+    !:
+exit:    
 }
 
 .macro CycleRotationForVoice(voice, lowerlimit, upperlimit, increaseAction, decreaseAction){
