@@ -46,9 +46,9 @@ _delay3_off: .byte 50,51,52
 _clipBoard: .fill 14,0
 _tempo_fill: .byte 64,32,24,16,12,08,06,04
 
-chords: .byte C2, E2, G2//Db2, E2, Ab3
-accent_chords: .byte C4, E4, G4//Db4, E4, Ab5
-
+chords: .byte Db2, E2, Ab3
+accent_chords: .byte Db4, E4, Ab5
+.label scale = scale_flamenco
 
 // .macro HouseProgression() { 
 //     // house progression
@@ -145,22 +145,20 @@ accent_chords: .byte C4, E4, G4//Db4, E4, Ab5
 // // chord_Su2: .byte C2, D2, G2
 // // chord_Dim: .byte C2, Eb2, Gb2
 
-// // https://en.wikipedia.org/wiki/List_of_musical_scales_and_modes
-// // W-W-W-H-W-H-W 	
-// scale_acoustic: .byte 0,2,4,6,7,9,10,12
-// scale_aeolian: .byte  0,2,3,5,7,8,10,12
-// scale_super_locrian: .byte 0,1,3,4,6,8,10,12
-// scale_enigmatic: .byte 0,1,4,6,8,10,11,12
-// scale_double_harmonic: .byte 0,1,4,5,7,8,11,12
-// scale_flamenco: .byte 0,1,4,5,7,8,11,12
-// scale_gypsy: .byte 0,2,3,6,7,8,10,12
-// scale_half_diminshed: .byte 0,2,3,5,6,8,10,12
-// scale_harmonic_major: .byte 0,2,4,5,7,8,11,12
-// scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
-// scale_phrygian: .byte 0,1,3,5,7,8,10,12
-// scale_phrygian_dominant: .byte 0,1,4,5,7,8,10,12
-
-// scale_circle_harmonic_major: .byte 0,5,11,2,7,12,4,8
+// https://en.wikipedia.org/wiki/List_of_musical_scales_and_modes
+scale_acoustic: .byte 0,2,4,6,7,9,10,12 // W-W-W-H-W-H-W 
+scale_aeolian: .byte  0,2,3,5,7,8,10,12
+scale_super_locrian: .byte 0,1,3,4,6,8,10,12
+scale_enigmatic: .byte 0,1,4,6,8,10,11,12
+scale_double_harmonic: .byte 0,1,4,5,7,8,11,12
+scale_flamenco: .byte 0,1,4,5,7,8,11,12
+scale_gypsy: .byte 0,2,3,6,7,8,10,12
+scale_half_diminshed: .byte 0,2,3,5,6,8,10,12
+scale_harmonic_major: .byte 0,2,4,5,7,8,11,12
+scale_harmonic_minor: .byte 0,2,3,5,7,8,11,12
+scale_phrygian: .byte 0,1,3,5,7,8,10,12
+scale_phrygian_dominant: .byte 0,1,4,5,7,8,10,12
+scale_circle_harmonic_major: .byte 0,5,11,2,7,12,4,8
 
 //------------------------------------------------------------------------
 // aligned data

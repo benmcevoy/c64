@@ -28,6 +28,7 @@
 .const MidiIRQEnable = $95
 .const MidiReset = $03
 
+_noteNumber: .byte 0
 _index: .byte 0
 
 InitMidi: {
@@ -90,32 +91,37 @@ InitMidi: {
     rx: lda MidiStatus
         lsr
         bcc rx
-
-        lda MidiReceive
-        clc
-        ldy #0
-        sta chords,Y
         
-        adc #4        
-        iny
+        
+        lda MidiReceive
+        sta _noteNumber
+        clc
+
+        ldy #0
+        ldx #0
+        adc scale,X
+        sta chords,Y
+        adc #24
+        ldy #3
         sta chords,Y
 
-        adc #3        
-        iny
+        lda _noteNumber
+        ldx #2  
+        ldy #1
+        adc scale,X
+        sta chords,Y
+        adc #24
+        ldy #4
         sta chords,Y
 
-        adc #17       
-        iny
+        lda _noteNumber
+        ldx #4 
+        ldy #2
+        adc scale,X
         sta chords,Y
-
-        adc #4       
-        iny
+        adc #24
+        ldy #5
         sta chords,Y
-
-        adc #3      
-        iny
-        sta chords,Y
-
 
 
     flush:
