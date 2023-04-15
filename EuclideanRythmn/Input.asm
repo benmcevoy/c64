@@ -40,7 +40,7 @@ ReadInput: {
             jmp check_pattern
         !:
         ConstrainBeatsForVoice(_selectedVoice, 0, steps, RIGHT_AND_FIRE, LEFT_AND_FIRE)
-        CycleRotationForVoice(_selectedVoice, 0, steps, UP_AND_FIRE, DOWN_AND_FIRE)
+        CycleRotationForVoice(_selectedVoice, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)
         jmp end
 
     check_pattern:
@@ -877,7 +877,7 @@ exit:
     sta op5+1
     sta op6+1    
 
-    lda #decreaseAction
+    lda #increaseAction
     bit PORT2
     bne !++
         ldx _patternIndex
@@ -892,7 +892,7 @@ op3:    sta $BEEF, X
         jmp _exit
     !:
 
-    lda #increaseAction
+    lda #decreaseAction
     bit PORT2
     bne !++
         ldx _patternIndex

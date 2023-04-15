@@ -307,7 +307,6 @@ end:
         bne render_pattern
 }
 
-
 .macro RenderPattern(voiceNumber, voice_x, voice_y, blank) {
     .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
     .var voiceRotation = _rotationPatterns + (voiceNumber*8)
@@ -318,11 +317,7 @@ end:
 
     Set PenColor:#DARK_GRAY
 
-    lda _selectedVoice
-    cmp #voiceNumber
-    bne !+
-        Set PenColor:#SelectedColor
-    !:
+
 
      render_pattern:
         ldy _patternIndex
@@ -346,6 +341,12 @@ end:
         Set Character:#blank
 
     next_step:
+        lda _selectedVoice
+        cmp #voiceNumber
+        bne !+
+            Set PenColor:#SelectedColor
+        !:
+
         Plot voice_x,X:voice_y,X
         inx
         inc _stepCounter
@@ -517,7 +518,6 @@ end:
 }
 
 screenRow: .lohifill 25, 40*i
-
 blank_small_char:   .byte 142,143,159,175,174,173,157,141
 pattern_small_char: .byte 187,188,204,220,219,218,202,186
 beat_small_char:    .byte 190,191,207,223,222,221,205,189

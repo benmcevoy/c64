@@ -3,7 +3,7 @@
 #import "Config.asm"
 
 // turn on
-//#define MIDI
+#define MIDI
 
 // SEQUENTIAL CIRCUITS INC.
 // Mode 	1 MHZ IRQ 	
@@ -79,10 +79,11 @@ InitMidi: {
         bcc exit
 
         lda MidiReceive
-        // ignore the chaneel (lower nybble)
+        // ignore the channel (lower nybble)
         and #$F0
         // Bx are control change messages
-        cmp #$B0
+        // 90 is note on
+        cmp #$90
         bne flush
 
     // bit 0 on MidiStatus is strobed for every byte
@@ -91,20 +92,30 @@ InitMidi: {
         bcc rx
 
         lda MidiReceive
-        cmp #74
-        bne !+
-            jsr _cc1
-        !:
+        clc
+        ldy #0
+        sta chords,Y
+        
+        adc #4        
+        iny
+        sta chords,Y
 
-        cmp #71
-        bne !+
-            jsr _cc2
-        !:
+        adc #3        
+        iny
+        sta chords,Y
 
-        cmp #73
-        bne !+
-            jsr _cc3
-        !:
+        adc #17       
+        iny
+        sta chords,Y
+
+        adc #4       
+        iny
+        sta chords,Y
+
+        adc #3      
+        iny
+        sta chords,Y
+
 
 
     flush:
@@ -113,41 +124,6 @@ InitMidi: {
         lsr
         bcs flush
     exit:    
-}
-
-_cc1: {
-    rx: lda MidiStatus
-        lsr
-        bcc rx
-
-        lda MidiReceive
-        lsr;lsr;lsr;lsr;
-        sta _selectedVoice     
-    rts
-}
-
-_cc2: {
-    rx: lda MidiStatus
-        lsr
-        bcc rx
-
-        lda MidiReceive
-        lsr;lsr;lsr;lsr;
-        ldy _selectedVoice
-        sta _voiceNumberOfBeats, Y
-    rts
-}
-
-_cc3: {
-    rx: lda MidiStatus
-        lsr
-        bcc rx
-
-        lda MidiReceive
-        lsr;lsr;lsr;lsr;
-        ldy _selectedVoice
-        sta _voiceRotation, Y
-    rts
 }
 
 _transmitMidi: {
