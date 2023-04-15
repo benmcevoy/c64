@@ -17,6 +17,7 @@
 
 _previousTempo: .byte 0
 _previousPattern: .byte 0
+_debounceOn: .byte 0
 .const Top = 5
 
 ReadInput: {
@@ -24,6 +25,7 @@ ReadInput: {
     lda #FIRE
     bit PORT2
     beq !+
+        Set _debounceOn:#0
         jmp select_voice
     !:
 
@@ -47,6 +49,12 @@ ReadInput: {
         beq !+
             jmp check_tempo
         !:
+        lda _proceedOn
+        beq !+
+            CyclePattern(_patternIndex, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+            CyclePattern(_patternIndex, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)    
+            jmp end
+        !:
         CyclePatternLR(_patternIndex)
         CyclePatternUD(_patternIndex)    
         jmp end
@@ -57,7 +65,6 @@ ReadInput: {
         beq !+
             jmp check_echo
         !:
-        // TODO: is this better? reuse on the other controls then if it is
         ConstrainTempoLR(_tempoIndicator)
         ConstrainTempoUD(_tempoIndicator)
         jmp end
@@ -944,7 +951,14 @@ op4:        inc $BEEF, X
 }
 
 .macro Toggle(operand, action){
-    // TODO: debounce!
+    // debounce
+    lda _debounceOn
+    beq !+
+        jmp _exit
+    !:
+
+    Set _debounceOn:#1
+
     lda #action
     bit PORT2
     bne !+
@@ -955,4 +969,30 @@ op4:        inc $BEEF, X
     !:
 }
 
+.macro CyclePattern(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
+    lda #decreaseAction
+    bit PORT2
+    bne !++
+        lda operand
+        cmp #lowerlimit
+        beq !+
+            dec operand
+            jmp _exit
+        !:
+        Set operand:#upperlimit
+        jmp _exit
+    !:
 
+    lda #increaseAction
+    bit PORT2
+    bne !++
+        lda operand
+        cmp #upperlimit
+        beq !+
+            inc operand
+            jmp _exit
+        !:
+        Set operand:#lowerlimit
+        jmp _exit
+    !:
+}

@@ -4,6 +4,7 @@
 .const scale_length = 7
 .const chord_length = 7
 .const steps = 8
+.const readInputDelay = 6
 
 .const CHANNEL_VOICE1 = 0
 .const CHANNEL_VOICE2 = 1
@@ -32,6 +33,7 @@ _echoOn: .byte $0
 _proceedOn: .byte $0
 _patternIndex: .byte 0
 _voiceOn: .byte 0,0,0,0,0,0,0
+_readInputInterval: .byte readInputDelay
 
 _delay0_on: .byte 12,13,14
 _delay0_off: .byte 14,15,16
@@ -44,8 +46,8 @@ _delay3_off: .byte 50,51,52
 _clipBoard: .fill 14,0
 _tempo_fill: .byte 64,32,24,16,12,08,06,04
 
-chords: .byte Db2, E2, Ab3
-accent_chords: .byte Db4, E4, Ab5
+chords: .byte C2, E2, G2//Db2, E2, Ab3
+accent_chords: .byte C4, E4, G4//Db4, E4, Ab5
 
 
 // .macro HouseProgression() { 

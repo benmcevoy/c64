@@ -12,11 +12,9 @@
     .const FILTER_LOW = 10
     .const FILTER_HIGH = 40
     .const FILTER_RESONANCE_LOW = 6
-    .const readInputDelay = 6
     .const patternSpeed = 1
 
     _intraBeatCounter: .byte 0,0,0
-    _readInputInterval: .byte readInputDelay
     _index: .byte 0
     _filterCutOffHi: .byte 16
     _filterResonance: .byte 8

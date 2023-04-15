@@ -438,7 +438,6 @@ end:
     Set Character:#145
 
     render_pattern:
-        // _tempo is 0 to $ff, where 0 is FULL ON and $ff is FULL OFF
         lda _tempoIndicator
         cmp _stepCounter
         bcs next_step
