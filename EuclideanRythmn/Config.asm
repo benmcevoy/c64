@@ -22,7 +22,6 @@
 .const CHANNEL_RANDOM = 13
 
 // tempo in units of "frame count"
-_time: .byte 0
 _frameCounter: .byte 0
 _tempo: .byte 16
 _tempoIndicator: .byte 4
@@ -48,7 +47,7 @@ _tempo_fill: .byte 64,32,24,16,12,08,06,04
 
 chords: .byte Db2, E2, Ab3
 accent_chords: .byte Db4, E4, Ab5
-.label scale = scale_flamenco
+.label scale = scale_harmonic_minor
 
 // .macro HouseProgression() { 
 //     // house progression

@@ -52,8 +52,6 @@
         // set next irq line number
         lda    #1
         sta    $d012
-        
-        inc _time
 
         dec _readInputInterval
         bne !+
@@ -62,14 +60,13 @@
         !:
 
         dec _frameCounter
-        
+      
         jsr Render
 
         lda _frameCounter        
         beq !+
             jmp nextFrame
         !: 
-
     stepStart:
         ldy _tempoIndicator
         Set _frameCounter:_tempo_fill,Y
@@ -115,7 +112,7 @@
         Echo(CHANNEL_VOICE2)
         Echo(CHANNEL_VOICE3)
 
-proceed:
+    proceed:
         lda _proceedOn
         beq exit
         Proceed()

@@ -33,7 +33,7 @@ _index: .byte 0
 
 InitMidi: {
     Set MidiControl:#MidiReset
-    Set MidiControl: #MidiEnable
+    Set MidiControl:#MidiEnable
 
     rts
 }
@@ -43,19 +43,19 @@ InitMidi: {
     lda #$90
     ora #voiceNumber
     tax
-    jsr _transmitMidi 
+    _transmitMidi()
     
     ldy #voiceNumber
     lda _voiceNoteNumber, Y
     tax
-    jsr _transmitMidi
+    _transmitMidi()
 
     inc _index
     ldx _index
     lda _random20,X
     clc; adc #Velocity
     tax
-    jsr _transmitMidi
+    _transmitMidi()
 }
 
 .macro TriggerMidiOff(voiceNumber) {
@@ -63,15 +63,15 @@ InitMidi: {
     lda #$80
     ora #voiceNumber
     tax
-    jsr _transmitMidi 
+    _transmitMidi()
     
     ldy #voiceNumber
     lda _voiceNoteNumber, Y
     tax
-    jsr _transmitMidi
+    _transmitMidi()
     
     ldx #0
-    jsr _transmitMidi
+    _transmitMidi()
 }
 
 .macro PollForMidiMessage() {
@@ -91,14 +91,15 @@ InitMidi: {
     rx: lda MidiStatus
         lsr
         bcc rx
-        
-        
+                
         lda MidiReceive
         sta _noteNumber
         clc
 
+        // here .Y is the index into chords and accent_chords
+        // .X is the chord shape, currently 0,2,4
         ldy #0
-        ldx #0
+        ldx #0 // chord scale index 0
         adc scale,X
         sta chords,Y
         adc #24
@@ -106,7 +107,7 @@ InitMidi: {
         sta chords,Y
 
         lda _noteNumber
-        ldx #2  
+        ldx #2  // chord scale index 1
         ldy #1
         adc scale,X
         sta chords,Y
@@ -115,14 +116,13 @@ InitMidi: {
         sta chords,Y
 
         lda _noteNumber
-        ldx #4 
+        ldx #4 // chord scale index 2
         ldy #2
         adc scale,X
         sta chords,Y
         adc #24
         ldy #5
         sta chords,Y
-
 
     flush:
         lda MidiReceive
@@ -132,14 +132,14 @@ InitMidi: {
     exit:    
 }
 
-_transmitMidi: {
+.macro _transmitMidi() {
+    _txMidi:
     lda MidiStatus
     lsr
     lsr
     // testing for the Tx to be high
-    bcc _transmitMidi
+    bcc _txMidi
     stx MidiTransmit 
-    rts
 }
 
 #endif

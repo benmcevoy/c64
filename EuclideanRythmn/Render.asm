@@ -22,7 +22,6 @@ Render: {
     RenderPatternSmall(CHANNEL_OCTAVE2, octave1_x, octave1_y)
     RenderPatternSmall(CHANNEL_OCTAVE3, octave2_x, octave2_y)
     RenderSelectedPattern(pattern_x, pattern_y, BLANK_SMALL)
-
     RenderTempo(tempo_x, tempo_y)
     RenderEcho(_echoOn)
     RenderCopy()
@@ -30,7 +29,6 @@ Render: {
     RenderAuto(_proceedOn)
     RenderRandom()
     RenderPattern(CHANNEL_FILTER, filter_x, filter_y, BLANK_SMALL)
-
     RenderJoy()
     rts
 }
@@ -186,13 +184,13 @@ exit:
     jmp off
 
 on:
-        PlotColor #14: #23: #GREEN
-        PlotColor #15: #23: #GREEN
-        jmp endSelected  
+    PlotColor #14: #23: #GREEN
+    PlotColor #15: #23: #GREEN
+    jmp endSelected  
 
 off:
-        PlotColor #14: #23: #GREY
-        PlotColor #15: #23: #GREY
+    PlotColor #14: #23: #GREY
+    PlotColor #15: #23: #GREY
 
 endSelected:
 
@@ -265,10 +263,7 @@ end:
 }
 
 .macro RenderSelectedPattern(voice_x, voice_y, blank) {
-    lda #0
-    sta _stepCounter
-    tax
-    
+    ldx #0
     Set PenColor:#DARK_GRAY
 
     lda _selectedVoice
@@ -278,48 +273,52 @@ end:
     !:
 
     render_pattern:
-        ldy #CHANNEL_PATTERN
+        Set Character:#blank
+
         // is this step a beat?
-        lda #1
-        // *16 so shift 4 times, each rhythm pattern is sixteeen long 
-        asl;asl;asl;asl
+        txa
         clc 
-        adc _stepCounter
+        adc #16
         adc _patternIndex
         tay
 
         lda _rhythm, Y
-        beq rest
+        beq next_step
 
-    pattern:
         Set Character:#PATTERN
-        jmp next_step
-
-    rest:
-        Set Character:#blank
 
     next_step:
         Plot voice_x,X:voice_y,X
         inx
-        inc _stepCounter
-        lda _stepCounter
-        cmp #steps
+        cpx #steps
         bne render_pattern
+
+    beat:
+        ldy #CHANNEL_PATTERN
+        lda _voiceOn, Y
+        beq !+
+            ldx _stepIndex        
+            Set PenColor:#BeatColor
+            Set Character:#BEAT
+            Plot voice_x,X:voice_y,X
+        !:        
 }
 
 .macro RenderPattern(voiceNumber, voice_x, voice_y, blank) {
     .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
     .var voiceRotation = _rotationPatterns + (voiceNumber*8)
 
-    lda #0
-    tax
-    sta _stepCounter
-
+    ldx #0
     Set PenColor:#DARK_GRAY
 
+    lda _selectedVoice
+    cmp #voiceNumber
+    bne !+
+        Set PenColor:#SelectedColor
+    !:
 
-
-     render_pattern:
+    render_pattern:
+        stx _stepCounter
         ldy _patternIndex
         // is this step a beat?
         lda voiceNumberOfBeats, Y
@@ -330,28 +329,17 @@ end:
         adc voiceRotation, Y
         tay
 
-        lda _rhythm, Y
-        beq rest
-
-    pattern:
-        Set Character:#PATTERN
-        jmp next_step
-
-    rest:
         Set Character:#blank
 
-    next_step:
-        lda _selectedVoice
-        cmp #voiceNumber
-        bne !+
-            Set PenColor:#SelectedColor
-        !:
+        lda _rhythm, Y
+        beq next_step
 
+        Set Character:#PATTERN
+
+    next_step:
         Plot voice_x,X:voice_y,X
         inx
-        inc _stepCounter
-        lda _stepCounter
-        cmp #steps
+        cpx #steps
         bne render_pattern
 
     beat:
@@ -435,25 +423,16 @@ end:
     !:
 
     ldx #0
-    Set _stepCounter:#0
-    Set Character:#145
-
     render_pattern:
-        lda _tempoIndicator
-        cmp _stepCounter
-        bcs next_step
-
-    pattern:
+        Set Character:#145
+        cpx _tempoIndicator
+        bcc next_step
+        beq next_step
         Set Character:#BLANK_SMALL
-        jmp next_step
-
     next_step:
-        ldy _stepCounter
         Plot voice_x,X:voice_y,X
         inx
-        inc _stepCounter
-        lda _stepCounter
-        cmp #steps
+        cpx #steps
         bne render_pattern
 }
 
