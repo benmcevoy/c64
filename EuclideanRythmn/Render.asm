@@ -298,7 +298,7 @@ end:
         lda _voiceOn, Y
         beq !+
             ldx _stepIndex        
-            Set PenColor:#BeatColor
+            Set PenColor:#GREY
             Set Character:#BEAT
             Plot voice_x,X:voice_y,X
         !:        

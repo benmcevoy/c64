@@ -51,12 +51,12 @@ ReadInput: {
         !:
         lda _proceedOn
         beq !+
-            CyclePattern(_patternIndex, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+            ConstrainPattern(_proceedIntervalDelay, 1, 100, LEFT_AND_FIRE, RIGHT_AND_FIRE)
             CyclePattern(_patternIndex, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)    
             jmp end
         !:
-        CyclePatternLR(_patternIndex)
-        CyclePatternUD(_patternIndex)    
+            CyclePattern(_patternIndex, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+            CyclePattern(_patternIndex, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)  
         jmp end
 
     check_tempo:
@@ -993,6 +993,30 @@ op4:        inc $BEEF, X
             jmp _exit
         !:
         Set operand:#lowerlimit
+        jmp _exit
+    !:
+}
+
+.macro ConstrainPattern(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
+    lda #decreaseAction
+    bit PORT2
+    bne !++
+        lda operand
+        cmp #lowerlimit
+        beq !+
+            dec operand
+        !:
+        jmp _exit
+    !:
+
+    lda #increaseAction
+    bit PORT2
+    bne !++
+        lda operand
+        cmp #upperlimit
+        beq !+
+            inc operand
+        !:
         jmp _exit
     !:
 }

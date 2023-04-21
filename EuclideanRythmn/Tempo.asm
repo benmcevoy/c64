@@ -12,7 +12,6 @@
     .const FILTER_LOW = 10
     .const FILTER_HIGH = 40
     .const FILTER_RESONANCE_LOW = 6
-    .const patternSpeed = 1
 
     _intraBeatCounter: .byte 0,0,0
     _index: .byte 0
@@ -115,6 +114,7 @@
     proceed:
         lda _proceedOn
         beq exit
+        dec _proceedInterval
         Proceed()
 
     exit:
@@ -124,15 +124,13 @@
     }
 
     .macro Proceed(){
-        lda _readInputInterval
-        cmp #readInputDelay
+        lda _proceedInterval
         bne !+
-            lda _patternIndex
-            //sec; sbc #patternSpeed
-            clc; adc #patternSpeed
-            sta _patternIndex
+            dec _patternIndex
 
             Modulo _patternIndex:#8
+
+            Set _proceedInterval:_proceedIntervalDelay
         !:
     }
 

@@ -6,6 +6,7 @@
 .const steps = 8
 .const readInputDelay = 6
 
+
 .const CHANNEL_VOICE1 = 0
 .const CHANNEL_VOICE2 = 1
 .const CHANNEL_VOICE3 = 2
@@ -30,6 +31,8 @@ _selectedVoice: .byte 0
 _chord: .byte 0
 _echoOn: .byte $0
 _proceedOn: .byte $0
+_proceedInterval: .byte 12
+_proceedIntervalDelay: .byte 12
 _patternIndex: .byte 0
 _voiceOn: .byte 0,0,0,0,0,0,0
 _readInputInterval: .byte readInputDelay
