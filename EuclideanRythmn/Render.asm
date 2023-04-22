@@ -293,6 +293,9 @@ end:
         cpx #steps
         bne render_pattern
 
+    lda _proceedOn
+    beq !+
+
     beat:
         ldy #CHANNEL_PATTERN
         lda _voiceOn, Y
