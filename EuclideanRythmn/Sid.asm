@@ -129,7 +129,7 @@ freq_lsb:
     lsr;
     eor _rnd
     sta _rnd
-    asl;asl
+    asl;asl;asl
     eor _rnd
     sta _rnd
 }

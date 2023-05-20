@@ -6,7 +6,6 @@
 .const steps = 8
 .const readInputDelay = 6
 
-
 .const CHANNEL_VOICE1 = 0
 .const CHANNEL_VOICE2 = 1
 .const CHANNEL_VOICE3 = 2
@@ -14,8 +13,9 @@
 .const CHANNEL_OCTAVE2 = 4
 .const CHANNEL_OCTAVE3 = 5
 .const CHANNEL_FILTER = 6
-.const CHANNEL_TEMPO = 7
-.const CHANNEL_PATTERN = 8
+
+.const CHANNEL_PATTERN = 7
+.const CHANNEL_TEMPO = 8
 .const CHANNEL_ECHO = 9
 .const CHANNEL_COPY = 10
 .const CHANNEL_PASTE = 11
@@ -34,7 +34,7 @@ _proceedOn: .byte $0
 _proceedInterval: .byte 12
 _proceedIntervalDelay: .byte 12
 _patternIndex: .byte 0
-_voiceOn: .byte 0,0,0,0,0,0,0
+_voiceOn: .byte 0,0,0,0,0,0,0,0,0,0,0
 _readInputInterval: .byte readInputDelay
 
 _delay0_on: .byte 12,13,14
@@ -46,10 +46,11 @@ _delay2_off: .byte 38,39,40
 _delay3_on: .byte 48,49,50
 _delay3_off: .byte 50,51,52
 _clipBoard: .fill 14,0
+// in BPM 47,93,125,188,250,500,750!  i'm feeling that every second beat is a "beat"
 _tempo_fill: .byte 64,32,24,16,12,08,06,04
 
-chords: .byte Db2, E2, Ab3
-accent_chords: .byte Db4, E4, Ab5
+chords: .byte E2, A3, E4
+accent_chords: .byte G4, B5, C5
 .label scale = scale_harmonic_minor
 
 // .macro HouseProgression() { 
@@ -187,8 +188,7 @@ _randomDistribution:
     .byte 6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7  // 16, ~3% chance of 6 or 7
 
 
-
-.align $100  // 112 bytes
+.align $100  // 128 bytes
  _beatPatterns:
 // going across are the patterns
     _voice1NumberOfBeats: .byte 0,0,0,0,0,0,0,0
@@ -198,6 +198,7 @@ _randomDistribution:
     _octave2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
     _octave3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
     _filterNumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    
 
 _rotationPatterns:
     _voice1Rotation: .byte 0,0,0,0,0,0,0,0
@@ -207,6 +208,9 @@ _rotationPatterns:
     _octave2Rotation: .byte 0,0,0,0,0,0,0,0
     _octave3Rotation: .byte 0,0,0,0,0,0,0,0
     _filterRotation: .byte 0,0,0,0,0,0,0,0
+    
+_patternNumberOfBeats: .byte 1,1,1,1,1,1,1,1    
+_patternRotation: .byte 0,0,0,0,0,0,0,0
 
 // chill patterns that are built around 3 beat
 // _beatPatterns:  // 8*7 bytes  = 56

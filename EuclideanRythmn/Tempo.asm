@@ -97,6 +97,8 @@
 
         TriggerFilter(CHANNEL_FILTER)
 
+     //   TriggerRandom(CHANNEL_PATTERN)
+
     nextFrame:
         inc _intraBeatCounter
         inc _intraBeatCounter+1
@@ -362,6 +364,37 @@
             TriggerMidiOn(voiceNumber)
         #endif
         !:
+    }
+
+    .macro TriggerRandom(voiceNumber) {
+        .var voiceNumberOfBeats = _patternNumberOfBeats
+        .var voiceRotation = _patternRotation
+
+        lda _proceedOn
+        bne !+
+            jmp exit
+        !:
+
+        ldy _patternIndex
+        lda voiceNumberOfBeats, Y
+        // *16 so shift 4 times
+        asl;asl;asl;asl
+        clc 
+        adc _stepIndex
+        adc voiceRotation, Y
+        tax
+
+        lda _rhythm, X
+        // if 0 then REST
+        bne !+
+            jmp exit
+        !:
+
+        // trigger on
+        //inc $d020
+        RandomizeCurrentPattern()
+  
+        exit:
     }
 
     /* @Command Return remainder in value */

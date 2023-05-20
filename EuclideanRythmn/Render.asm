@@ -297,14 +297,11 @@ end:
     beq !+
 
     beat:
-        ldy #CHANNEL_PATTERN
-        lda _voiceOn, Y
-        beq !+
-            ldx _stepIndex        
-            Set PenColor:#GREY
-            Set Character:#BEAT
-            Plot voice_x,X:voice_y,X
-        !:        
+        ldx _stepIndex        
+        Set PenColor:#GREY
+        Set Character:#BEAT
+        Plot voice_x,X:voice_y,X
+    !:        
 }
 
 .macro RenderPattern(voiceNumber, voice_x, voice_y, blank) {
