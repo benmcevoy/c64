@@ -20,13 +20,13 @@ BasicUpstart2(Start)
 .label ClearScreen = $E544
 .const readInputDelay = 4
 _readInputInterval: .byte readInputDelay
-PenColor: .byte DARK_GREY
+PenColor: .byte BLACK
 
 Start: {
     // initialise
     jsr ClearScreen
-    Set $d020:#DARK_GREY
-    Set $d021:#DARK_GREY
+    Set $d020:#BLACK
+    Set $d021:#BLACK
 
     // Raster IRQ
     sei
@@ -98,7 +98,7 @@ UpdateState: {
         lda yTrails,X
         sta y1
         // clear previous
-        Set PenColor:#DARK_GREY
+        Set PenColor:#BLACK
         Plot x1:y1
 
         // this call is very slow
