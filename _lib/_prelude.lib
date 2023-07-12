@@ -9,22 +9,22 @@
 .label __overflowSet = $06 
 
 // ZP arity args for macro's __arg0-3.
-.label __arg0 = $94
-.label __arg1 = $95
-.label __arg2 = $96
-.label __arg3 = $97
+.label __arg0 = $07
+.label __arg1 = $08
+.label __arg2 = $09
+.label __arg3 = $0A
 
 // ZP result value variables __val0-3.
-.label __val0 = $2A
-.label __val1 = $4B
-.label __val2 = $4C
-.label __val3 = $52
+.label __val0 = $0B
+.label __val1 = $0C
+.label __val2 = $0D
+.label __val3 = $0E
 
 // ZP ptr words __ptr0-3
-.label __ptr0 = $06
-.label __ptr1 = $08
-.label __ptr2 = $0A
-.label __ptr3 = $0C
+.label __ptr0 = $0F
+.label __ptr1 = $10
+.label __ptr2 = $11
+.label __ptr3 = $12
 
 /* indicates if a pointer action was handled successfully */
 .const ACTION_HANDLED = $FF

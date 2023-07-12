@@ -34,7 +34,6 @@ _proceedOn: .byte $0
 _proceedInterval: .byte 12
 _proceedIntervalDelay: .byte 12
 _patternIndex: .byte 0
-_voiceOn: .byte 0,0,0,0,0,0,0,0,0,0,0
 _readInputInterval: .byte readInputDelay
 
 _delay0_on: .byte 12,13,14
@@ -211,7 +210,9 @@ _rotationPatterns:
     
 _patternNumberOfBeats: .byte 1,1,1,1,1,1,1,1    
 _patternRotation: .byte 0,0,0,0,0,0,0,0
+_voiceOn: .byte 0,0,0,0,0,0,0,0,0,0,0
 
+.print _beatPatterns
 // chill patterns that are built around 3 beat
 // _beatPatterns:  // 8*7 bytes  = 56
 // // going across are the patterns

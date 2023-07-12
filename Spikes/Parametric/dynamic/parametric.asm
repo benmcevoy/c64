@@ -2,31 +2,22 @@ BasicUpstart2(Start)
 #define FASTMATH
 
 #import "_prelude.lib"
-#import "_joystick.lib"
 #import "_math.lib"
 #import "Input.asm"
+#import "state.asm"
+#import  "honeycomb.asm"
 
-
-.const AXIS = 8
-.const TRAILS = 6
-.const PALETTE_LENGTH = 16
-.const WIDTH = 51
-.const HEIGHT = 51
-.const OFFSET = 15
-
-.const CENTERX = (WIDTH/2)
-.const CENTERY = (HEIGHT/2)
-.label ROTATION_ANGLE_INCREMENT = _rotation_angle_increment
 .label ClearScreen = $E544
-.const readInputDelay = 4
-_readInputInterval: .byte readInputDelay
-PenColor: .byte BLACK
 
 Start: {
     // initialise
-    jsr ClearScreen
     Set $d020:#BLACK
     Set $d021:#BLACK
+
+    jsr ClearScreen
+    jsr Background.Draw
+
+    InitializeState()
 
     // Raster IRQ
     sei
@@ -63,15 +54,13 @@ UpdateState: {
     lda    #1
     sta    $d012
     
-    // inc $d020
-
     inc time
     lda time
     and _slowMo
     bne !+
         inc clock
     !:
-        
+
     // set point, just moving along a line
     Set x:clock
     Set j:#0
@@ -101,7 +90,7 @@ UpdateState: {
         Set PenColor:#BLACK
         Plot x1:y1
 
-        // this call is very slow
+        // TODO: this call is very slow
         Rotate startAngle:x:y
         Set x1:__val0
         Set y1:__val1
@@ -127,7 +116,7 @@ UpdateState: {
                 
         lda startAngle
         clc
-        adc ROTATION_ANGLE_INCREMENT 
+        adc _rotation_angle_increment 
         sta startAngle
 
         lda writePointer
@@ -143,33 +132,23 @@ UpdateState: {
             jmp axis
         !:
     exit:
-    // dec $d020
+     //dec $d020
     // end irq
     pla;tay;pla;tax;pla
     rti 
-
-    // indexes
-    j: .byte 0
-    x: .byte 0
-    y: .byte CENTERY
-    x1: .byte 0
-    y1: .byte 0
-    startAngle: .word 0
-    writePointer: .byte 0
-    erasePointer: .byte 0
 }
 
 .pseudocommand Rotate angle:x:y{
     // xRelative is signed and relative to the origin at (CENTERX, CENTERY)
     lda x
     sec
-    sbc #CENTERX
+    sbc CENTERX
     sta xRelative+1
     Set xRelative:#0
 
     lda y
     sec
-    sbc #CENTERY
+    sbc CENTERY
     sta yRelative+1
     Set yRelative:#0
 
@@ -212,7 +191,6 @@ UpdateState: {
 
     // only care about high byte
     lda __val1
-    // i do not know why i have to double it, only that it works :(
     asl
     sta x1
 
@@ -241,7 +219,7 @@ UpdateState: {
     Set __tmp3:y2a+1
 
     Add16 __tmp0:__tmp1:__tmp2:__tmp3
-    // only care about high byte
+    // // only care about high byte
     lda __val1
     asl
     sta y1
@@ -249,26 +227,21 @@ UpdateState: {
     // convert back to "screen space"
     lda x1
     clc
-    adc #CENTERX
+    adc CENTERX
     sta __val0
 
     // CENTERY - y1
     lda y1
     clc
-    adc #CENTERY
+    adc CENTERY
     sta __val1
 }
 
 .pseudocommand Plot x:y {
     // we never take advantage of PlotH/Sixels
     // so can just halve the x/y and do a char based plot instead
-    lda x
-    lsr
-    sta x
-
-    lda y
-    lsr
-    sta y
+    lda x;lsr;sta x
+    lda y;lsr;sta y
     
     .var screenLO = __tmp0 
     .var screenHI = __tmp1
@@ -282,12 +255,12 @@ UpdateState: {
     lda screenRow.lo,X  
     sta screenLO
 
-    lda screenRow.hi,X
-    ora #$04 
-    sta screenHI
+    // lda screenRow.hi,X
+    // ora #$04 
+    // sta screenHI
 
-    lda #126
-    sta (screenLO),Y  
+    // lda #126
+    // sta (screenLO),Y  
 
     // set color ram
     lda screenRow.hi,X
@@ -315,40 +288,14 @@ screenRow: .lohifill 25, 40*i
     tax
 }
 
-// relative to origin at centerx,y
-xRelative: .word 0
-yRelative: .word 0
-
-sineAngle: .word 0
-cosineAngle: .word 0
-
-x2a: .word 0
-y2a: .word 0
-
-x1: .byte 0
-y1: .byte 0
-
-
-palette: 
-//.byte 1,7,15,5,4,2,6,9,11,8,12,3,13,1,7,15
-
-.byte CYAN,LIGHT_BLUE,PURPLE,LIGHT_RED
-.byte ORANGE,YELLOW,LIGHT_GREEN,GREEN
-.byte LIGHT_BLUE,BLUE,BLUE,BLUE
-.byte ORANGE,YELLOW,LIGHT_GREEN,GREEN
-
 *=$3800 "Modulo LUT"
 mod51: .byte 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,0
-//mod26: .byte 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 mod16: .byte 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
-
+mod26: .byte 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
+mod23: .byte 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 *=$4000 "Signed trig tables"
 // values range -127..127  
 cosine: .fill 256,round(127*cos(toRadians(i*360/256)))
 sine: .fill 256,round(127*sin(toRadians(i*360/256)))
-* = $4200 "trails"
-xTrails: .fill (TRAILS*AXIS),0
-yTrails: .fill (TRAILS*AXIS),0
 
-.print Start
