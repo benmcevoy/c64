@@ -3,6 +3,8 @@ BasicUpstart2(Start)
 
 #import "_charscreen.lib"
 #import "_joystick.lib"
+#import "../Parametric/dynamic/solid.asm"
+
 
 .label ClearScreen = $E544
 
@@ -28,6 +30,7 @@ Start:{
     Set $d020:#0
     Set $d021:#0
     jsr ClearScreen
+    jsr Background.Draw
 
     sei
         lda #<Draw            
@@ -192,7 +195,7 @@ Lissajou: {
     sta yTrails, X
 
     Set CharScreen.PenColor:t
-    Call CharScreen.Plot:x:y
+    PlotColor x:y
 
     lda writePointer
     cmp #TRAILS
@@ -224,7 +227,7 @@ ClearTrail: {
     sta y
     // clear previous
     Set CharScreen.PenColor:#BLACK
-    Call CharScreen.Plot:x:y
+    PlotColor x:y
 
     rts
     x: .byte 0

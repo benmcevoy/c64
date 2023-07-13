@@ -253,6 +253,17 @@
 
         Push __tmp0; Push __tmp1
 
+        ReadInner(x,y)
+
+        Pop __tmp1; Pop __tmp0
+        
+        rts
+    }
+
+    .macro ReadInner(x,y){
+        .var screenLO = __tmp0 
+        .var screenHI = __tmp1
+
         ldy x
         ldx y
 
@@ -274,10 +285,6 @@
 
         lda (screenLO),y  
         sta __val1
-
-        Pop __tmp1; Pop __tmp0
-        
-        rts
     }
 
     /* @Call 
@@ -329,7 +336,8 @@
     }
 
     /* @Call
-       Plot a hires sixel point, __arg0 is x 0..79, __arg1 is y 0..49 */
+       Plot a hires sixel point, __arg0 is x 0..79, __arg1 is y 0..49 
+       Currently there is no way to "unset" a pixel? Other than setting the whole "cell" to the bg color. */
     PlotH: {
         .var x = __arg0
         .var y = __arg1
@@ -348,20 +356,12 @@
         sta yScreen
 
         // get current sixel
-        Call CharScreen.Read:xScreen:yScreen
+        ReadInner(xScreen,yScreen)
+
         // convert the character to the sixel index
-        lda __val0
-        ldx #0
-        loop:
-            cmp sixels,X
-            bne !+
-                stx sixel0
-                jmp !next+
-            !:
-                inx
-                cpx #16
-                bne loop
-        !next:
+        ldx __val0
+        lda sixel_to_index,x
+        sta sixel0
 
         // calulate new bit to set from odd/even of x,y
         lda x
@@ -390,7 +390,7 @@
         stx sixel1
 
         // lookup new char
-        lda sixels,X
+        lda index_to_sixel,X
         sta sixel1
 
         // and plot
@@ -400,11 +400,17 @@
         rts
         xScreen: .byte 0
         yScreen: .byte 0
-        sixels: .byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
+        index_to_sixel: .byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
+        sixel_to_index: .fill 0, 96
+        .byte 5,12,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,2,0,1,9
+        .fill 31,0
+        .byte 15
+        .fill 64,0
+        .byte 10,3,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,13,0,14,6
         sixel0: .byte 0
         sixel1: .byte 0
-
     }
+
 
     /* @Call
        PlotLine from x0,y0 to x1,y1 */
@@ -740,7 +746,7 @@
         y1: .byte 0
     }
 
-    /* @Call */
+    /* @jsr */
     _checkBounds: {
         .var x = __arg0
         .var y = __arg1
@@ -769,3 +775,23 @@
     screenRow: .lohifill 25, 40*i
 }
 
+    .pseudocommand PlotColor x:y {
+        .var screenLO = __tmp0 
+        .var screenHI = __tmp1
+
+        // annoyingly backwards "x is Y" due to indirect indexing below
+        ldy x
+        ldx y
+
+        lda CharScreen.screenRow.lo,X  
+        sta screenLO
+
+        // set color ram
+        lda CharScreen.screenRow.hi,X
+        // ora is nice then to set the memory page
+        ora #$D8 
+        sta screenHI
+
+        lda CharScreen.PenColor
+        sta (screenLO),Y  
+    }
