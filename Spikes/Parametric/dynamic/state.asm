@@ -3,11 +3,11 @@
 // zero page
 .const readInputDelay = 4
 .const AXIS = 8
-.const TRAILS = 8
+.const TRAILS = 11
 .const WIDTH = 51
 .const HEIGHT = 51
 .const OFFSET = 15
-.const SLOWMO = %00000010
+.const SLOWMO = %00000011
 
 
 .label _readInputInterval = $20 // byte
@@ -75,6 +75,7 @@
     Set CENTERX:#(WIDTH/2)
     Set CENTERY:#(HEIGHT/2)
     Set y:CENTERY
+    Set erasePointer:#44
     
 
 

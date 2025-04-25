@@ -371,11 +371,14 @@ time: .byte 0
 // speed: .byte 0
 
 // unsigned trig tables
-*=$1300 "Data"
+*=$1400 "Data"
 sine: .fill 256,round(127.5+127.5*sin(toRadians(i*360/256)))
 cosine: .fill 256,round(127.5+127.5*cos(toRadians(i*360/256)))
 
 // WIP, ok for the now
-palette: .byte 0,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9
+palette: .byte 2,8,10,7,13,3,5,14,4,6,9,2,8,10,7,13,3,5,14,4,6,9
+//0,6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9
+
+
 
 

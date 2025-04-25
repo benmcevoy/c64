@@ -165,17 +165,18 @@
     y1: .byte 0
 
     // state
-    palette: .byte 6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9
+    palette: .byte  2,8,10,7,13,3,5,14,4,6,9,2,8,10,7,13,3,5,14,4,6,9
+    //6,11,4,14,5,3,13,7,1,1,7,13,15,5,12,8,2,9,2,9
     // TODO:  i thought about filling color ram with 
     // concentric circles of colors and then just poke the char
     // for a little speed, meh maybe
     // 00 06 04 0e  0c 03 07 0d  01 07 0f 0a  0c 08 0b 09
 
-    *=$3700 "Signed trig tables"
+    *=$4000 "Signed trig tables"
     // values range -127..127  
     cosine: .fill 256,round(127*cos(toRadians(i*360/256)))
     sine: .fill 256,round(127*sin(toRadians(i*360/256)))
-    * = $3900 "trails"
+    * = $4200 "trails"
     xTrails: .fill (TRAILS*AXIS),0
     yTrails: .fill (TRAILS*AXIS),0
 }

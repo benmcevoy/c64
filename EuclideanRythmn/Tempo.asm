@@ -1,6 +1,5 @@
 #importonce
 #import "_prelude.lib"
-#import "_charscreen.lib"
 #import "Sid.asm"
 #import "Render.asm"
 #import "Input.asm"

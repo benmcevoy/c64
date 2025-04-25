@@ -1,6 +1,6 @@
 BasicUpstart2(Start)
 #import "_prelude.lib"
-#import "dynamic/solid.asm"
+#import "../dynamic/solid.asm"
 
 .const OFFSET = 5
 .label ClearScreen = $E544
@@ -32,7 +32,7 @@ Start: {
 
 loop:
     // TODO: trails
-    jsr Background.Draw
+    jsr Background.Draw    
     jsr UpdateState
     jmp loop
 }

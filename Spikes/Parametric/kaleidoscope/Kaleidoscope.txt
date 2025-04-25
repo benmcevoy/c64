@@ -1,0 +1,51 @@
+a zx81 listing
+
+let a = 22
+let b = 0
+let c = b
+for d = c to a+a*pi*rnd
+ let e = pi*pi*rnd
+ let b = b + e*rnd
+ let c = c+e*rnd
+ let b = b && b <= a
+ let c = c && c <= a
+
+ plot a+b, a+c
+ plot a+b, a-c
+ plot a-b, a+c
+ plot a-b, a-c
+
+ plot a+c, a+b
+ plot a+c, a-b
+ plot a-c, a+b
+ plot a-c, a-b
+next d
+
+
+my cutdown version
+
+the *pi rubbish does not mean anything
+the random numbers are scaled down to fit the screen
+ check bounds, either be the value or 0
+ let b = b && b <= a --- can just skip to the next iteration if so, as it just draws a dot in the center otherwise 
+
+let a = 22
+let b = 0
+let c = b
+for d = random
+ 
+ let b = random
+ let c = random
+ let b = b && b <= a
+ let c = c && c <= a
+
+ plot a+b, a+c
+ plot a+b, a-c
+ plot a-b, a+c
+ plot a-b, a-c
+
+ plot a+c, a+b
+ plot a+c, a-b
+ plot a-c, a+b
+ plot a-c, a-b
+next d

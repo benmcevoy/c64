@@ -20,6 +20,7 @@ BasicUpstart2(Start)
 .label yScreen = $2b
 .label sixel0 = $2c
 .label sixel1 = $2d
+.label frame = $2e
 
 .label index_to_sixel = $2e
 
@@ -30,8 +31,10 @@ Start: {
     Set $d020:#BLACK
     Set $d021:#BLACK
 
+    ClearScreen()
+
     Set _rnd:#1
-    Set a:#150
+    Set a:#160
 
     // byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
     ldx #0
@@ -84,13 +87,47 @@ Start: {
     sta index_to_sixel,X
     
 
-loop:
-    jsr ClearScreen    
-    jsr UpdateState
-    jmp loop
+// Raster IRQ
+    sei
+        // disable cia timers
+        lda    #$7f
+        sta    $dc0d
+        
+        // enable raster irq
+        lda $d01a                     
+        ora #$01
+        sta $d01a
+        lda $d011                    
+        and #$7f
+        sta $d011
+
+        // set next irq line number
+        lda    #1
+        sta    $d012
+        
+        lda #<UpdateState            
+        sta $0314
+        lda #>UpdateState
+        sta $0315
+    cli
+
+    jmp *
+
 }
 
 UpdateState: {
+    // ack irq
+    lda $d019
+    sta $d019
+    // set next irq line number
+    lda    #250
+    sta    $d012
+
+//inc $d020
+
+    // TODO: unset a pixel
+    ClearScreen()
+
     lda #0
     sta b
     sta c
@@ -116,20 +153,26 @@ UpdateState: {
     inc a
 __:
 
+
+        
+        
     NextRandom()
-    lsr;lsr
+    lsr;lsr;
     sta d
 next:
     NextRandom()
     sta PenColor
 
     NextRandom()
+    // TODO: surely an AND is faster?
     lsr;lsr;lsr;lsr;lsr
+    //and #%00000111
     clc; adc b
     sta b
 
     NextRandom()
     lsr;lsr;lsr;lsr;lsr
+    //and #%00000011
     clc; adc c
     sta c
 
@@ -138,7 +181,8 @@ next:
     cmp a
     bcc !+
     beq !+
-        Set b:#0
+        // out of bounds bail
+        jmp early
     !:
 
     // check bounds c <= a
@@ -146,7 +190,7 @@ next:
     cmp a
     bcc !+
     beq !+
-        Set c:#0
+        jmp early
     !:
     
     // plot a+b, a+c
@@ -157,6 +201,19 @@ next:
     lda a
     clc;adc c
     sta _y
+
+    // TODO: too many, can i use some kind of buffer instead and draw the lot in one go?
+    // maintain a bit map/frame buffer of 80x50 pixels (or 80x48) or 10x6 bytes
+    // 60 bytes can fit in zero page
+    // then i can calculate new frame with many raster lines then just render within the blank
+
+    // start:
+    //  zero out the buffer
+    //  OR in the pixels
+    // render:
+    //  draws the "whole" screen everytime
+    //  from pixel to sixel?  more  LUTs? map 1 byte to one draw operation
+    //  one byte is 8x8 pixels, which is 4 sixels?
 
     PlotH(_x,_y)
 
@@ -221,12 +278,15 @@ next:
 
     PlotH(_x,_y)
 
+early:
     dec d
     beq cont
     jmp next
 cont:
-
-    rts
+exit:
+//dec $d020
+        pla;tay;pla;tax;pla
+        rti  
 }
 
 /* 
@@ -293,7 +353,6 @@ cont:
     /* Plot a hires sixel point, __arg0 is x 0..79, __arg1 is y 0..49 
        Currently there is no way to "unset" a pixel? Other than setting the whole "cell" to the bg color. */
     .macro PlotH(x,y) {
-        
         // set sixel1 as default even
         Set sixel1:#1
         Set sixel0:#0
@@ -350,15 +409,13 @@ cont:
         PlotInner(xScreen,yScreen)
     }
 
-
-        
-        sixel_to_index: .fill 0, 96
-        .byte 5,12,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,2,0,1,9
-        .fill 31,0
-        .byte 15
-        .fill 64,0
-        .byte 10,3,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,13,0,14,6
-                
+    sixel_to_index: .fill 0, 96
+    .byte 5,12,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,2,0,1,9
+    .fill 31,0
+    .byte 15
+    .fill 64,0
+    .byte 10,3,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,13,0,14,6
+            
 
     .macro ReadInner(x,y){
         .var screenLO = __tmp0 
@@ -386,3 +443,16 @@ cont:
         lda (screenLO),y  
         sta __val1
     }
+
+.macro ClearScreen(){
+    //$0400-$07E7
+    lda #32
+    ldx #0
+    !:
+        sta $0400,X
+        sta $0500,X
+        sta $0600,X
+        sta $0700,X
+        inx
+    bne !-
+}

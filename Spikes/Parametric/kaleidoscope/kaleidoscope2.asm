@@ -1,6 +1,6 @@
 BasicUpstart2(Start)
 #import "_prelude.lib"
-#import "dynamic/solid.asm"
+#import "../dynamic/solid.asm"
 
 .label ClearScreen = $E544
 .const OFFSET = 7
@@ -25,13 +25,42 @@ Start: {
     Set _rnd:#1
     Set a:#12
 
+
+
+// Raster IRQ
+    sei
+        // disable cia timers
+        lda    #$7f
+        sta    $dc0d
+        
+        // enable raster irq
+        lda $d01a                     
+        ora #$01
+        sta $d01a
+        lda $d011                    
+        and #$7f
+        sta $d011
+
+        // set next irq line number
+        lda    #1
+        sta    $d012
+        
+        lda #<UpdateState            
+        sta $0314
+        lda #>UpdateState
+        sta $0315
+    cli
+
+    jmp *
+
 loop:
-    jsr Background.Draw
+   
     jsr UpdateState
     jmp loop
 }
 
 UpdateState: {
+     jsr Background.Draw
     NextRandom()
     lsr;lsr
     sta d
@@ -142,6 +171,8 @@ next:
     beq cont
     jmp next
 cont:
+        pla;tay;pla;tax;pla
+        rti  
     rts
 }
 
