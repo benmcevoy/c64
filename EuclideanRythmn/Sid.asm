@@ -109,6 +109,38 @@ freq_lsb:
     sta SID_V1_CONTROL + (voiceNumber * 7)
 }
 
+.macro Scale(transpose, scale) {
+    ldx transpose
+    clc; adc scale,X; tax
+}
+
+.macro SetChord(chord, chordIndex, transpose, scale) {
+    // multiply by 3
+    lda chordIndex
+    asl
+    clc
+    adc chordIndex
+    tay
+
+    lda chord, Y
+    Scale(transpose, scale)
+    ldy #0
+    sta _voiceNoteNumber, Y
+    
+
+    iny
+    lda chord, Y
+    Scale(transpose, scale)
+    ldy #1
+    sta _voiceNoteNumber, Y
+
+    iny
+    lda chord, Y
+    Scale(transpose, scale)
+    ldy #2
+    sta _voiceNoteNumber, Y
+}
+
 // https://en.wikipedia.org/wiki/Xorshift
 // https://gist.github.com/t-mat/8b2c183ae50480c7998f4d9ab2271b1d
 // "With given triples, if RNG state can forward (2^N)-1 steps without

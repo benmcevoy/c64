@@ -10,6 +10,10 @@
 .const SelectedColor = GREEN
 .const BeatColor = LIGHT_GREEN
 
+// TODO: this was the old colour scheme and I think it was cooler
+_voiceColor: .byte RED, GREEN, BLUE, YELLOW
+_voiceAltColor: .byte LIGHT_RED, LIGHT_GREEN, CYAN, YELLOW
+
 Character: .byte 204
 PenColor: .byte GREEN
 _stepCounter: .byte 0
@@ -22,6 +26,7 @@ Render: {
     RenderPatternSmall(CHANNEL_OCTAVE2, octave1_x, octave1_y)
     RenderPatternSmall(CHANNEL_OCTAVE3, octave2_x, octave2_y)
     RenderSelectedPattern(pattern_x, pattern_y, BLANK_SMALL)
+    RenderChord(chord_x, chord_y, BLANK_SMALL)
     RenderTempo(tempo_x, tempo_y)
     RenderEcho(_echoOn)
     RenderCopy()
@@ -304,6 +309,39 @@ end:
     !:        
 }
 
+
+.macro RenderChord(voice_x, voice_y, blank) {
+    ldx #0
+    Set PenColor:#DARK_GRAY
+
+    lda _selectedVoice
+    cmp #CHANNEL_CHORD
+    bne !+
+        Set PenColor:#SelectedColor
+    !:
+
+    render_pattern:
+        Set Character:#blank
+
+        // is this step a beat?
+        txa
+        clc 
+        adc #16
+        adc _chord
+        tay
+
+        lda _rhythm, Y
+        beq next_step
+
+        Set Character:#PATTERN
+
+    next_step:
+        Plot voice_x,X:voice_y,X
+        inx
+        cpx #steps
+        bne render_pattern
+}
+
 .macro RenderPattern(voiceNumber, voice_x, voice_y, blank) {
     .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
     .var voiceRotation = _rotationPatterns + (voiceNumber*8)
@@ -424,11 +462,11 @@ end:
 
     ldx #0
     render_pattern:
-        Set Character:#145
+        Set Character:tempo_char,X
         cpx _tempoIndicator
         bcc next_step
         beq next_step
-        Set Character:#BLANK_SMALL
+        Set Character:tempo_blank_char,X
     next_step:
         Plot voice_x,X:voice_y,X
         inx
@@ -517,8 +555,14 @@ pattern_x:  .byte 33,35,36,35,33,31,30,31,33,35,36,35,33,31,30,31
 pattern_y:  .byte 14,15,17,19,20,19,17,15,14,15,17,19,20,19,17,15
 
 // this is in a different order, first entry is the bottom of the circle, goes clockwise
-tempo_x:    .byte 25,23,22,23,25,27,28,27
-tempo_y:    .byte 20,19,17,15,14,15,17,19
+tempo_x:    .byte 38,37,37,37,38,39,39,39
+tempo_y:    .byte 02,02,01,00,00,00,01,02
+tempo_blank_char:   .byte 174,173,157,141,142,143,159,175
+tempo_char: .byte 219,218,202,186,187,188,204,220
+
+chord_x:    .byte 25,23,22,23,25,27,28,27
+chord_y:    .byte 20,19,17,15,14,15,17,19
+
 
 filter_x:   .byte 25,27,28,27,25,23,22,23,25,27,28,27,25,23,22,23
 filter_y:   .byte 04,05,07,09,10,09,07,05,04,05,07,09,10,09,07,05

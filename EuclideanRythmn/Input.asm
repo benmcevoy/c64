@@ -47,7 +47,7 @@ ReadInput: {
         lda _selectedVoice
         cmp #CHANNEL_PATTERN
         beq !+
-            jmp check_tempo
+            jmp check_chord
         !:
         lda _proceedOn
         beq !+
@@ -58,6 +58,16 @@ ReadInput: {
             CyclePattern(_patternIndex, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
             CyclePattern(_patternIndex, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)  
         jmp end
+
+    check_chord:
+        lda _selectedVoice
+        cmp #CHANNEL_CHORD
+        beq !+
+            jmp check_tempo
+        !:
+        CyclePattern(_chord, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+        CyclePattern(_transpose, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)  
+        jmp end        
 
     check_tempo:
         lda _selectedVoice
@@ -93,6 +103,11 @@ ReadInput: {
                 tay
                 jmp nextCopy
         !:
+        lda _chord
+        sta _clipBoard,X
+        inx
+        lda _transpose
+        sta _clipBoard,X
         jmp end    
 
     check_paste:
@@ -112,6 +127,11 @@ ReadInput: {
                 tay
                 jmp nextPaste
         !:
+        lda _clipBoard,X
+        sta _chord
+        inx
+        lda _clipBoard,X
+        sta _transpose
         jmp end    
 
     check_auto:
@@ -206,7 +226,7 @@ next:
         lda _selectedVoice
         cmp #CHANNEL_FILTER
         bne !+
-            Set _selectedVoice:#CHANNEL_TEMPO
+            Set _selectedVoice:#CHANNEL_CHORD
             jmp _exit
         !:
 
@@ -220,7 +240,7 @@ next:
         lda _selectedVoice
         cmp #CHANNEL_TEMPO
         bne !+
-            Set _selectedVoice:#CHANNEL_COPY
+            Set _selectedVoice:#CHANNEL_OCTAVE2
             jmp _exit
         !:                      
 
@@ -260,9 +280,16 @@ next:
         !:
 
         lda _selectedVoice
-        cmp #CHANNEL_TEMPO
+        cmp #CHANNEL_OCTAVE2
         bne !+
-            Set _selectedVoice:#CHANNEL_FILTER
+            Set _selectedVoice:#CHANNEL_TEMPO
+            jmp _exit
+        !:
+
+        lda _selectedVoice
+        cmp #CHANNEL_OCTAVE1
+        bne !+
+            Set _selectedVoice:#CHANNEL_TEMPO
             jmp _exit
         !:
 
@@ -298,6 +325,13 @@ next:
         cmp #CHANNEL_PASTE
         bne !+
             Set _selectedVoice:#CHANNEL_PATTERN
+            jmp _exit
+        !:  
+
+        lda _selectedVoice
+        cmp #CHANNEL_CHORD
+        bne !+
+            Set _selectedVoice:#CHANNEL_FILTER
             jmp _exit
         !:  
 
@@ -353,12 +387,12 @@ next:
         lda _selectedVoice
         cmp #CHANNEL_PATTERN
         bne !+
-            Set _selectedVoice:#CHANNEL_TEMPO
+            Set _selectedVoice:#CHANNEL_CHORD
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #CHANNEL_TEMPO
+        cmp #CHANNEL_CHORD
         bne !+
             Set _selectedVoice:#CHANNEL_VOICE3
             jmp _exit
@@ -442,18 +476,11 @@ next:
         !:
 
         lda _selectedVoice
-        cmp #CHANNEL_TEMPO
+        cmp #CHANNEL_CHORD
         bne !+
             Set _selectedVoice:#CHANNEL_PATTERN
             jmp _exit
         !:   
-
-        lda _selectedVoice
-        cmp #CHANNEL_TEMPO
-        bne !+
-            Set _selectedVoice:#CHANNEL_VOICE3
-            jmp _exit
-        !:
 
         lda _selectedVoice
         cmp #CHANNEL_COPY

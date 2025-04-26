@@ -100,7 +100,7 @@ InitMidi: {
         // .X is the chord shape, currently 0,2,4
         ldy #0
         ldx #0 // chord scale index 0
-        adc scale,X
+        adc selectedScale,X
         sta chords,Y
         adc #24
         ldy #3
@@ -109,7 +109,7 @@ InitMidi: {
         lda _noteNumber
         ldx #2  // chord scale index 1
         ldy #1
-        adc scale,X
+        adc selectedScale,X
         sta chords,Y
         adc #24
         ldy #4
@@ -118,7 +118,7 @@ InitMidi: {
         lda _noteNumber
         ldx #4 // chord scale index 2
         ldy #2
-        adc scale,X
+        adc selectedScale,X
         sta chords,Y
         adc #24
         ldy #5
