@@ -52,9 +52,9 @@ _clipBoard: .fill 16,0
 // in BPM 47,93,125,188,250,500,750!  i'm feeling that every second beat is a "beat"
 _tempo_fill: .byte 64,32,24,16,12,08,06,04
 
-chords: Hallelujah()
-accent_chords: .byte C4, E5, G4
-.label selectedScale = scale_flamenco
+chords: HouseProgression()
+//accent_chords: .byte C4, E5, G4
+.label selectedScale = scale_harmonic_major
 
 .macro HouseProgression() { 
     // house progression
@@ -79,6 +79,17 @@ accent_chords: .byte C4, E5, G4
     chord_Dm: .byte D2, F2, A3
     chord_G: .byte G2, B3, D2
     chord_C2: .byte C3, E2, G2
+}
+
+.macro CRoot() {
+ .byte C2, E2, G2
+ .byte C2, Eb2, G2
+ .byte C2, G2, Bb3
+ .byte C2, Eb2, Bb3
+ .byte C2, G2, B3
+ .byte C2, F2, G2
+ .byte C2, D2, G2
+ .byte C2, Eb2, Gb2
 }
 
 .macro GalaticCore() {
@@ -142,14 +153,7 @@ accent_chords: .byte C4, E5, G4
    chord_Gm3: .byte G2, Bb2, D2 
 }
 
-// chord_Maj: .byte C2, E2, G2
-// chord_Min: .byte C2, Eb2, G2
-// chord_M_7: .byte C2, G2, Bb3
-// chord_Mn7: .byte C2, Eb2, Bb3
-// chord_Mj7: .byte C2, G2, B3
-// chord_Su4: .byte C2, F2, G2
-// chord_Su2: .byte C2, D2, G2
-// chord_Dim: .byte C2, Eb2, Gb2
+
 
 // https://en.wikipedia.org/wiki/List_of_musical_scales_and_modes
 scale_acoustic: .byte 0,2,4,6,7,9,10,12 // W-W-W-H-W-H-W 

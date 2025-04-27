@@ -124,21 +124,21 @@ freq_lsb:
 
     lda chord, Y
     Scale(transpose, scale)
-    ldy #0
-    sta _voiceNoteNumber, Y
+    ldx #0
+    sta _voiceNoteNumber, X
     
 
     iny
     lda chord, Y
     Scale(transpose, scale)
-    ldy #1
-    sta _voiceNoteNumber, Y
+    ldx #1
+    sta _voiceNoteNumber, X
 
     iny
     lda chord, Y
     Scale(transpose, scale)
-    ldy #2
-    sta _voiceNoteNumber, Y
+    ldx #2
+    sta _voiceNoteNumber, X
 }
 
 // https://en.wikipedia.org/wiki/Xorshift
