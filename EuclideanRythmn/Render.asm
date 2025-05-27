@@ -25,8 +25,8 @@ Render: {
     RenderPatternSmall(CHANNEL_OCTAVE1, octave0_x, octave0_y)
     RenderPatternSmall(CHANNEL_OCTAVE2, octave1_x, octave1_y)
     RenderPatternSmall(CHANNEL_OCTAVE3, octave2_x, octave2_y)
+    RenderPattern(CHANNEL_CHORD, chord_x, chord_y, BLANK_SMALL)
     RenderSelectedPattern(pattern_x, pattern_y, BLANK_SMALL)
-    RenderChord(chord_x, chord_y, BLANK_SMALL)
     RenderTempo(tempo_x, tempo_y)
     RenderEcho(_echoOn)
     RenderCopy()
@@ -560,8 +560,8 @@ tempo_y:    .byte 02,02,01,00,00,00,01,02
 tempo_blank_char:   .byte 174,173,157,141,142,143,159,175
 tempo_char: .byte 219,218,202,186,187,188,204,220
 
-chord_x:    .byte 25,23,22,23,25,27,28,27
-chord_y:    .byte 20,19,17,15,14,15,17,19
+chord_x:    .byte 25,23,22,23,25,27,28,27,25,23,22,23,25,27,28,27
+chord_y:    .byte 20,19,17,15,14,15,17,19,20,19,17,15,14,15,17,19
 
 
 filter_x:   .byte 25,27,28,27,25,23,22,23,25,27,28,27,25,23,22,23

@@ -29,6 +29,7 @@ _frameCounter: .byte 0
 _tempo: .byte 16
 _tempoIndicator: .byte 4
 _stepIndex: .byte 0
+_measureIndex: .byte 0
 _selectedVoice: .byte 0
 _transpose: .byte 4
 _chord: .byte 0
@@ -229,6 +230,7 @@ _randomDistribution:
     _octave2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
     _octave3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
     _filterNumberOfBeats: .byte 0,0,0,0,0,0,0,0
+    _chordNumberOfBeats: .byte 1,1,1,1,1,1,1,1
 
 _rotationPatterns:
     _voice1Rotation: .byte 0,0,0,0,0,0,0,0
@@ -238,6 +240,7 @@ _rotationPatterns:
     _octave2Rotation: .byte 0,0,0,0,0,0,0,0
     _octave3Rotation: .byte 0,0,0,0,0,0,0,0
     _filterRotation: .byte 0,0,0,0,0,0,0,0
+    _chordRotation: .byte 0,0,0,0,0,0,0,0
     
 _patternNumberOfBeats: .byte 1,1,1,1,1,1,1,1    
 _patternRotation: .byte 0,0,0,0,0,0,0,0

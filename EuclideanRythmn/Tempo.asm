@@ -74,6 +74,11 @@
         cmp #steps
         bne !+
             Set _stepIndex:#0
+            inc _measureIndex
+            lda _measureIndex
+            cmp #steps
+            bne !+
+                Set _measureIndex:#0
         !:
     #if MIDI
         TriggerMidiOff(CHANNEL_VOICE1)
@@ -84,7 +89,7 @@
         TriggerMidiOff(CHANNEL_OCTAVE3)
         // filter is not sent to midi
     #endif    
-        TriggerChord()
+        TriggerChord(CHANNEL_CHORD)
 
         TriggerOctave(CHANNEL_OCTAVE1)
         TriggerOctave(CHANNEL_OCTAVE2)
@@ -256,8 +261,37 @@
     exit:
     }
     
-    .macro TriggerChord() {
-        SetChord(chords, _chord, _transpose, selectedScale)
+    .macro TriggerChord(voiceNumber) {
+        .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+        .var voiceRotation = _rotationPatterns + (voiceNumber*8)
+
+        ldy #voiceNumber
+        lda #0
+        sta _voiceOn,Y
+        ldy _patternIndex
+        lda voiceNumberOfBeats, Y
+        // *16 so shift 4 times
+        asl;asl;asl;asl
+        clc 
+        adc _measureIndex
+        adc voiceRotation, Y
+        tax
+
+        lda _rhythm, X
+        // if 0 then REST
+        bne !+
+            jmp exit
+        !:
+
+
+        SetChord(chords, _measureIndex)
+
+        lda #1
+        ldy #voiceNumber
+        sta _voiceOn, Y
+
+        Set _intraBeatCounter,Y:#0
+    exit:
     }
 
     .macro TriggerBeat(voiceNumber) {

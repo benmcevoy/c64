@@ -32,9 +32,9 @@ ReadInput: {
     // actions
     check_voice:
         lda _selectedVoice
-        // checking for less than or equal to CHANNEL_FILTER
+        // checking for less than or equal to CHANNEL_CHORD
         // which is voices and octaves and the filter as they are all manipulated the same
-        cmp #CHANNEL_FILTER
+        cmp #CHANNEL_CHORD
         beq !+
             bcc !+
             jmp check_pattern
@@ -47,7 +47,7 @@ ReadInput: {
         lda _selectedVoice
         cmp #CHANNEL_PATTERN
         beq !+
-            jmp check_chord
+            jmp check_tempo
         !:
         lda _proceedOn
         beq !+
@@ -59,21 +59,21 @@ ReadInput: {
             CyclePattern(_patternIndex, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)  
         jmp end
 
-    check_chord:
-        lda _selectedVoice
-        cmp #CHANNEL_CHORD
-        beq !+
-            jmp check_tempo
-        !:
-        // lda _proceedOn
-        // beq !+
-        //     CyclePattern(_chord, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
-        //     CyclePattern(_transpose, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)    
-        //     jmp end
-        // !:
-        CyclePattern(_chord, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
-        CyclePattern(_transpose, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)  
-        jmp end        
+    // check_chord:
+    //     lda _selectedVoice
+    //     cmp #CHANNEL_CHORD
+    //     beq !+
+    //         jmp check_tempo
+    //     !:
+    //     // lda _proceedOn
+    //     // beq !+
+    //     //     CyclePattern(_chord, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+    //     //     CyclePattern(_transpose, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)    
+    //     //     jmp end
+    //     // !:
+    //     CyclePattern(_chord, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+    //     CyclePattern(_transpose, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)  
+    //     jmp end        
 
     check_tempo:
         lda _selectedVoice

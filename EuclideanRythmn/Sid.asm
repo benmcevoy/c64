@@ -114,7 +114,31 @@ freq_lsb:
     clc; adc scale,X; tax
 }
 
-.macro SetChord(chord, chordIndex, transpose, scale) {
+.macro SetChord(chord, chordIndex) {
+    // multiply by 3
+    lda chordIndex
+    asl
+    clc
+    adc chordIndex
+    tay
+
+    lda chord, Y
+    ldx #0
+    sta _voiceNoteNumber, X
+    
+
+    iny
+    lda chord, Y
+    ldx #1
+    sta _voiceNoteNumber, X
+
+    iny
+    lda chord, Y
+    ldx #2
+    sta _voiceNoteNumber, X
+}
+
+.macro SetChordWithTranspose(chord, chordIndex, transpose, scale) {
     // multiply by 3
     lda chordIndex
     asl
