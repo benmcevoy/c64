@@ -65,6 +65,12 @@ ReadInput: {
         beq !+
             jmp check_tempo
         !:
+        // lda _proceedOn
+        // beq !+
+        //     CyclePattern(_chord, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
+        //     CyclePattern(_transpose, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)    
+        //     jmp end
+        // !:
         CyclePattern(_chord, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
         CyclePattern(_transpose, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)  
         jmp end        
@@ -113,7 +119,7 @@ ReadInput: {
     check_paste:
         lda _selectedVoice
         cmp #CHANNEL_PASTE
-        bne check_auto
+        bne check_random
         ldy _patternIndex
         ldx #0
         nextPaste:
@@ -134,27 +140,31 @@ ReadInput: {
         sta _transpose
         jmp end    
 
-    check_auto:
-        lda _selectedVoice
-        cmp #CHANNEL_AUTO
-        bne check_random
-        Toggle(_proceedOn, FIRE)        
-        jmp end  
 
     check_random:
         lda _selectedVoice
         cmp #CHANNEL_RANDOM
-        bne select_voice
+        bne check_auto
         RandomizeCurrentPattern()        
-        jmp end                             
+        jmp end          
+
+    check_auto:
+        lda _selectedVoice
+        cmp #CHANNEL_AUTO
+        bne select_voice
+        Toggle(_proceedOn, FIRE)        
+        jmp end  
+                           
 
     // selection
     select_voice:
         /*all-voices*/
         SelectVoice()
-    end:
+    end: rts
 }
+
 _exit:rts
+
 
 .macro RandomizeCurrentPattern(){
     ldx _patternIndex
@@ -169,6 +179,7 @@ next:
     txa; adc #8
     tax
 
+    // 112 is 8 steps * 7 channels * 2 features (7 channels (voices, ocataves, filter)(7) with beats and phase (2))
     cpx #112
     bcc next
 }

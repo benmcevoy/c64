@@ -153,6 +153,7 @@ freq_lsb:
 //   { 5, 3, 6}, { 5, 3, 7},
 //  };
 
+/// get a rand and put in .A
 .macro NextRandom() {
     lda _rnd
     asl;asl;

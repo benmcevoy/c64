@@ -13,15 +13,16 @@
 .const CHANNEL_OCTAVE2 = 4
 .const CHANNEL_OCTAVE3 = 5
 .const CHANNEL_FILTER = 6
+.const CHANNEL_CHORD = 7
 
-.const CHANNEL_PATTERN = 7
-.const CHANNEL_TEMPO = 8
-.const CHANNEL_ECHO = 9
-.const CHANNEL_COPY = 10
-.const CHANNEL_PASTE = 11
-.const CHANNEL_AUTO = 12
-.const CHANNEL_RANDOM = 13
-.const CHANNEL_CHORD = 14
+.const CHANNEL_PATTERN = 8
+.const CHANNEL_TEMPO = 9
+.const CHANNEL_ECHO = 10
+.const CHANNEL_COPY = 11
+.const CHANNEL_PASTE = 12
+.const CHANNEL_AUTO = 13
+.const CHANNEL_RANDOM = 14
+
 
 // tempo in units of "frame count"
 _frameCounter: .byte 0
@@ -52,9 +53,32 @@ _clipBoard: .fill 16,0
 // in BPM 47,93,125,188,250,500,750!  i'm feeling that every second beat is a "beat"
 _tempo_fill: .byte 64,32,24,16,12,08,06,04
 
-chords: HouseProgression()
+.align $100
+chords: Attempt2()
 //accent_chords: .byte C4, E5, G4
-.label selectedScale = scale_harmonic_major
+.label selectedScale = scale_harmonic_minor
+
+.macro Attempt2(){
+.byte C2, Eb2, C3
+.byte C2, Eb2, G3 
+.byte C2, Eb2, Eb3
+.byte Bb2, Eb2, F3
+.byte Bb2, Eb2, Bb3
+.byte C2, Eb2, C3
+.byte C2, Eb2, Ab3
+.byte C2, Eb2, G2 
+}
+
+.macro Attempt1(){
+.byte C2, E2, F2
+.byte G2, C2, A3 
+.byte E2, C3, G3
+.byte E2, G2, B3
+.byte F1, E2, G2
+.byte B2, G2, A3
+.byte C2, F2, A3
+.byte C2, C3, A3 
+}
 
 .macro HouseProgression() { 
     // house progression
@@ -82,14 +106,14 @@ chords: HouseProgression()
 }
 
 .macro CRoot() {
- .byte C2, E2, G2
- .byte C2, Eb2, G2
- .byte C2, G2, Bb3
- .byte C2, Eb2, Bb3
- .byte C2, G2, B3
- .byte C2, F2, G2
- .byte C2, D2, G2
- .byte C2, Eb2, Gb2
+chord0: .byte C2, E2, G2
+chord1: .byte A2, C3, E3
+chord2: .byte F2, A2, C3
+chord3: .byte D2, F2, A3
+chord4: .byte G2, B3, D2
+chord5: .byte E2, G2, B3
+chord6: .byte B3, D2, F2
+chord7: .byte C3, E2, G2
 }
 
 .macro GalaticCore() {
@@ -218,8 +242,6 @@ _rotationPatterns:
 _patternNumberOfBeats: .byte 1,1,1,1,1,1,1,1    
 _patternRotation: .byte 0,0,0,0,0,0,0,0
 _voiceOn: .byte 0,0,0,0,0,0,0,0,0,0,0
-_patternChord: .byte 0,0,0,0,0,0,0,0
-_patternTranspose: .byte 0,0,0,0,0,0,0,0
 
 .print _beatPatterns
 // chill patterns that are built around 3 beat

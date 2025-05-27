@@ -96,8 +96,6 @@
 
         TriggerFilter(CHANNEL_FILTER)
 
-        TriggerRandom(CHANNEL_PATTERN)
-
     nextFrame:
         inc _intraBeatCounter
         inc _intraBeatCounter+1
@@ -308,50 +306,6 @@
         exit:
     }
 
-    // .macro TriggerAccent(voiceNumber) {
-    //     .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
-    //     .var voiceRotation = _rotationPatterns + (voiceNumber*8)
-
-    //     ldy #voiceNumber
-    //     lda #0
-    //     sta _voiceOn,Y
-    //     ldy _patternIndex
-    //     lda voiceNumberOfBeats, Y
-    //     // *16 so shift 4 times
-    //     asl;asl;asl;asl
-    //     clc 
-    //     adc _stepIndex
-    //     adc voiceRotation, Y
-    //     tax
-
-    //     lda _rhythm, X
-    //     // if 0 then REST
-    //     beq !+
-    //         // trigger on
-    //         lda #1
-    //         ldy #voiceNumber
-    //         sta _voiceOn, Y
-
-    //         lda #voiceNumber
-    //         sec; sbc #3
-    //         tay
-
-    //         lda accent_chords, Y
-    //         sta _voiceNoteNumber, Y
-    //         tax
-    //         lda freq_msb, X
-    //         sta SID_V1_FREQ_HI+(voiceNumber-3)*7
-    //         lda freq_lsb, X
-    //         sta SID_V1_FREQ_LO+(voiceNumber-3)*7
-   
-    //     #if MIDI
-    //         ldy #voiceNumber
-    //         sta _voiceNoteNumber, Y
-    //         TriggerMidiOn(voiceNumber)
-    //     #endif
-    //     !:
-    // }
-
     .macro TriggerOctave(voiceNumber) {
         .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
         .var voiceRotation = _rotationPatterns + (voiceNumber*8)
@@ -390,37 +344,6 @@
             TriggerMidiOn(voiceNumber)
         #endif
         !:
-    }
-
-    .macro TriggerRandom(voiceNumber) {
-        .var voiceNumberOfBeats = _patternNumberOfBeats
-        .var voiceRotation = _patternRotation
-
-        lda _proceedOn
-        bne !+
-            jmp exit
-        !:
-
-        ldy _patternIndex
-        lda voiceNumberOfBeats, Y
-        // *16 so shift 4 times
-        asl;asl;asl;asl
-        clc 
-        adc _stepIndex
-        adc voiceRotation, Y
-        tax
-
-        lda _rhythm, X
-        // if 0 then REST
-        bne !+
-            jmp exit
-        !:
-
-        // trigger on
-        //inc $d020
-        RandomizeCurrentPattern()
-  
-        exit:
     }
 
     /* @Command Return remainder in value */
