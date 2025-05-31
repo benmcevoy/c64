@@ -12,8 +12,8 @@
     .const FILTER_HIGH = 40
     .const FILTER_RESONANCE_LOW = 6
 
+    // one for each voice
     _intraBeatCounter: .byte 0,0,0
-    _index: .byte 0
     _filterCutOffHi: .byte 16
     _filterResonance: .byte 8
 
@@ -71,15 +71,21 @@
 
         inc _stepIndex
         lda _stepIndex
-        cmp #steps
-        bne !+
+        cmp #STEPS
+        bne !++
+            // the measure is complete
             Set _stepIndex:#0
+
             inc _measureIndex
             lda _measureIndex
-            cmp #steps
+            cmp #STEPS
             bne !+
                 Set _measureIndex:#0
+            !:
+            TriggerChord(CHANNEL_CHORD)   
         !:
+        
+
     #if MIDI
         TriggerMidiOff(CHANNEL_VOICE1)
         TriggerMidiOff(CHANNEL_VOICE2)
@@ -89,8 +95,7 @@
         TriggerMidiOff(CHANNEL_OCTAVE3)
         // filter is not sent to midi
     #endif    
-        TriggerChord(CHANNEL_CHORD)
-
+        
         TriggerOctave(CHANNEL_OCTAVE1)
         TriggerOctave(CHANNEL_OCTAVE2)
         TriggerOctave(CHANNEL_OCTAVE3)
@@ -265,32 +270,44 @@
         .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
         .var voiceRotation = _rotationPatterns + (voiceNumber*8)
 
-        ldy #voiceNumber
-        lda #0
-        sta _voiceOn,Y
-        ldy _patternIndex
-        lda voiceNumberOfBeats, Y
+
+        // nothing to do if number of beats is zero
+        lda voiceNumberOfBeats
+        cmp #0
+        bne !+
+            jmp exit
+        !:
+
+        // we are on the an active beat
+        // find the next active chord index
+        // naively
+        // loop from _chordCurrentBeatIndex to 8
+    loop:
+        inc _chordCurrentBeatIndex
+        lda _chordCurrentBeatIndex
+        cmp #8
+        bne !+
+            Set _chordCurrentBeatIndex:#0
+            
+        !:
+
+        // ignore pattern - would be in .Y like it is TriggerBeat
+        lda voiceNumberOfBeats
         // *16 so shift 4 times
         asl;asl;asl;asl
         clc 
-        adc _measureIndex
-        adc voiceRotation, Y
+        adc _chordCurrentBeatIndex
+        adc voiceRotation
         tax
 
         lda _rhythm, X
         // if 0 then REST
         bne !+
-            jmp exit
+            jmp loop
         !:
 
-
-        SetChord(chords, _measureIndex)
-
-        lda #1
-        ldy #voiceNumber
-        sta _voiceOn, Y
-
-        Set _intraBeatCounter,Y:#0
+        SetChord(chords, _chordCurrentBeatIndex)
+       
     exit:
     }
 

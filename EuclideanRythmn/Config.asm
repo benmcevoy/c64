@@ -3,7 +3,8 @@
 
 .const scale_length = 7
 .const chord_length = 7
-.const steps = 8
+.const STEPS = 8
+.const MEASURE = 4
 .const readInputDelay = 6
 
 .const CHANNEL_VOICE1 = 0
@@ -33,6 +34,8 @@ _measureIndex: .byte 0
 _selectedVoice: .byte 0
 _transpose: .byte 4
 _chord: .byte 0
+_chordCurrentBeatIndex: .byte 0
+_chordNextBeatIndex: .byte 0
 _echoOn: .byte $0
 // proceed is ON when AUTO is ON
 _proceedOn: .byte $0
@@ -244,7 +247,7 @@ _rotationPatterns:
     
 _patternNumberOfBeats: .byte 1,1,1,1,1,1,1,1    
 _patternRotation: .byte 0,0,0,0,0,0,0,0
-_voiceOn: .byte 0,0,0,0,0,0,0,0,0,0,0
+_voiceOn: .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 .print _beatPatterns
 // chill patterns that are built around 3 beat

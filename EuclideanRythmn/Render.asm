@@ -9,6 +9,7 @@
 .const BEAT = 4
 .const SelectedColor = GREEN
 .const BeatColor = LIGHT_GREEN
+.const ChordColor = LIGHT_RED
 
 // TODO: this was the old colour scheme and I think it was cooler
 _voiceColor: .byte RED, GREEN, BLUE, YELLOW
@@ -16,26 +17,39 @@ _voiceAltColor: .byte LIGHT_RED, LIGHT_GREEN, CYAN, YELLOW
 
 Character: .byte 204
 PenColor: .byte GREEN
+// the "dot" we are rendering
 _stepCounter: .byte 0
 
 Render: {
+    // TODO: there is a bug here, flickering
+    // can't work it out.
+    
+    RenderPattern(CHANNEL_FILTER, filter_x, filter_y, BLANK_SMALL)
+
     RenderPattern(CHANNEL_VOICE1, voice0_x, voice0_y, BLANK)
     RenderPattern(CHANNEL_VOICE2, voice1_x, voice1_y, BLANK)
     RenderPattern(CHANNEL_VOICE3, voice2_x, voice2_y, BLANK)
+    
     RenderPatternSmall(CHANNEL_OCTAVE1, octave0_x, octave0_y)
     RenderPatternSmall(CHANNEL_OCTAVE2, octave1_x, octave1_y)
     RenderPatternSmall(CHANNEL_OCTAVE3, octave2_x, octave2_y)
-    RenderPattern(CHANNEL_CHORD, chord_x, chord_y, BLANK_SMALL)
+    
+    RenderChord(CHANNEL_CHORD, chord_x, chord_y, BLANK_SMALL)
     RenderSelectedPattern(pattern_x, pattern_y, BLANK_SMALL)
     RenderTempo(tempo_x, tempo_y)
-    RenderEcho(_echoOn)
-    RenderCopy()
-    RenderPaste()
-    RenderAuto(_proceedOn)
-    RenderRandom()
-    RenderPattern(CHANNEL_FILTER, filter_x, filter_y, BLANK_SMALL)
+    RenderEchoButton(_echoOn)
+    RenderCopyButton()
+    RenderPasteButton()
+    RenderAutoButton(_proceedOn)
+    RenderRandomButton()
     RenderJoy()
+    RenderMetronome()
     rts
+}
+
+.macro RenderMetronome() {
+    // TODO: flash the beat and flash the measure
+    // somewhere top of the screen, part of the "joy" probably
 }
 
 .macro RenderJoy(){
@@ -140,7 +154,7 @@ Render: {
 exit:
 }
 
-.macro RenderCopy() {
+.macro RenderCopyButton() {
     lda _selectedVoice
     cmp #CHANNEL_COPY
     beq on        
@@ -160,7 +174,7 @@ exit:
     end:
 }
 
-.macro RenderPaste() {
+.macro RenderPasteButton() {
     lda _selectedVoice
     cmp #CHANNEL_PASTE
     beq on        
@@ -182,7 +196,7 @@ exit:
     end:
 }
 
-.macro RenderEcho(operand) {
+.macro RenderEchoButton(operand) {
     lda _selectedVoice
     cmp #CHANNEL_ECHO
     beq on        
@@ -211,7 +225,7 @@ endSelected:
 endEchoOn:
 }
 
-.macro RenderAuto(operand) {
+.macro RenderAutoButton(operand) {
     lda _selectedVoice
     cmp #CHANNEL_AUTO
     beq on        
@@ -238,7 +252,7 @@ endSelected:
 end:
 }
 
-.macro RenderRandom() {
+.macro RenderRandomButton() {
     lda _selectedVoice
     cmp #CHANNEL_RANDOM
     beq on        
@@ -248,22 +262,12 @@ on:
     PlotColor #4: #23: #GREEN
     PlotColor #5: #23: #GREEN
     PlotColor #6: #23: #GREEN
-    jmp endSelected  
+    jmp end  
 
 off:
     PlotColor #4: #23: #DARK_GREY
     PlotColor #5: #23: #GREY
     PlotColor #6: #23: #GREY
-
-endSelected:
-
-    // lda operand
-    // beq !+
-    //     PlotColor #8: #23: #GREEN
-    //     jmp end
-    // !:
-
-    //PlotColor #8: #23: #GREY
 end:
 }
 
@@ -295,7 +299,7 @@ end:
     next_step:
         Plot voice_x,X:voice_y,X
         inx
-        cpx #steps
+        cpx #STEPS
         bne render_pattern
 
     lda _proceedOn
@@ -309,44 +313,13 @@ end:
     !:        
 }
 
-
-.macro RenderChord(voice_x, voice_y, blank) {
-    ldx #0
-    Set PenColor:#DARK_GRAY
-
-    lda _selectedVoice
-    cmp #CHANNEL_CHORD
-    bne !+
-        Set PenColor:#SelectedColor
-    !:
-
-    render_pattern:
-        Set Character:#blank
-
-        // is this step a beat?
-        txa
-        clc 
-        adc #16
-        adc _chord
-        tay
-
-        lda _rhythm, Y
-        beq next_step
-
-        Set Character:#PATTERN
-
-    next_step:
-        Plot voice_x,X:voice_y,X
-        inx
-        cpx #steps
-        bne render_pattern
-}
-
-.macro RenderPattern(voiceNumber, voice_x, voice_y, blank) {
+.macro RenderChord(voiceNumber, voice_x, voice_y, blank) {
     .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
     .var voiceRotation = _rotationPatterns + (voiceNumber*8)
 
-    ldx #0
+    lda #0
+    sta _stepCounter
+    tax
     Set PenColor:#DARK_GRAY
 
     lda _selectedVoice
@@ -377,7 +350,57 @@ end:
     next_step:
         Plot voice_x,X:voice_y,X
         inx
-        cpx #steps
+        cpx #STEPS
+        bne render_pattern
+
+    beat:
+        ldx _chordCurrentBeatIndex 
+        ReadChar voice_x,X:voice_y,X
+        
+        Set PenColor:#ChordColor
+        ldx _chordCurrentBeatIndex        
+        Plot voice_x,X:voice_y,X
+
+}
+
+.macro RenderPattern(voiceNumber, voice_x, voice_y, blank) {
+    .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+    .var voiceRotation = _rotationPatterns + (voiceNumber*8)
+
+    lda #0
+    sta _stepCounter
+    tax
+    Set PenColor:#DARK_GRAY
+
+    lda _selectedVoice
+    cmp #voiceNumber
+    bne !+
+        Set PenColor:#SelectedColor
+    !:
+
+    render_pattern:
+        stx _stepCounter
+        ldy _patternIndex
+        // is this step a beat?
+        lda voiceNumberOfBeats, Y
+        // *16 so shift 4 times, each rhythm pattern is sixteeen long 
+        asl;asl;asl;asl
+        clc 
+        adc _stepCounter
+        adc voiceRotation, Y
+        tay
+
+        Set Character:#blank
+
+        lda _rhythm, Y
+        beq next_step
+
+        Set Character:#PATTERN
+
+    next_step:
+        Plot voice_x,X:voice_y,X
+        inx
+        cpx #STEPS
         bne render_pattern
 
     beat:
@@ -435,7 +458,7 @@ end:
         inx
         inc _stepCounter
         lda _stepCounter
-        cmp #steps
+        cmp #STEPS
         bne render_pattern
 
     beat:
@@ -470,7 +493,7 @@ end:
     next_step:
         Plot voice_x,X:voice_y,X
         inx
-        cpx #steps
+        cpx #STEPS
         bne render_pattern
 }
 
@@ -507,6 +530,27 @@ end:
 
     pla;tax
 }
+
+.pseudocommand ReadChar x:y {
+        .var screenLO = __tmp0 
+        .var screenHI = __tmp1
+
+        Set __tmp3:y
+        ldy x
+        ldx __tmp3
+
+        clc
+        lda screenRow.lo,x  
+        sta screenLO
+
+        lda screenRow.hi,x
+        ora #$04 
+        sta screenHI
+
+        lda (screenLO),y  
+        sta Character
+  
+    }
 
 .pseudocommand PlotColor x:y:color {
     .var screenLO = __tmp0 
@@ -560,8 +604,8 @@ tempo_y:    .byte 02,02,01,00,00,00,01,02
 tempo_blank_char:   .byte 174,173,157,141,142,143,159,175
 tempo_char: .byte 219,218,202,186,187,188,204,220
 
-chord_x:    .byte 25,23,22,23,25,27,28,27,25,23,22,23,25,27,28,27
-chord_y:    .byte 20,19,17,15,14,15,17,19,20,19,17,15,14,15,17,19
+chord_x:    .byte 25,27,28,27,25,23,22,23,25,27,28,27,25,23,22,23
+chord_y:    .byte 14,15,17,19,20,19,17,15,14,15,17,19,20,19,17,15
 
 
 filter_x:   .byte 25,27,28,27,25,23,22,23,25,27,28,27,25,23,22,23

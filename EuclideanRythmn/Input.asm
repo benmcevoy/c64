@@ -34,14 +34,26 @@ ReadInput: {
         lda _selectedVoice
         // checking for less than or equal to CHANNEL_CHORD
         // which is voices and octaves and the filter as they are all manipulated the same
-        cmp #CHANNEL_CHORD
+        cmp #CHANNEL_FILTER
         beq !+
             bcc !+
-            jmp check_pattern
+            jmp check_chord
         !:
-        ConstrainBeatsForVoice(_selectedVoice, 0, steps, RIGHT_AND_FIRE, LEFT_AND_FIRE)
+        ConstrainBeatsForVoice(_selectedVoice, 0, STEPS, RIGHT_AND_FIRE, LEFT_AND_FIRE)
         CycleRotationForVoice(_selectedVoice, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)
         jmp end
+
+    check_chord:
+        lda _selectedVoice
+        // checking for less than or equal to CHANNEL_CHORD
+        // which is voices and octaves and the filter as they are all manipulated the same
+        cmp #CHANNEL_CHORD
+        beq !+
+            jmp check_pattern
+        !:
+        ConstrainBeatsForVoice(_selectedVoice, 0, STEPS, RIGHT_AND_FIRE, LEFT_AND_FIRE)
+        CycleRotationForVoice(_selectedVoice, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)
+        jmp end        
 
     check_pattern:
         lda _selectedVoice
