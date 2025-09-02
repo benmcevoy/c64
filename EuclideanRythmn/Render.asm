@@ -34,7 +34,8 @@ Render: {
     RenderPatternSmall(CHANNEL_OCTAVE2, octave1_x, octave1_y)
     RenderPatternSmall(CHANNEL_OCTAVE3, octave2_x, octave2_y)
     
-    RenderChord(CHANNEL_CHORD, chord_x, chord_y, BLANK_SMALL)
+    // TODO: RenderChord should render like tempo - like a volume knob
+    RenderChord(meter_x, meter_y)
     RenderSelectedPattern(pattern_x, pattern_y, BLANK_SMALL)
     RenderTempo(tempo_x, tempo_y)
     RenderEchoButton(_echoOn)
@@ -57,8 +58,8 @@ Render: {
     .var paletteIndex = __tmp2
     .var color = __tmp3
 
-    ldy _tempoIndicator
-    lda _tempo_fill,Y
+    ldy _tempo_Index
+    lda _tempo_LUT,Y
     tay; dey; 
     cpy _frameCounter
     beq !+
@@ -313,54 +314,29 @@ end:
     !:        
 }
 
-.macro RenderChord(voiceNumber, voice_x, voice_y, blank) {
-    .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
-    .var voiceRotation = _rotationPatterns + (voiceNumber*8)
-
-    lda #0
-    sta _stepCounter
-    tax
+.macro RenderChord(voice_x, voice_y) {
+    // set pen color to unselected 
     Set PenColor:#DARK_GRAY
 
     lda _selectedVoice
-    cmp #voiceNumber
+    cmp #CHANNEL_METER
     bne !+
+        // or selected
         Set PenColor:#SelectedColor
     !:
 
+    ldx #0
     render_pattern:
-        stx _stepCounter
-        ldy _patternIndex
-        // is this step a beat?
-        lda voiceNumberOfBeats, Y
-        // *16 so shift 4 times, each rhythm pattern is sixteeen long 
-        asl;asl;asl;asl
-        clc 
-        adc _stepCounter
-        adc voiceRotation, Y
-        tay
-
-        Set Character:#blank
-
-        lda _rhythm, Y
-        beq next_step
-
         Set Character:#PATTERN
-
+        cpx _beatsPerMeasure_Index
+        bcc next_step
+        beq next_step
+        Set Character:#BLANK_SMALL
     next_step:
         Plot voice_x,X:voice_y,X
         inx
         cpx #STEPS
         bne render_pattern
-
-    beat:
-        ldx _chordCurrentBeatIndex 
-        ReadChar voice_x,X:voice_y,X
-        
-        Set PenColor:#ChordColor
-        ldx _chordCurrentBeatIndex        
-        Plot voice_x,X:voice_y,X
-
 }
 
 .macro RenderPattern(voiceNumber, voice_x, voice_y, blank) {
@@ -486,7 +462,7 @@ end:
     ldx #0
     render_pattern:
         Set Character:tempo_char,X
-        cpx _tempoIndicator
+        cpx _tempo_Index
         bcc next_step
         beq next_step
         Set Character:tempo_blank_char,X
@@ -604,8 +580,12 @@ tempo_y:    .byte 02,02,01,00,00,00,01,02
 tempo_blank_char:   .byte 174,173,157,141,142,143,159,175
 tempo_char: .byte 219,218,202,186,187,188,204,220
 
-chord_x:    .byte 25,27,28,27,25,23,22,23,25,27,28,27,25,23,22,23
-chord_y:    .byte 14,15,17,19,20,19,17,15,14,15,17,19,20,19,17,15
+// like tempo, first entry is the bottom of the circle, goes clockwise
+// chord_x:    .byte 25,27,28,27,25,23,22,23,25,27,28,27,25,23,22,23
+// chord_y:    .byte 14,15,17,19,20,19,17,15,14,15,17,19,20,19,17,15
+
+meter_x:    .byte 25,23,22,23,25,27,28,27,25,23,22,23,25,27,28,27
+meter_y:    .byte 20,19,17,15,14,15,17,19,20,19,17,15,14,15,17,19
 
 
 filter_x:   .byte 25,27,28,27,25,23,22,23,25,27,28,27,25,23,22,23

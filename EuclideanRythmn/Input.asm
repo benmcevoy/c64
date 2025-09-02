@@ -10,12 +10,13 @@
 .const RIGHT   = %00001000
 .const FIRE    = %00010000
 
-.const LEFT_AND_FIRE  = %00010100
-.const RIGHT_AND_FIRE = %00011000
 .const UP_AND_FIRE    = %00010001
 .const DOWN_AND_FIRE  = %00010010
+.const LEFT_AND_FIRE  = %00010100
+.const RIGHT_AND_FIRE = %00011000
 
 _previousTempo: .byte 0
+_previousMeter: .byte 0
 _previousPattern: .byte 0
 _debounceOn: .byte 0
 .const Top = 5
@@ -37,23 +38,23 @@ ReadInput: {
         cmp #CHANNEL_FILTER
         beq !+
             bcc !+
-            jmp check_chord
+            jmp check_meter
         !:
         ConstrainBeatsForVoice(_selectedVoice, 0, STEPS, RIGHT_AND_FIRE, LEFT_AND_FIRE)
         CycleRotationForVoice(_selectedVoice, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)
         jmp end
 
-    check_chord:
+    check_meter:
         lda _selectedVoice
-        // checking for less than or equal to CHANNEL_CHORD
-        // which is voices and octaves and the filter as they are all manipulated the same
-        cmp #CHANNEL_CHORD
+        cmp #CHANNEL_METER
         beq !+
             jmp check_pattern
         !:
-        ConstrainBeatsForVoice(_selectedVoice, 0, STEPS, RIGHT_AND_FIRE, LEFT_AND_FIRE)
-        CycleRotationForVoice(_selectedVoice, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)
-        jmp end        
+
+        ConstrainTempoLR(_beatsPerMeasure_Index, _previousMeter)
+        ConstrainTempoUD(_beatsPerMeasure_Index, _previousMeter)
+
+        jmp end          
 
     check_pattern:
         lda _selectedVoice
@@ -71,21 +72,7 @@ ReadInput: {
             CyclePattern(_patternIndex, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)  
         jmp end
 
-    // check_chord:
-    //     lda _selectedVoice
-    //     cmp #CHANNEL_CHORD
-    //     beq !+
-    //         jmp check_tempo
-    //     !:
-    //     // lda _proceedOn
-    //     // beq !+
-    //     //     CyclePattern(_chord, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
-    //     //     CyclePattern(_transpose, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)    
-    //     //     jmp end
-    //     // !:
-    //     CyclePattern(_chord, 0, 7, LEFT_AND_FIRE, RIGHT_AND_FIRE)
-    //     CyclePattern(_transpose, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)  
-    //     jmp end        
+      
 
     check_tempo:
         lda _selectedVoice
@@ -93,8 +80,8 @@ ReadInput: {
         beq !+
             jmp check_echo
         !:
-        ConstrainTempoLR(_tempoIndicator)
-        ConstrainTempoUD(_tempoIndicator)
+        ConstrainTempoLR(_tempo_Index, _previousTempo)
+        ConstrainTempoUD(_tempo_Index, _previousTempo)
         jmp end
 
     check_echo:
@@ -114,18 +101,13 @@ ReadInput: {
             lda _beatPatterns, Y
             sta _clipBoard, X
             inx
-            cpx #14
+            cpx #14 // copy voices+filter
             beq !+
                 tya
                 clc; adc #8
                 tay
                 jmp nextCopy
         !:
-        lda _chord
-        sta _clipBoard,X
-        inx
-        lda _transpose
-        sta _clipBoard,X
         jmp end    
 
     check_paste:
@@ -138,20 +120,14 @@ ReadInput: {
             lda _clipBoard, X
             sta _beatPatterns, Y
             inx
-            cpx #14
+            cpx #14 // paste voices+filter
             beq !+
                 tya
                 clc; adc #8
                 tay
                 jmp nextPaste
         !:
-        lda _clipBoard,X
-        sta _chord
-        inx
-        lda _clipBoard,X
-        sta _transpose
         jmp end    
-
 
     check_random:
         lda _selectedVoice
@@ -186,13 +162,18 @@ next:
     lda _randomDistribution, Y
     sta _beatPatterns,X
     
+    NextRandom()
+    tay
+    lda _randomDistribution, Y
+    sta _rotationPatterns,X
+
     // increase x by 8 to advance to the next CHANNEL
     clc
     txa; adc #8
     tax
 
-    // 112 is 8 steps * 7 channels * 2 features (7 channels (voices, ocataves, filter)(7) with beats and phase (2))
-    cpx #112
+    // 48 is 8 steps * 6 channels  (3xvoices, 3xoctaves) with beats and phase
+    cpx #48
     bcc next
 }
 
@@ -249,7 +230,7 @@ next:
         lda _selectedVoice
         cmp #CHANNEL_FILTER
         bne !+
-            Set _selectedVoice:#CHANNEL_CHORD
+            Set _selectedVoice:#CHANNEL_METER
             jmp _exit
         !:
 
@@ -352,7 +333,7 @@ next:
         !:  
 
         lda _selectedVoice
-        cmp #CHANNEL_CHORD
+        cmp #CHANNEL_METER
         bne !+
             Set _selectedVoice:#CHANNEL_FILTER
             jmp _exit
@@ -410,12 +391,12 @@ next:
         lda _selectedVoice
         cmp #CHANNEL_PATTERN
         bne !+
-            Set _selectedVoice:#CHANNEL_CHORD
+            Set _selectedVoice:#CHANNEL_METER
             jmp _exit
         !:
 
         lda _selectedVoice
-        cmp #CHANNEL_CHORD
+        cmp #CHANNEL_METER
         bne !+
             Set _selectedVoice:#CHANNEL_VOICE3
             jmp _exit
@@ -499,7 +480,7 @@ next:
         !:
 
         lda _selectedVoice
-        cmp #CHANNEL_CHORD
+        cmp #CHANNEL_METER
         bne !+
             Set _selectedVoice:#CHANNEL_PATTERN
             jmp _exit
@@ -534,14 +515,14 @@ next:
         !:  
 }
 
-.macro ConstrainTempoLR(operand) {
+.macro ConstrainTempoLR(operand, previous) {
     lda #LEFT_AND_FIRE
     bit PORT2
     bne !++
         lda operand
         cmp #Top
         bne skip
-            sta _previousTempo
+            sta previous
         skip:
         cmp #0
         beq !+
@@ -553,7 +534,7 @@ next:
     lda #RIGHT_AND_FIRE
     bit PORT2
     bne !++
-        inc _previousTempo
+        inc previous
         lda operand
         cmp #7
         beq !+
@@ -563,7 +544,7 @@ next:
     !:
 }
 
-.macro ConstrainTempoUD(operand) {
+.macro ConstrainTempoUD(operand, previous) {
     lda #DOWN_AND_FIRE
     bit PORT2
     beq !+
@@ -587,11 +568,11 @@ next:
     !:
     cmp #4
     bne !+
-        lda _previousTempo
+        lda previous
         cmp #Top
         bne skip
             inc operand
-            inc _previousTempo
+            inc previous
             jmp _exit    
         skip:
         dec operand
@@ -622,7 +603,7 @@ checkUp:
         !:
         cmp #5
         bne !+
-            sta _previousTempo
+            sta previous
             dec operand
             jmp _exit
         !:
@@ -1048,6 +1029,7 @@ op4:        inc $BEEF, X
 }
 
 .macro ConstrainPattern(operand, lowerlimit, upperlimit, increaseAction, decreaseAction){
+    
     lda #decreaseAction
     bit PORT2
     bne !++
@@ -1069,4 +1051,97 @@ op4:        inc $BEEF, X
         !:
         jmp _exit
     !:
+}
+.macro CycleRotationForVoiceIgnorePattern(voice, lowerlimit, upperlimit, increaseAction, decreaseAction){
+    // setup pointer
+    lda #>_rotationPatterns
+    sta op1+2
+    sta op2+2
+    sta op3+2
+    sta op4+2
+    sta op5+2
+    sta op6+2    
+
+    lda voice
+    // multiply by 8
+    asl;asl;asl
+    clc; adc #<_rotationPatterns
+    sta op1+1
+    sta op2+1
+    sta op3+1
+    sta op4+1
+    sta op5+1
+    sta op6+1    
+
+    lda #increaseAction
+    bit PORT2
+    bne !++
+        ldx #0
+op1:    lda $BEEF, X
+        cmp #lowerlimit
+        beq !+
+op2:        dec $BEEF, X
+            jmp _exit
+        !:
+        lda #upperlimit
+op3:    sta $BEEF, X
+        jmp _exit
+    !:
+
+    lda #decreaseAction
+    bit PORT2
+    bne !++
+        ldx #0
+op4:    lda $BEEF, X
+        cmp #upperlimit
+        beq !+
+op5:        inc $BEEF, X
+            jmp _exit
+        !:
+        lda #lowerlimit
+op6:    sta $BEEF, X
+        jmp _exit
+    !:
+}
+
+.macro ConstrainBeatsForVoiceIgnorePattern(voice, lowerlimit, upperlimit, increaseAction, decreaseAction){
+    // setup pointer
+    lda #>_beatPatterns
+    sta op1+2
+    sta op2+2
+    sta op3+2
+    sta op4+2
+
+    lda voice
+    // multiply by 8
+    asl;asl;asl
+    clc; adc #<_beatPatterns
+    sta op1+1
+    sta op2+1
+    sta op3+1
+    sta op4+1
+
+    lda #decreaseAction
+    bit PORT2
+    bne !++
+        ldx #0
+op1:    lda $BEEF, X
+        cmp #lowerlimit
+        beq !+
+op2:    dec $BEEF, X
+        !:
+        jmp _exit
+    !:
+
+    lda #increaseAction
+    bit PORT2
+    bne !++
+        ldx #0
+op3:    lda $BEEF, X
+        cmp #upperlimit
+        beq !+
+op4:        inc $BEEF, X
+        !:
+        jmp _exit
+    !:   
 }

@@ -2,9 +2,7 @@
 #import "Sid.asm"
 
 .const scale_length = 7
-.const chord_length = 7
 .const STEPS = 8
-.const MEASURE = 4
 .const readInputDelay = 6
 
 .const CHANNEL_VOICE1 = 0
@@ -14,7 +12,7 @@
 .const CHANNEL_OCTAVE2 = 4
 .const CHANNEL_OCTAVE3 = 5
 .const CHANNEL_FILTER = 6
-.const CHANNEL_CHORD = 7
+.const CHANNEL_METER = 7
 
 .const CHANNEL_PATTERN = 8
 .const CHANNEL_TEMPO = 9
@@ -24,18 +22,21 @@
 .const CHANNEL_AUTO = 13
 .const CHANNEL_RANDOM = 14
 
-
-// tempo in units of "frame count"
 _frameCounter: .byte 0
-_tempo: .byte 16
-_tempoIndicator: .byte 4
 _stepIndex: .byte 0
-_measureIndex: .byte 0
 _selectedVoice: .byte 0
 _transpose: .byte 4
+
 _chord: .byte 0
-_chordCurrentBeatIndex: .byte 0
-_chordNextBeatIndex: .byte 0
+// currently active chord index
+_chordCurrentIndex: .byte 0
+// which beat are we on on the chord "wheel"
+_chordIndex: .byte 0
+
+_measureCounter: .byte 0
+_beatsPerMeasure_Index: .byte 4
+_beatsPerMeasure_LUT: .byte 128,64,32,16,8,4,2,1
+
 _echoOn: .byte $0
 // proceed is ON when AUTO is ON
 _proceedOn: .byte $0
@@ -52,14 +53,18 @@ _delay2_on: .byte 36,37,38
 _delay2_off: .byte 38,39,40
 _delay3_on: .byte 48,49,50
 _delay3_off: .byte 50,51,52
-// clipboard reserves space for 6 voices each with two values - number of beats and rotation, + filter beats and rotation + chordindex + transpose = 16 bytes
+// clipboard reserves space for 6 voices each with two values - number of beats and rotation, + filter beats and rotation  = 14 bytes
 _clipBoard: .fill 16,0
+
+// tempo in units of "frame count"
+_tempo: .byte 14
+_tempo_Index: .byte 4
 // in BPM 47,93,125,188,250,500,750!  i'm feeling that every second beat is a "beat"
-_tempo_fill: .byte 64,32,24,16,12,08,06,04
+_tempo_LUT: .byte 64,32,24,16,12,08,06,04
+
 
 .align $100
-chords: Attempt2()
-//accent_chords: .byte C4, E5, G4
+chords: Attempt8()
 .label selectedScale = scale_harmonic_minor
 
 .macro Attempt2(){
@@ -83,6 +88,77 @@ chords: Attempt2()
 .byte C2, F2, A3
 .byte C2, C3, A3 
 }
+
+.macro Attempt3(){
+.byte F3, Db2, C4
+.byte F3, Db2, F4
+.byte C4, Ab3, F4
+.byte C4, Ab3, C4
+.byte Ab4, Eb2, F4
+.byte Ab4, Eb2, F4
+.byte G3, F2, C4
+.byte G3, F2, F4
+}
+
+// pentatonic and a drone
+.macro Attempt4(){
+.byte C3, D4, C2
+.byte C3, D4, C2
+.byte G3, E4, C2
+.byte G3, E4, C2
+.byte A4, G4, C2
+.byte A4, G4, C2
+.byte C4, A5, C2
+.byte C4, A5, C2
+}
+
+// blues
+.macro Attempt5(){
+.byte C2, F4, C4
+.byte C2, F4, G4
+.byte Eb2, G4, C4
+.byte Eb2, G4, G4
+.byte F2, Bb5, C4
+.byte F2, Bb5, G4
+.byte G2, C5, C4
+.byte G2, C5, G4
+}
+
+// shepard tone?
+.macro Attempt6(){
+    .byte C2, G2, E3
+    .byte A3, E3, C2
+    .byte F3, C2, A3
+    .byte D2, A3, F3
+    .byte B3, F3, D2
+    .byte G3, D2, B3
+    .byte E2, B3, G3
+    .byte C3, G3, E2
+ }
+
+ .macro Attempt7(){
+    .byte C2, D3, E4
+    .byte D3, E4, F2
+    .byte E4, F2, G3
+    .byte F2, G3, A5
+    .byte G3, A5, B3
+    .byte A5, B3, C4
+    .byte B3, C4, C2
+    .byte C4, D2, E3
+ }
+
+// drone with a fifth every four beast
+ .macro Attempt8(){
+    .byte G2, B3, E2
+    .byte G3, B3, E2
+    .byte G4, B2, E2
+    .byte G3, B3, E3
+    .byte G3, B3, E2
+    .byte G3, B3, E2
+    .byte G4, B4, E2
+    .byte G3, B3, E3
+ }
+
 
 .macro HouseProgression() { 
     // house progression
@@ -233,7 +309,7 @@ _randomDistribution:
     _octave2NumberOfBeats: .byte 0,0,0,0,0,0,0,0
     _octave3NumberOfBeats: .byte 0,0,0,0,0,0,0,0
     _filterNumberOfBeats: .byte 0,0,0,0,0,0,0,0
-    _chordNumberOfBeats: .byte 1,1,1,1,1,1,1,1
+    _chordNumberOfBeats: .byte 8,8,8,8,8,8,8,8
 
 _rotationPatterns:
     _voice1Rotation: .byte 0,0,0,0,0,0,0,0

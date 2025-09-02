@@ -8,9 +8,10 @@
 
 .namespace Tempo {
 
-    .const FILTER_LOW = 10
-    .const FILTER_HIGH = 40
-    .const FILTER_RESONANCE_LOW = 6
+    .const FILTER_MIN = 10
+    .const FILTER_MAX = 40
+    .const FILTER_RESONANCE_MIN = 6
+    .const WAVEFORM = Saw
 
     // one for each voice
     _intraBeatCounter: .byte 0,0,0
@@ -20,7 +21,7 @@
     Init: {
         // init SID
         Set SID_MIX_FILTER_CUT_OFF_LO:#%00000111  
-        Set SID_MIX_FILTER_CUT_OFF_HI:#10
+        Set SID_MIX_FILTER_CUT_OFF_HI:#%00000010
         Set SID_MIX_FILTER_CONTROL:#%11110111
         Set SID_MIX_VOLUME:#%00011111
 
@@ -32,13 +33,13 @@
         Set SID_V2_SUSTAIN_RELEASE:#$00
         Set SID_V3_SUSTAIN_RELEASE:#$00
 
-        SetWaveForm(CHANNEL_VOICE1, Square)
-        SetWaveForm(CHANNEL_VOICE2, Square)
-        SetWaveForm(CHANNEL_VOICE3, Square)
+        SetWaveForm(CHANNEL_VOICE1, WAVEFORM)
+        SetWaveForm(CHANNEL_VOICE2, WAVEFORM)
+        SetWaveForm(CHANNEL_VOICE3, WAVEFORM)
 
-        SetPulseWidth(CHANNEL_VOICE1, $FF, $7F)
-        SetPulseWidth(CHANNEL_VOICE2, $8F, $7F)
-        SetPulseWidth(CHANNEL_VOICE3, $0F, $7F)
+        // SetPulseWidth(CHANNEL_VOICE1, $FF, $7F)
+        // SetPulseWidth(CHANNEL_VOICE2, $8F, $7F)
+        // SetPulseWidth(CHANNEL_VOICE3, $0F, $7F)
 
         rts
     }
@@ -66,25 +67,29 @@
             jmp nextFrame
         !: 
     stepStart:
-        ldy _tempoIndicator
-        Set _frameCounter:_tempo_fill,Y
+        ldy _tempo_Index
+        Set _frameCounter:_tempo_LUT,Y
 
         inc _stepIndex
         lda _stepIndex
         cmp #STEPS
-        bne !++
+        bne !+
             // the measure is complete
             Set _stepIndex:#0
+        !:
 
-            inc _measureIndex
-            lda _measureIndex
-            cmp #STEPS
-            bne !+
-                Set _measureIndex:#0
-            !:
-            TriggerChord(CHANNEL_CHORD)   
+        inc _measureCounter
+        lda _measureCounter
+        ldx _beatsPerMeasure_Index
+        cmp _beatsPerMeasure_LUT, X
+        bcc !+
+            Set _measureCounter:#0
+            // trigger the next chord
+            TriggerChord(CHANNEL_METER)   
         !:
         
+    // set the note numbers to currently active chord
+    SetChord(chords, _chordCurrentIndex)
 
     #if MIDI
         TriggerMidiOff(CHANNEL_VOICE1)
@@ -95,7 +100,6 @@
         TriggerMidiOff(CHANNEL_OCTAVE3)
         // filter is not sent to midi
     #endif    
-        
         TriggerOctave(CHANNEL_OCTAVE1)
         TriggerOctave(CHANNEL_OCTAVE2)
         TriggerOctave(CHANNEL_OCTAVE3)
@@ -150,13 +154,13 @@
         bne !+
             Set SID_V1_ATTACK_DECAY+voiceNumber*7:#$89
             Set SID_V1_SUSTAIN_RELEASE+voiceNumber*7:#$F9
-            Set SID_V1_CONTROL+voiceNumber*7:#%00000001
+            Set SID_V1_CONTROL+voiceNumber*7:#1
         !:
 
         lda _intraBeatCounter,Y
         cmp _delay0_off,Y
         bne !+
-            Set SID_V1_CONTROL+voiceNumber*7:#%01000000
+            Set SID_V1_CONTROL+voiceNumber*7:#(WAVEFORM-1)
         !:
 
         lda _intraBeatCounter,Y
@@ -164,13 +168,13 @@
         bne !+
             Set SID_V1_ATTACK_DECAY+voiceNumber*7:#$A0
             Set SID_V1_SUSTAIN_RELEASE+voiceNumber*7:#$89
-            Set SID_V1_CONTROL+voiceNumber*7:#%00000001
+            Set SID_V1_CONTROL+voiceNumber*7:#1
         !:
 
         lda _intraBeatCounter,Y
-        cmp _delay1_off,Y
+        cmp _delay2_off,Y
         bne !+
-            Set SID_V1_CONTROL+voiceNumber*7:#%01000000
+            Set SID_V1_CONTROL+voiceNumber*7:#(WAVEFORM-1)
         !:
 
         lda _intraBeatCounter,Y
@@ -178,13 +182,13 @@
         bne !+
             Set SID_V1_ATTACK_DECAY+voiceNumber*7:#$C0
             Set SID_V1_SUSTAIN_RELEASE+voiceNumber*7:#$49
-            Set SID_V1_CONTROL+voiceNumber*7:#%00000001
+            Set SID_V1_CONTROL+voiceNumber*7:#1
         !:
 
         lda _intraBeatCounter,Y
         cmp _delay2_off,Y
         bne !+
-            Set SID_V1_CONTROL+voiceNumber*7:#%01000000
+            Set SID_V1_CONTROL+voiceNumber*7:#(WAVEFORM-1)
         !:
 
         lda _intraBeatCounter,Y
@@ -192,13 +196,13 @@
         bne !+
             Set SID_V1_ATTACK_DECAY+voiceNumber*7:#$E0
             Set SID_V1_SUSTAIN_RELEASE+voiceNumber*7:#$29
-            Set SID_V1_CONTROL+voiceNumber*7:#%00000001
+            Set SID_V1_CONTROL+voiceNumber*7:#1
         !:
 
         lda _intraBeatCounter,Y
         cmp _delay3_off,Y
         bne !+
-            Set SID_V1_CONTROL+voiceNumber*7:#%01000000
+            Set SID_V1_CONTROL+voiceNumber*7:#(WAVEFORM-1)
         !:
     }
 
@@ -225,7 +229,7 @@
             // filter
             lda _filterCutOffHi
             clc; adc #2
-            cmp #FILTER_HIGH
+            cmp #FILTER_MAX
             sta SID_MIX_FILTER_CUT_OFF_HI
             bcs !+
                 sta _filterCutOffHi
@@ -250,13 +254,13 @@
         lda _filterCutOffHi
         sec; sbc #4
         sta SID_MIX_FILTER_CUT_OFF_HI
-        cmp #FILTER_LOW
+        cmp #FILTER_MIN
         bcc exit
         sta _filterCutOffHi
 
         lda _filterResonance
         sec; sbc #4
-        cmp #FILTER_RESONANCE_LOW
+        cmp #FILTER_RESONANCE_MIN
         bcc exit
         sta _filterResonance
         asl;asl;asl;asl
@@ -270,7 +274,6 @@
         .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
         .var voiceRotation = _rotationPatterns + (voiceNumber*8)
 
-
         // nothing to do if number of beats is zero
         lda voiceNumberOfBeats
         cmp #0
@@ -281,14 +284,13 @@
         // we are on the an active beat
         // find the next active chord index
         // naively
-        // loop from _chordCurrentBeatIndex to 8
+        // loop from _chordCurrentIndex to 8
     loop:
-        inc _chordCurrentBeatIndex
-        lda _chordCurrentBeatIndex
+        inc _chordIndex
+        lda _chordIndex
         cmp #8
         bne !+
-            Set _chordCurrentBeatIndex:#0
-            
+            Set _chordIndex:#0
         !:
 
         // ignore pattern - would be in .Y like it is TriggerBeat
@@ -296,18 +298,53 @@
         // *16 so shift 4 times
         asl;asl;asl;asl
         clc 
-        adc _chordCurrentBeatIndex
+        adc _chordIndex
         adc voiceRotation
         tax
+        lda _rhythm, X
+        // if 0 then REST
+        beq !+
+            lda _chordIndex
+            sta _chordCurrentIndex
+        !:
+    exit:
+    }
 
+    .macro TriggerNextChord(voiceNumber) {
+        .var voiceNumberOfBeats = _beatPatterns + (voiceNumber*8)
+        .var voiceRotation = _rotationPatterns + (voiceNumber*8)
+
+        // nothing to do if number of beats is zero
+        lda voiceNumberOfBeats
+        cmp #0
+        bne !+
+            jmp exit
+        !:
+
+        // find the next active chord index
+        // naively
+        // loop from _chordCurrentIndex to 8
+    loop:
+        inc _chordCurrentIndex
+        lda _chordCurrentIndex
+        cmp #8
+        bne !+
+            Set _chordCurrentIndex:#0
+        !:
+
+        // ignore pattern - would be in .Y like it is TriggerBeat
+        lda voiceNumberOfBeats
+        // *16 so shift 4 times
+        asl;asl;asl;asl
+        clc 
+        adc _chordCurrentIndex
+        adc voiceRotation
+        tax
         lda _rhythm, X
         // if 0 then REST
         bne !+
             jmp loop
         !:
-
-        SetChord(chords, _chordCurrentBeatIndex)
-       
     exit:
     }
 
