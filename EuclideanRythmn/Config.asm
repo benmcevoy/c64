@@ -64,7 +64,7 @@ _tempo_LUT: .byte 64,32,24,16,12,08,06,04
 
 
 .align $100
-chords: Attempt8()
+chords: Attempt6()
 .label selectedScale = scale_harmonic_minor
 
 .macro Attempt2(){
@@ -157,6 +157,17 @@ chords: Attempt8()
     .byte G3, B3, E2
     .byte G4, B4, E2
     .byte G3, B3, E3
+ }
+
+ .macro Attempt9(){
+    .byte G2, Eb2, D3
+    .byte G2, Eb2, D3
+    .byte Bb3, Eb2, D3
+    .byte C3, Eb2, D3
+    .byte G2, Eb2, Eb3
+    .byte G2, Eb2, Eb3
+    .byte G2, Eb2, Eb3
+    .byte G2, Eb2, Eb3
  }
 
 
