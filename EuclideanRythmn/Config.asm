@@ -64,7 +64,8 @@ _tempo_LUT: .byte 64,32,24,16,12,08,06,04
 
 
 .align $100
-chords: Attempt6()
+chords: Attempt11()
+
 .label selectedScale = scale_harmonic_minor
 
 .macro Attempt2(){
@@ -170,6 +171,40 @@ chords: Attempt6()
     .byte G2, Eb2, Eb3
  }
 
+// line from Cure - The Drowning Man F E A# D, seems to F Maj
+.macro Attempt10(){
+    .byte F3, G2, A3
+    .byte F3, G2, A3
+    .byte E3, A3, Bb3
+    .byte E3, A3, Bb3
+    .byte Bb3, F2, G2
+    .byte Bb3, F2, G2
+    .byte D3, D2, A3
+    .byte D3, D2, A3
+ }
+
+// kylie can't get you out of my head
+.macro Attempt11(){
+    .byte A4, E3, D2
+    .byte A4, D3, D2
+    .byte A4, E3, D2
+    .byte C3, D3, D2
+    .byte E3, G3, A2
+    .byte E3, D3, A2
+    .byte E3, E3, A2
+    .byte G3, D3, A2
+ }
+
+.macro Attempt12(){
+    .byte C4, E3, D2
+    .byte G4, D3, D2
+    .byte Eb4, E3, D2
+    .byte G4, D3, D2
+    .byte Eb4, G3, A2
+    .byte G4, D3, A2
+    .byte Eb4, E3, A2
+    .byte Eb4, D3, A2
+ }
 
 .macro HouseProgression() { 
     // house progression

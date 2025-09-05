@@ -72,8 +72,6 @@ ReadInput: {
             CyclePattern(_patternIndex, 0, 7, UP_AND_FIRE, DOWN_AND_FIRE)  
         jmp end
 
-      
-
     check_tempo:
         lda _selectedVoice
         cmp #CHANNEL_TEMPO

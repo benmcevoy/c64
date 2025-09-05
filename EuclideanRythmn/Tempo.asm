@@ -58,10 +58,11 @@
             Set _readInputInterval:#readInputDelay
         !:
 
-        dec _frameCounter
+        
       
         jsr Render
 
+        dec _frameCounter
         lda _frameCounter        
         beq !+
             jmp nextFrame
@@ -127,7 +128,6 @@
     proceed:
         lda _proceedOn
         beq exit
-        dec _proceedInterval
         Proceed()
 
     exit:
@@ -137,6 +137,7 @@
     }
 
     .macro Proceed(){
+        dec _proceedInterval
         lda _proceedInterval
         bne !+
             dec _patternIndex
